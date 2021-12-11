@@ -13,6 +13,7 @@ use Hailo;
 use Log::Any qw ($log);
 use Math::Random::Secure qw (irand);
 use Mojo::Base 'Teapot::Bot::Brain';
+use Mojo::Redis;
 use BotLib::Admin qw (FortuneToggleList);
 use BotLib qw (RandomCommonPhrase Command Highlight BotSleep IsCensored);
 use BotLib::Conf qw (LoadConf);
@@ -32,7 +33,7 @@ my $myusername;
 my $myfirst_name;
 my $mylast_name;
 my $myfullname;
-my $redis_mutex;
+my $redis;
 
 has token => $c->{telegrambot}->{token};
 
@@ -359,9 +360,9 @@ sub __on_msg {
 }
 
 sub __redisListener {
-	return if ($redis_mutex);
+	return if (defined $redis);
 
-	my $redis = Mojo::Redis->new (
+	$redis = Mojo::Redis->new (
 		sprintf 'redis://%s:%s/1', $c->{redis_server}, $c->{redis_port}
 	);
 
@@ -376,7 +377,6 @@ sub __redisListener {
 		);
 	}
 
-	$redis_mutex = 1;
 	return;
 }
 
