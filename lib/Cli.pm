@@ -10,7 +10,7 @@ use open qw (:std :utf8);
 # модули для работы приложения
 use Mojo::Redis;
 
-use Conf qw (LoadConf);
+use BolLib::Conf qw (LoadConf);
 
 use version; our $VERSION = qw (1.0);
 use Exporter qw (import);
@@ -23,9 +23,10 @@ sub RunCli {
 		sprintf 'redis://%s:%s/1', $c->{redis_server}, $c->{redis_port}
 	);
 
+	my $pubsub = $redis->pubsub;
 	my $send_to = 'telegram';
 
-	$redis->json ($send_to)->notify (
+	$pubsub->json ($send_to)->notify (
 		$send_to => {
 			from    => 'redis_msg_gen.pl',
 			userid  => '0',

@@ -15,11 +15,7 @@ my $workdir;
 BEGIN {
 	use Cwd qw (chdir abs_path);
 	my @CWD = split /\//xms, abs_path ($PROGRAM_NAME);
-
-	if ($#CWD > 1) {
-		$#CWD = $#CWD - 1;
-	}
-
+	if ($#CWD > 1) { $#CWD = $#CWD - 2; }
 	$workdir = join '/', @CWD;
 	chdir $workdir;
 }
@@ -27,10 +23,6 @@ BEGIN {
 use lib ("$workdir/lib", "$workdir/vendor_perl", "$workdir/vendor_perl/lib/perl5");
 use Cli qw (RunCli);
 
-# set correct proctitle
-$PROGRAM_NAME = abs_path $PROGRAM_NAME;              ## no critic (Variables::RequireLocalizedPunctuationVars)
-
-# run cli, at last
 RunCli ();
 
 exit 0;
