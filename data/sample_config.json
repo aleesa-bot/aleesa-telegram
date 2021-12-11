@@ -52,7 +52,7 @@
 
     # Openwatermap plugin.
     "openweathermap" : {
-        "appid" : "md5sum-like_string",
+        "appid" : "md5sum-like_string"
     },
 
     # Stuff for telegram itself.
@@ -70,4 +70,10 @@
 
     # Unprivileged user to run this bot from.
     "user" : "unit",
+
+    "redis_server": "127.0.0.1",
+    "redis_port" : "6379",
+    "redis_channels" : [
+        "telegram"
+    ]
 }

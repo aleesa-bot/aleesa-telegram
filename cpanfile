@@ -26,6 +26,7 @@ requires 'Log::Any::For::Std';
 requires 'Math::Random::Secure';
 requires 'Mojo::Base';
 requires 'Mojo::IOLoop';
+requires 'Mojo::Redis'
 requires 'Mojo::UserAgent';
 requires 'Mojo::UserAgent::Cached';
 requires 'String::Random';

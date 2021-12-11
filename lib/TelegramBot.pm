@@ -19,6 +19,7 @@ use BotLib::Conf qw (LoadConf);
 use BotLib::Fortune qw (Fortune);
 use BotLib::Karma qw (KarmaSet);
 use BotLib::Util qw (trim fmatch);
+use RedisLib qw (redisListener);
 
 use version; our $VERSION = qw (1.0);
 use Exporter qw (import);
@@ -31,6 +32,7 @@ my $myusername;
 my $myfirst_name;
 my $mylast_name;
 my $myfullname;
+my $redis_mutex;
 
 has token => $c->{telegrambot}->{token};
 
@@ -356,6 +358,28 @@ sub __on_msg {
 	return;
 }
 
+sub __redisListener {
+	return if ($redis_mutex);
+
+	my $redis = Mojo::Redis->new (
+		sprintf 'redis://%s:%s/1', $c->{redis_server}, $c->{redis_port}
+	);
+
+	my $pubsub = $redis->pubsub;
+	my $sub;
+
+	foreach my $channel (@{$c->{redis_channels}}) {
+		$log->info ("Subscribing to $channel");
+
+		$sub->{$channel} = $pubsub->json ($channel)->listen (
+			$channel => sub { \&redis_parse_message->(@_); }
+		);
+	}
+
+	$redis_mutex = 1;
+	return;
+}
+
 # setup our bot
 sub init {
 	my $self = shift;
@@ -369,6 +393,7 @@ sub init {
 	}
 
 	$self->add_listener (\&__on_msg);
+	$self->add_listener (\&__redisListener);
 	$self->add_repeating_task (900, \&__cron);
 	return;
 }
