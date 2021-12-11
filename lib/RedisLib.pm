@@ -10,9 +10,9 @@ use Data::Dumper;
 
 use version; our $VERSION = qw (1.0);
 use Exporter qw (import);
-our @EXPORT_OK = qw (redisListener);
+our @EXPORT_OK = qw (redis_parse_message);
 
-sub parse_message {
+sub redis_parse_message {
 	my $self = shift;
 	my $m = shift;
 	my $answer = $m;

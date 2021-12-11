@@ -10,7 +10,7 @@ use open qw (:std :utf8);
 # модули для работы приложения
 use Mojo::Redis;
 
-use BolLib::Conf qw (LoadConf);
+use BotLib::Conf qw (LoadConf);
 
 use version; our $VERSION = qw (1.0);
 use Exporter qw (import);
