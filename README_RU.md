@@ -24,7 +24,7 @@ metacpan.org
 
 Понадобится perl-5.18, а желательно новее, "Development Tools" или подобная
 группа пакетов , perl, perl-devel, perl-local-lib, perl-app-cpanm, sqlite-devel,
-zlib-devel, openssl-devel, libdb4-devel (Berkeley DB devel), make.
+zlib-devel, openssl-devel, libdb4-devel (Berkeley DB devel), make, hiredis-devel.
 
 После установки этих пакетов, можно будет запустить:
 

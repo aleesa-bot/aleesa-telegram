@@ -13,6 +13,8 @@ use Hailo;
 use Log::Any qw ($log);
 use Math::Random::Secure qw (irand);
 use Mojo::Base 'Teapot::Bot::Brain';
+# Чтобы "уж точно" использовать hiredis-биндинги, загрузим этот модуль перед Mojo::Redis
+use Protocol::Redis::XS;
 use Mojo::Redis;
 use Mojo::Redis::Connection;
 use BotLib::Admin qw (FortuneToggleList);
@@ -21,7 +23,7 @@ use BotLib::Conf qw (LoadConf);
 use BotLib::Fortune qw (Fortune);
 use BotLib::Karma qw (KarmaSet);
 use BotLib::Util qw (trim fmatch);
-use RedisLib qw (redisListener);
+use RedisLib qw (redis_parse_message);
 
 use version; our $VERSION = qw (1.0);
 use Exporter qw (import);
@@ -372,13 +374,16 @@ sub __on_msg {
 }
 
 sub __redisListener {
+	$log->error ('Run redis listener');
 	# If we already connected there is no point to disconnect
-	if (defined $main::REDIS) { 
+	if (defined $main::REDIS) {
 		my $connected = eval { Mojo::Redis::Connection->is_connected ($main::REDIS); };
 
 		if ($connected) {
+			$log->notice ('[NOTICE] Redis client already running and connected');
 			return;
 		} else {
+			$log->notice ('[NOTICE] Redis client registered, but looks like it is not connected, try to re-connect');
 			$main::REDIS = undef;
 		}
 	}
@@ -387,44 +392,39 @@ sub __redisListener {
 		sprintf 'redis://%s:%s/1', $c->{redis_server}, $c->{redis_port}
 	);
 
+	$log->notice ('[NOTICE] New redis client registered, registering callbacks');
 	# Don't forget to update global ref to our redis context
 	$main::REDIS = $r;
 
 	$r->on (
-		error => sub {
-			my ($conn, $error) = @_;
-
-			$log->error ("Redis connection error: $error");
-
-			# TODO: maintain list of callbacks and clean them up?
-
-			my $redis = Mojo::Redis->new (
-				sprintf 'redis://%s:%s/1', $c->{redis_server}, $c->{redis_port}
-			);
-
-			# Don't forget to update global ref to our redis context
-			$main::REDIS = $redis;
-			return;
-		}
-	);
-
-	$r->on (
 		connection => sub {
 			my ($redis, $connection) = @_;
-			my $pubsub = $redis->pubsub;
-			my $sub;
 
-			foreach my $channel (@{$c->{redis_channels}}) {
-				$log->info ("Subscribing to $channel");
-
-				$sub->{$channel} = $pubsub->json ($channel)->listen (
-					$channel => sub { \&redis_parse_message->(@_); }
-				);
-			}
+			# Log error
+			$connection->on (
+				error => sub {
+					my ($conn, $error) = @_;
+					$log->error ("[ERROR] Redis connection error: $error");
+					return;
+				}
+			);
 
 			return;
 		}
 	);
+
+	# Subscribe to channels
+	my $pubsub = $r->pubsub;
+	my $sub;
+	$log->notice ('[NOTICE] Subscribing to redis channels');
+
+	foreach my $channel (@{$c->{redis_channels}}) {
+		$log->info ("[INFO] Subscribing to $channel");
+
+		$sub->{$channel} = $pubsub->json ($channel)->listen (
+			$channel => sub { \&redis_parse_message->(@_); }
+		);
+	}
 
 	return;
 }
@@ -445,8 +445,8 @@ sub init {
 	}
 
 	$self->add_listener (\&__on_msg);
-	$self->add_listener (\&__redisListener);
 	$self->add_repeating_task (900, \&__cron);
+	__redisListener ();
 	return;
 }
 

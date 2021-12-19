@@ -15,10 +15,23 @@ our @EXPORT_OK = qw (redis_parse_message);
 sub redis_parse_message {
 	my $self = shift;
 	my $m = shift;
-	my $answer = $m;
-	my $send_to = $answer->{from};
 
 	$log->error (Dumper $self);
+
+	# We cannot send message if we're not connected to telegram
+	# TODO: Queue messages properly.
+
+	until (defined $main::TGM) {
+		sleep 1;
+	}
+
+	# TODO: add some checks, at least that the bot is not muted in chat
+	$main::TGM->sendMessage (
+		{
+			chat_id => $m->{chatid},
+			text => $m->{message}
+		}
+	);
 
 	return;
 };

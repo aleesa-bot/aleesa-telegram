@@ -92,3 +92,7 @@ lib_sections    = NAME | VERSION | DESCRIPTION | AUTHOR | LICENSE AND COPYRIGHT
 
 [-ControlStructures::ProhibitDeepNests]
 # Have to use it, so fuckoff
+
+[-ControlStructures::ProhibitUntilBlocks]
+# Until is really useful if condition is simple, so let's assume condition is
+# always simple to read

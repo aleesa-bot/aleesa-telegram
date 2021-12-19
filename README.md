@@ -13,17 +13,18 @@ mature enough, maybe I release it separately.
 Bot config located in **data/config.json**, sample config provided as
 **data/sample_config.json**.
 
-Bot can be run via **bin/aleesa-telegram-bot** and acts as daemon (double fork()
-and detaches stdio).
+Bot can be run via **bin/aleesa-telegram-bot** and acts as daemon (double
+fork() and detaches stdio).
 
 ## Installation
 
-In order to run this application, you need to "bootstrap" it - download and build
-all required dependencies and libraries.
+In order to run this application, you need to "bootstrap" it - download and
+build all required dependencies and libraries.
 
 You'll need perl-5.18 or newer, "Development Tools" or similar group of
 packages, perl, perl-devel, perl-local-lib, perl-app-cpanm, sqlite-devel,
-zlib-devel, openssl-devel, libdb4-devel (Berkeley DB devel), make.
+zlib-devel, openssl-devel, libdb4-devel (Berkeley DB devel), make,
+hiredis-devel.
 
 After installing required dependencies it is possible to run:
 

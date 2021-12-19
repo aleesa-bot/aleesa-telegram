@@ -9,6 +9,8 @@ use open qw (:std :utf8);
 use English qw ( -no_match_vars );
 use Carp qw (carp);
 use Math::Random::Secure qw (irand);
+use Data::Dumper;
+use Log::Any qw ($log);
 
 use BotLib::Conf qw (LoadConf);
 use BotLib::Admin qw (@ForbiddenMessageTypes GetForbiddenTypes AddForbiddenType
@@ -60,11 +62,35 @@ sub Command {
 	my $msg = shift;
 	my $text = shift;
 	my $chatid = shift;
+
 	my $reply;
 	my ($userid, $username, $fullname, $highlight, $visavi) = Highlight ($msg);
 
+	my $rmsg->{from} = 'telegram';
+	$rmsg->{userid}  = $userid;
+	$rmsg->{chatid}  = $chatid;
+	$rmsg->{plugin}  = 'telegram';
+
+	if ($chatid >= 0) {
+		$rmsg->{mode}    = 'private';
+	} else {
+		$rmsg->{mode}    = 'public';
+	}
+
 	if (substr ($text, 1) eq 'ping') {
-		$reply = 'Pong.';
+		$rmsg->{message} = $text;
+		$self->log->debug ('[DEBUG] Sending message to redis ' . Dumper ($rmsg));
+
+		until (eval { Mojo::Redis::Connection->is_connected ($main::REDIS); }) {
+			$log->info ('[INFO] Not yet connected to redis');
+			sleep 1;
+		}
+
+		my $pubsub = $main::REDIS->pubsub;
+
+		$pubsub->json ($c->{'redis_router_channel'})->notify (
+			$c->{'redis_router_channel'} => $rmsg
+		);
 	} elsif (substr ($text, 1) eq 'пинг') {
 		$reply = 'Понг.';
 	} elsif (substr ($text, 1) eq 'pong') {
