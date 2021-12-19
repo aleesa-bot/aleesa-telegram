@@ -75,5 +75,6 @@
     "redis_port" : "6379",
     "redis_channels" : [
         "telegram"
-    ]
+    ],
+    "redis_router_channel" : "misc"
 }

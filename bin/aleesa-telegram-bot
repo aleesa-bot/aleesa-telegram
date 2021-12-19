@@ -144,6 +144,9 @@ local $SIG{TERM} = \&__signal_handler;
 # set correct proctitle
 $PROGRAM_NAME = abs_path $PROGRAM_NAME;              ## no critic (Variables::RequireLocalizedPunctuationVars)
 
+# make some global vars for telegram and redis context
+our ($TGM $REDIS);
+
 # run bot, at last
 RunTelegramBot ();
 

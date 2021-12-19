@@ -14,6 +14,7 @@ use Log::Any qw ($log);
 use Math::Random::Secure qw (irand);
 use Mojo::Base 'Teapot::Bot::Brain';
 use Mojo::Redis;
+use Mojo::Redis::Connection;
 use BotLib::Admin qw (FortuneToggleList);
 use BotLib qw (RandomCommonPhrase Command Highlight BotSleep IsCensored);
 use BotLib::Conf qw (LoadConf);
@@ -33,7 +34,6 @@ my $myusername;
 my $myfirst_name;
 my $mylast_name;
 my $myfullname;
-my $redis;
 
 has token => $c->{telegrambot}->{token};
 
@@ -372,22 +372,59 @@ sub __on_msg {
 }
 
 sub __redisListener {
-	return if (defined $redis);
+	# If we already connected there is no point to disconnect
+	if (defined $main::REDIS) { 
+		my $connected = eval { Mojo::Redis::Connection->is_connected ($main::REDIS); };
 
-	$redis = Mojo::Redis->new (
+		if ($connected) {
+			return;
+		} else {
+			$main::REDIS = undef;
+		}
+	}
+
+	my $r = Mojo::Redis->new (
 		sprintf 'redis://%s:%s/1', $c->{redis_server}, $c->{redis_port}
 	);
 
-	my $pubsub = $redis->pubsub;
-	my $sub;
+	# Don't forget to update global ref to our redis context
+	$main::REDIS = $r;
 
-	foreach my $channel (@{$c->{redis_channels}}) {
-		$log->info ("Subscribing to $channel");
+	$r->on (
+		error => sub {
+			my ($conn, $error) = @_;
 
-		$sub->{$channel} = $pubsub->json ($channel)->listen (
-			$channel => sub { \&redis_parse_message->(@_); }
-		);
-	}
+			$log->error ("Redis connection error: $error");
+
+			# TODO: maintain list of callbacks and clean them up?
+
+			my $redis = Mojo::Redis->new (
+				sprintf 'redis://%s:%s/1', $c->{redis_server}, $c->{redis_port}
+			);
+
+			# Don't forget to update global ref to our redis context
+			$main::REDIS = $redis;
+			return;
+		}
+	);
+
+	$r->on (
+		connection => sub {
+			my ($redis, $connection) = @_;
+			my $pubsub = $redis->pubsub;
+			my $sub;
+
+			foreach my $channel (@{$c->{redis_channels}}) {
+				$log->info ("Subscribing to $channel");
+
+				$sub->{$channel} = $pubsub->json ($channel)->listen (
+					$channel => sub { \&redis_parse_message->(@_); }
+				);
+			}
+
+			return;
+		}
+	);
 
 	return;
 }
@@ -395,6 +432,9 @@ sub __redisListener {
 # setup our bot
 sub init {
 	my $self = shift;
+
+	# Don't forget to update global ref to our telegram context
+	$main::TGM = $self;
 	my $braindir = $c->{telegrambot}->{braindir};
 
 	unless (-d $braindir) {

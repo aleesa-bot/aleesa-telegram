@@ -30,10 +30,10 @@ sub RunCli {
 		$send_to => {
 			from    => 'redis_msg_gen.pl',
 			userid  => '0',
-			chatid  => 'some_chat_id',
+			chatid  => '0',
 			plugin  => 'redis_msg_gen.pl_plugin',
 			message => 'ping?',
-			mode    => 'mode',
+			mode    => 'private',
 		}
 	);
 
