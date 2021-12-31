@@ -67,6 +67,8 @@ sub Command {
 	my ($userid, $username, $fullname, $highlight, $visavi) = Highlight ($msg);
 
 	my $rmsg->{from} = 'telegram';
+	$rmsg->{misc}->{answer} = 1;
+	$rmsg->{misc}->{csign} = $csign;
 	$rmsg->{userid}  = $userid;
 	$rmsg->{chatid}  = $chatid;
 	$rmsg->{plugin}  = 'telegram';
@@ -77,13 +79,20 @@ sub Command {
 		$rmsg->{mode}    = 'public';
 	}
 
-	if (substr ($text, 1) eq 'ping') {
+	if ((substr ($text, 1) eq 'ping') || (substr ($text, 1) eq 'пинг') || (substr ($text, 1) eq 'pong')  ||
+	    (substr ($text, 1) eq 'понг') || (substr ($text, 1) eq 'coin' || substr ($text, 1) eq 'монетка') ||
+		(substr ($text, 1) eq 'roll' || substr ($text, 1) eq 'dice' || substr ($text, 1) eq 'кости')     ||
+		(substr ($text, 1) eq 'ver' || substr ($text, 1) eq 'version' || substr ($text, 1) eq 'версия')  ||
+		(substr ($text, 1) eq 'хэлп' || substr ($text, 1) eq 'halp')                                     ||
+		(substr ($text, 1) eq 'kde' || substr ($text, 1) eq 'кде')                                         ) {
 		$rmsg->{message} = $text;
 		$self->log->debug ('[DEBUG] Sending message to redis ' . Dumper ($rmsg));
 
-		until (eval { Mojo::Redis::Connection->is_connected ($main::REDIS); }) {
-			$log->info ('[INFO] Not yet connected to redis');
-			sleep 1;
+		{
+			do {
+				my $ready = eval { $main::RCONN->is_connected; };
+				last if ($ready);
+			} while (sleep 1);
 		}
 
 		my $pubsub = $main::REDIS->pubsub;
@@ -91,34 +100,6 @@ sub Command {
 		$pubsub->json ($c->{'redis_router_channel'})->notify (
 			$c->{'redis_router_channel'} => $rmsg
 		);
-	} elsif (substr ($text, 1) eq 'пинг') {
-		$reply = 'Понг.';
-	} elsif (substr ($text, 1) eq 'pong') {
-		$reply = 'Wat?';
-	} elsif (substr ($text, 1) eq 'понг') {
-		$reply = 'Шта?';
-	} elsif (substr ($text, 1) eq 'coin' || substr ($text, 1) eq 'монетка') {
-		if (rand (101) < 0.016) {
-			$reply = 'ребро';
-		} else {
-			if (irand (2) == 0) {
-				if (irand (2) == 0) {
-					$reply = 'орёл';
-				} else {
-					$reply = 'аверс';
-				}
-			} else {
-				if (irand (2) == 0) {
-					$reply = 'решка';
-				} else {
-					$reply = 'реверс';
-				}
-			}
-		}
-	} elsif (substr ($text, 1) eq 'roll' || substr ($text, 1) eq 'dice' || substr ($text, 1) eq 'кости') {
-		$reply = sprintf 'На первой кости выпало %d, а на второй — %d.', irand (6) + 1, irand (6) + 1;
-	} elsif (substr ($text, 1) eq 'ver' || substr ($text, 1) eq 'version' || substr ($text, 1) eq 'версия') {
-		$reply = 'Версия:  Четыре.Технологическое_превью';
 	} elsif (substr ($text, 1) eq 'anek' || substr ($text, 1) eq 'анек' || substr ($text, 1) eq 'анекдот') {
 		$msg->typing ();
 		$reply = "```\n" . Anek () . "\n```";
@@ -264,17 +245,6 @@ sub Command {
 		sleep (irand (2) + 1);
 		$msg->replyMd ($reply);
 		return;
-	} elsif (substr ($text, 1) eq 'хэлп' || substr ($text, 1) eq 'halp') {
-		$reply = 'HALP!!!11';
-	} elsif (substr ($text, 1) eq 'kde' || substr ($text, 1) eq 'кде') {
-		my @phrases = (
-			'Нет, я не буду поднимать вам плазму.',
-			'Повторяйте эту мантру по утрам не менее 5 раз: "Плазма не падает." И, возможно, она перестанет у вас падать.',
-			'Плазма не падает, она просто выходит отдохнуть.',
-			'Плазма это не агрегатное состояние, это суперпозиция. Во время работы она находится сразу в жидком, мягком и тёплом состояниях.',
-		);
-
-		$reply = $phrases[irand ($#phrases + 1)];
 	} elsif (substr ($text, 1) eq 'help'  ||  substr ($text, 1) eq 'помощь') {
 		$reply = << "MYHELP";
 ```

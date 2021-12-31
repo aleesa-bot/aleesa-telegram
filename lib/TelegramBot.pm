@@ -422,12 +422,14 @@ sub __redisListener {
 	$r->on (
 		connection => sub {
 			my ($redis, $connection) = @_;
+			$main::RCONN = $connection;
 
 			# Log error
 			$connection->on (
 				error => sub {
 					my ($conn, $error) = @_;
 					$log->error ("[ERROR] Redis connection error: $error");
+					$main::RCONN = undef;
 					return;
 				}
 			);
@@ -439,13 +441,14 @@ sub __redisListener {
 	# Subscribe to channels
 	my $pubsub = $r->pubsub;
 	my $sub;
+	my $rpm = \&redis_parse_message;
 	$log->notice ('[NOTICE] Subscribing to redis channels');
 
 	foreach my $channel (@{$c->{redis_channels}}) {
 		$log->info ("[INFO] Subscribing to $channel");
 
 		$sub->{$channel} = $pubsub->json ($channel)->listen (
-			$channel => sub { \&redis_parse_message->(@_); }
+			$channel => sub { $rpm->(@_); }
 		);
 	}
 
