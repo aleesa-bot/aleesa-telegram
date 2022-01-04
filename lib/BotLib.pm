@@ -15,47 +15,17 @@ use Log::Any qw ($log);
 use BotLib::Conf qw (LoadConf);
 use BotLib::Admin qw (@ForbiddenMessageTypes GetForbiddenTypes AddForbiddenType
                       DelForbiddenType ListForbidden FortuneToggle FortuneStatus
-                      PluginToggle PluginStatus PluginEnabled);
-use BotLib::Anek qw (Anek);
+                      PluginToggle PluginStatus PluginEnabled ChanMsgToggle ChanMsgStatus);
 use BotLib::Archeologist qw (Dig);
-use BotLib::Buni qw (Buni);
-use BotLib::Drink qw (Drink);
 use BotLib::Fisher qw (Fish);
-use BotLib::Fortune qw (Fortune);
-use BotLib::Friday qw (Friday);
-use BotLib::Image qw (Kitty Fox Oboobs Obutts Rabbit Owl Frog Horse Snail);
-use BotLib::Karma qw (KarmaSet KarmaGet);
-use BotLib::Lat qw (Lat);
-use BotLib::Monkeyuser qw (Monkeyuser);
-use BotLib::Proverb qw (Proverb);
 use BotLib::Util qw (trim);
-use BotLib::Weather qw (Weather);
-use BotLib::Xkcd qw (Xkcd);
 
 use version; our $VERSION = qw (1.0);
 use Exporter qw (import);
-our @EXPORT_OK = qw (RandomCommonPhrase Command Highlight BotSleep IsCensored);
+our @EXPORT_OK = qw (Command Highlight BotSleep IsCensored);
 
 my $c = LoadConf ();
 my $csign = $c->{telegrambot}->{csign};
-
-sub RandomCommonPhrase {
-	my @myphrase = (
-		'Так, блядь...',
-		'*Закатывает рукава* И ради этого ты меня позвал?',
-		'Ну чего ты начинаешь, нормально же общались',
-		'Повтори свой вопрос, не поняла',
-		'Выйди и зайди нормально',
-		'Я подумаю',
-		'Даже не знаю, что на это ответить',
-		'Ты упал такие вопросы девочке задавать?',
-		'Можно и так, но не уверена',
-		'А как ты думаешь?',
-		'А ви, таки, почему интересуетесь?',
-	);
-
-	return $myphrase[irand ($#myphrase + 1)];
-}
 
 sub Command {
 	my $self = shift;
@@ -79,14 +49,64 @@ sub Command {
 		$rmsg->{mode}    = 'public';
 	}
 
-	if ((substr ($text, 1) eq 'ping') || (substr ($text, 1) eq 'пинг') || (substr ($text, 1) eq 'pong')  ||
-	    (substr ($text, 1) eq 'понг') || (substr ($text, 1) eq 'coin' || substr ($text, 1) eq 'монетка') ||
-		(substr ($text, 1) eq 'roll' || substr ($text, 1) eq 'dice' || substr ($text, 1) eq 'кости')     ||
-		(substr ($text, 1) eq 'ver' || substr ($text, 1) eq 'version' || substr ($text, 1) eq 'версия')  ||
-		(substr ($text, 1) eq 'хэлп' || substr ($text, 1) eq 'halp')                                     ||
-		(substr ($text, 1) eq 'kde' || substr ($text, 1) eq 'кде')                                         ) {
+	my $cmd = substr $text, 1;
+	my @cmds = qw (tits boobs tities boobies сиси сисечки butt booty ass попа попка);
+
+	while (my $check = pop @cmds) {
+		if ($cmd eq $check) {
+			unless (PluginEnabled $chatid, 'oboobs') {
+				return;
+			}
+		}
+	}
+
+	$#cmds = -1;
+	@cmds = qw (butt booty ass попа попка);
+
+	while (my $check = pop @cmds) {
+		if ($cmd eq $check) {
+			unless (PluginEnabled $chatid, 'obutts') {
+				return;
+			}
+		}
+	}
+
+	$#cmds = -1;
+	@cmds = qw (ping пинг пинх pong понг понх coin монетка roll dice кости ver version версия хэлп halp kde кде lat
+	            лат friday пятница proverb пословица fortune фортунка f ф anek анек анекдот buni cat кис drink праздник fox лис
+				frog лягушка horse лошадь лошадка monkeyuser owl сова сыч rabbit bunny кролик snail улитка tits boobs tities
+				boobies сиси сисечки butt booty ass попа попка xkcd);
+
+	my $bingo = 0;
+
+	while (my $check = pop @cmds) {
+		if ($cmd eq $check) {
+			$bingo = 1;
+			last;
+		}
+	}
+
+	# TODO: Заменить на сравнение со строкой?
+	if (($cmd =~ /^w\s/u) || ($cmd =~ /^п\s/u) || ($cmd =~ /^weather\s/u) || ($cmd =~ /^погода\s/u) ||
+		($cmd =~ /^погодка\s/u) || ($cmd =~ /^погадка\s/u) || ($cmd =~ /^karma\s/u) || ($cmd =~ /карма\s/u)) {
+		$bingo = 1;
+	}
+
+	if ($bingo) {
 		$rmsg->{message} = $text;
 		$self->log->debug ('[DEBUG] Sending message to redis ' . Dumper ($rmsg));
+
+		$#cmds = -1;
+		@cmds = qw (fortune фортунка f ф anek анек анекдот buni cat кис fox лис frog лягушка horse лошадь
+		            лошадка monkeyuser owl сова сыч rabbit bunny кролик snail улитка tits boobs tities boobies сиси сисечки
+					butt booty ass попа попка xkcd);
+
+		while (my $check = pop @cmds) {
+			if ($cmd eq $check) {
+				$rmsg->{misc}->{msg_format} = 1;
+				last;
+			}
+		}
 
 		{
 			do {
@@ -100,139 +120,6 @@ sub Command {
 		$pubsub->json ($c->{'redis_router_channel'})->notify (
 			$c->{'redis_router_channel'} => $rmsg
 		);
-	} elsif (substr ($text, 1) eq 'anek' || substr ($text, 1) eq 'анек' || substr ($text, 1) eq 'анекдот') {
-		$msg->typing ();
-		$reply = "```\n" . Anek () . "\n```";
-		sleep (irand (2) + 1);
-		$msg->replyMd ($reply);
-		return;
-	} elsif (length ($text) >= 2 && (substr ($text, 1, 2) eq 'w ' || substr ($text, 1, 2) eq 'п ')) {
-		my $city = substr $text, 3;
-		$reply = Weather $city;
-	} elsif (substr ($text, 1, 7) eq 'погода ') {
-		my $city = substr $text, 7;
-		$reply = Weather $city;
-	} elsif ((substr ($text, 1, 8) eq 'погодка ') || (substr ($text, 1, 8) eq 'погадка ') || (substr ($text, 1, 8) eq 'weather ')){
-		my $city = substr $text, 8;
-		$reply = Weather $city;
-	} elsif (substr ($text, 1) eq 'buni') {
-		$msg->typing ();
-		$reply = Buni ();
-		sleep (irand (2) + 1);
-		$msg->replyMd ($reply);
-		return;
-	} elsif (substr ($text, 1) eq 'monkeyuser') {
-		$msg->typing ();
-		$reply = Monkeyuser ();
-		sleep (irand (2) + 1);
-		$msg->replyMd ($reply);
-		return;
-	} elsif (substr ($text, 1) eq 'cat'  ||  substr ($text, 1) eq 'кис') {
-		$msg->typing ();
-		$reply = Kitty ();
-		sleep (irand (2) + 1);
-		$msg->replyMd ($reply);
-		return;
-	} elsif (substr ($text, 1) eq 'frog'  ||  substr ($text, 1) eq 'toad'  || substr ($text, 1) eq 'лягушка') {
-		$msg->typing ();
-		$reply = Frog ();
-		sleep (irand (2) + 1);
-		$msg->replyMd ($reply);
-		return;
-	} elsif (substr ($text, 1) eq 'horse'  ||  substr ($text, 1) eq 'лошадка') {
-		$msg->typing ();
-		$reply = Horse ();
-		sleep (irand (2) + 1);
-		$msg->replyMd ($reply);
-		return;
-	} elsif (substr ($text, 1) eq 'snail'  ||  substr ($text, 1) eq 'улитка') {
-		$msg->typing ();
-		$reply = Snail ();
-		sleep (irand (2) + 1);
-		$msg->replyMd ($reply);
-		return;
-	} elsif (substr ($text, 1) eq 'lat'  ||  substr ($text, 1) eq 'лат') {
-		$reply = Lat ();
-	} elsif (
-		(length ($text) >= 6 && (substr ($text, 1, 6) eq 'karma ' || substr ($text, 1, 6) eq 'карма '))  ||
-		substr ($text, 1) eq 'karma'  ||  substr ($text, 1) eq 'карма'
-	) {
-		my $mytext = '';
-
-		if (length($text) > 6) {
-			$mytext = substr $text, 7;
-			chomp $mytext;
-			$mytext = trim $mytext;
-		} else {
-			$mytext = '';
-		}
-
-		$reply = KarmaGet ($chatid, $mytext);
-	} elsif (substr ($text, 1) eq 'xkcd') {
-		$msg->typing ();
-		$reply = Xkcd ();
-		sleep (irand (2) + 1);
-		$msg->replyMd ($reply);
-		return;
-	} elsif (substr ($text, 1) eq 'fox'  ||  substr ($text, 1) eq 'лис') {
-		$msg->typing ();
-		$reply = Fox ();
-		sleep (irand (2) + 1);
-		$msg->replyMd ($reply);
-		return;
-	} elsif (substr ($text, 1) eq 'rabbit'  ||  substr ($text, 1) eq 'bunny'  ||  substr ($text, 1) eq 'кролик') {
-		$msg->typing ();
-		$reply = Rabbit ();
-		$msg->replyMd ($reply);
-		return;
-	} elsif (substr ($text, 1) eq 'owl'  ||  substr ($text, 1) eq 'сова') {
-		$msg->typing ();
-		$reply = Owl ();
-		$msg->replyMd ($reply);
-		return;
-	} elsif (
-		substr ($text, 1) eq 'tits'    ||
-		substr ($text, 1) eq 'boobs'   ||
-		substr ($text, 1) eq 'tities'  ||
-		substr ($text, 1) eq 'boobies' ||
-		substr ($text, 1) eq 'сиси'    ||
-		substr ($text, 1) eq 'сисечки'
-	) {
-		if (PluginEnabled $chatid, 'oboobs') {
-			$msg->typing ();
-			$reply = Oboobs ();
-			sleep (irand (2) + 1);
-			$msg->replyMd ($reply);
-		}
-
-		return;
-	} elsif (
-		substr ($text, 1) eq 'butt'  ||
-		substr ($text, 1) eq 'booty' ||
-		substr ($text, 1) eq 'ass'   ||
-		substr ($text, 1) eq 'попа'  ||
-		substr ($text, 1) eq 'попка'
-	) {
-		if (PluginEnabled $chatid, 'obutts') {
-			$msg->typing ();
-			$reply = Obutts ();
-			sleep (irand (2) + 1);
-			$msg->replyMd ($reply);
-		}
-
-		return;
-	} elsif (substr ($text, 1) eq 'friday'  ||  substr ($text, 1) eq 'пятница') {
-		$reply = Friday ();
-	} elsif (substr ($text, 1) eq 'proverb'  ||  substr ($text, 1) eq 'пословица') {
-		$reply = Proverb ();
-	} elsif (substr ($text, 1) eq 'fortune'  ||  substr ($text, 1) eq 'фортунка'  ||  substr ($text, 1) eq 'f'  ||  substr ($text, 1) eq 'ф') {
-		$reply = sprintf "```\n%s\n```\n", trim (Fortune ());
-		$msg->replyMd ($reply);
-		return;
-	} elsif (substr ($text, 1) eq 'drink' || substr ($text, 1) eq 'праздник') {
-		$msg->typing ();
-		$reply = Drink ();
-		sleep (irand (2) + 1);
 	} elsif (substr ($text, 1) eq 'dig' || substr ($text, 1) eq 'копать') {
 		$msg->typing ();
 		$reply = Dig $highlight;
@@ -266,17 +153,17 @@ ${csign}frog | ${csign}лягушка            - лягушка
 ${csign}horse | ${csign}лошадка           - лошадка
 ${csign}lat | ${csign}лат                 - сгенерить фразу из крылатых латинских выражений
 ${csign}monkeyuser                 - рандомный стрип MonkeyUser
-${csign}owl | ${csign}сова                - сова
+${csign}owl | ${csign}сова | ${csign}сыч         - сова
 ${csign}proverb | ${csign}пословица       - рандомная русская пословица
 ${csign}ping | ${csign}пинг               - попинговать бота
 ${csign}roll | ${csign}dice | ${csign}кости      - бросить кости
 ${csign}snail | ${csign}улитка            - улитка
 ${csign}ver | ${csign}version | ${csign}версия   - что-то про версию ПО
 ${csign}w город | ${csign}п город         - погода в указанном городе
-${csign}weather город                     - погода в указанном городе
-${csign}погода город                      - погода в указанном городе
-${csign}погодка город                     - погода в указанном городе
-${csign}погадка город                     - погода в указанном городе
+${csign}weather город              - погода в указанном городе
+${csign}погода город               - погода в указанном городе
+${csign}погодка город              - погода в указанном городе
+${csign}погадка город              - погода в указанном городе
 ${csign}xkcd                       - рандомный стрип с сайта xkcd.ru
 ${csign}karma фраза | ${csign}карма фраза - посмотреть карму фразы
 фраза-- | фраза++           - убавить или добавить карму фразе
@@ -305,6 +192,8 @@ ${csign}admin oboobs #      - где 1 - вкл, 0 - выкл плагина obo
 ${csign}admin oboobs        - показываем ли сисечки по просьбе участников чата (команды ${csign}tits, ${csign}tities, ${csign}boobs, ${csign}boobies, ${csign}сиси, ${csign}сисечки)
 ${csign}admin obutts #      - где 1 - вкл, 0 - выкл плагина obutts
 ${csign}admin obutts        - показываем ли попки по просьбе участников чата (команды ${csign}ass, ${csign}butt, ${csign}booty, ${csign}попа, ${csign}попка)
+${csign}admin chan_msg      - оставляем ли сообщения присланные от имени (других) каналов
+${csign}admin chan_msg #    - где 1 - оставляем, 0 - удаляем
 ```
 Типы сообщений:
 audio voice photo video animation sticker dice game poll document
@@ -320,7 +209,9 @@ MYADMIN
 		# this msg should be shown only if admins of chat request it
 		if (($member->status eq 'administrator') || ($member->status eq 'creator')) {
 			my $command = trim (substr $text, 7);
-			my ($cmd, $args) = split /\s+/, $command, 2;
+			$cmd = undef;
+			my $args;
+			($cmd, $args) = split /\s+/, $command, 2;
 
 			if ($cmd eq '') {
 				return;
@@ -353,6 +244,16 @@ MYADMIN
 					}
 				} else {
 					$reply = FortuneStatus ($chatid);
+				}
+			} elsif ($cmd eq 'chan_msg') {
+				if (defined $args) {
+					if ($args == 1) {
+						$reply = ChanMsgToggle ($chatid, 1);
+					} elsif ($args == 0) {
+						$reply = ChanMsgToggle ($chatid, 0);
+					}
+				} else {
+					$reply = ChanMsgStatus ($chatid);
 				}
 			} elsif ($cmd eq 'oboobs') {
 				if (defined $args) {

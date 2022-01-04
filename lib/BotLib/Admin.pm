@@ -18,7 +18,7 @@ use Exporter qw (import);
 our @ISA    = qw / Exporter /; ## no critic (ClassHierarchies::ProhibitExplicitISA)
 our @EXPORT_OK = qw (@ForbiddenMessageTypes @PluginList GetForbiddenTypes AddForbiddenType DelForbiddenType
                      ListForbidden FortuneToggle FortuneToggleList FortuneStatus PluginToggle PluginStatus
-                     PluginEnabled);
+                     PluginEnabled ChanMsgToggle ChanMsgStatus ChanMsgEnabled);
 
 my $c = LoadConf ();
 my $cachedir = $c->{cachedir};
@@ -171,6 +171,107 @@ sub FortuneToggleList () {
 		driver => 'BerkeleyDB',
 		root_dir => $cachedir,
 		namespace => __PACKAGE__ . '_' . 'fortune'
+	);
+
+	return $cache->get_keys ();
+}
+
+sub ChanMsgToggle (@) {
+	my $chatid = shift;
+	my $action = shift // undef;
+	my $phrase = 'Сообщения, пришедшие от имени каналов ';
+
+	my $cache = CHI->new (
+		driver => 'BerkeleyDB',
+		root_dir => $cachedir,
+		namespace => __PACKAGE__ . '_' . 'chan_msg'
+	);
+
+	my $state = $cache->get ($chatid);
+
+	if (defined $action) {
+		if ($action) {
+			$cache->set ($chatid, 1, 'never');
+			$phrase .= 'не будут удаляться.';
+		} else {
+			if (defined $state && $state) {
+				$cache->set ($chatid, 0, 'never');
+				$phrase .= 'будут удаляться.';
+			} else {
+				$cache->set ($chatid, 1, 'never');
+				$phrase .= 'не будут удаляться.';
+			}
+		}
+	} else {
+		if (defined $state){
+			if ($state) {
+				$cache->set ($chatid, 0, 'never');
+				$phrase .= 'будут удаляться.';
+			} else {
+				$cache->set ($chatid, 1, 'never');
+				$phrase .= 'не будут удаляться.';
+			}
+		} else {
+			$cache->set ($chatid, 1, 'never');
+			$phrase .= 'не будут удаляться.';
+		}
+	}
+
+	return $phrase;
+}
+
+sub ChanMsgStatus ($) {
+	my $chatid = shift;
+	my $phrase = 'Сообщения, пришедшие от имени каналов ';
+
+	my $cache = CHI->new (
+		driver => 'BerkeleyDB',
+		root_dir => $cachedir,
+		namespace => __PACKAGE__ . '_' . 'chan_msg'
+	);
+
+	my $state = $cache->get ($chatid);
+
+	if (defined $state) {
+		if ($state) {
+			$phrase .= 'не удаляются.';
+		} else {
+			$phrase .= 'удаляются.';
+		}
+	} else {
+		$phrase .= 'не удаляются.';
+	}
+
+	return $phrase;
+}
+
+sub ChanMsgEnabled ($) {
+	my $chatid = shift;
+
+	my $cache = CHI->new (
+		driver => 'BerkeleyDB',
+		root_dir => $cachedir,
+		namespace => __PACKAGE__ . '_' . 'chan_msg'
+	);
+
+	my $state = $cache->get ($chatid);
+
+	if (defined $state) {
+		if ($state) {
+			return 1;
+		} else {
+			return 0;
+		}
+	} else {
+		return 1;
+	}
+}
+
+sub ChanMsgToggleList () {
+	my $cache = CHI->new (
+		driver => 'BerkeleyDB',
+		root_dir => $cachedir,
+		namespace => __PACKAGE__ . '_' . 'chan_msg'
 	);
 
 	return $cache->get_keys ();

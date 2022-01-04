@@ -7,53 +7,12 @@
         "gamestatdir" : "data/gamestat"
     },
 
-    "fortune" : {
-        "dir" : "data/fortune",
-        "srcdir" : "data/fortune_src"
-    },
-
-    "proverb" : {
-        "dir" : "data/proverb",
-        "srcdir" : "data/proverb_src"
-    },
-
-    "friday" : {
-        "dir" : "data/friday",
-        "src" : "data/friday.txt"
-    },
-
-    "image": {
-        "imgur" : {
-            # See README.md about these settings - auth'ed search settings.
-            "client-id" : "imgur api client id",
-            "secret" : "secret for client id",
-            "access_token" : "access token for querying imgur api",
-            "refresh_token" : "token for refreshing access token"
-        },
-        "flickr" : {
-            # See README.md about these settings - auth'ed search settings.
-            "consumer_key" : "md5-like_hash",
-            "consumer_secret" : "some_hash-like_string",
-            "verifier": "some_hash-like_string"
-        }
-    },
-
-    "lat" : {
-        "brain": "data/lat/brain.sqlite",
-        "src": "data/lat.txt"
-    },
-
     # Required for debugging reasons, if commented out or not exist, no debug logging appears at all.
     "log" : "/var/log/aleesa-telegram-bot/aleesa.log",
 
     # Verbosity can be trace, debug, info (inform), notice, warning (warn), error (err), critical (crit, fatal), alert, emergency.
     # Currently implemented debug, info, notice, warn, error, fatal. Notice is default logging level.
     "loglevel": "notice",
-
-    # Openwatermap plugin.
-    "openweathermap" : {
-        "appid" : "md5sum-like_string"
-    },
 
     # Stuff for telegram itself.
     "telegrambot" : {
@@ -69,7 +28,7 @@
     },
 
     # Unprivileged user to run this bot from.
-    "user" : "unit",
+    "user" : "nobody",
 
     "redis_server": "127.0.0.1",
     "redis_port" : "6379",

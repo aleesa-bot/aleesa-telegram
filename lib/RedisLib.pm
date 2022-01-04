@@ -15,8 +15,7 @@ our @EXPORT_OK = qw (redis_parse_message);
 sub redis_parse_message {
 	my $self = shift;
 	my $m = shift;
-
-	$log->error (Dumper $self);
+	my $message;
 
 	# We cannot send message if we're not connected to telegram
 	# TODO: Queue messages properly.
@@ -26,12 +25,13 @@ sub redis_parse_message {
 	}
 
 	# TODO: add some checks, at least that the bot is not muted in chat
-	$main::TGM->sendMessage (
-		{
-			chat_id => $m->{chatid},
-			text => $m->{message}
-		}
-	);
+	if ($m->{misc}->{msg_format}) {
+		$message->{parse_mode} = 'Markdown';
+	}
+
+	$message->{chat_id} = $m->{chatid};
+	$message->{text} = $m->{message};
+	$main::TGM->sendMessage ($message);
 
 	return;
 };

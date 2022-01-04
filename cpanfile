@@ -1,4 +1,5 @@
 requires 'Carp';
+requires 'Clone';
 requires 'CHI';
 requires 'CHI::Driver::BerkeleyDB';
 requires 'Cwd::utf8';

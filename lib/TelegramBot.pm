@@ -8,8 +8,8 @@ use utf8;
 use open qw (:std :utf8);
 use English qw ( -no_match_vars );
 use Carp qw (cluck carp);
+use Clone qw (clone);
 use File::Path qw (make_path);
-use Hailo;
 use Log::Any qw ($log);
 use Math::Random::Secure qw (irand);
 use Mojo::Base 'Teapot::Bot::Brain';
@@ -17,12 +17,10 @@ use Mojo::Base 'Teapot::Bot::Brain';
 use Protocol::Redis::XS;
 use Mojo::Redis;
 use Mojo::Redis::Connection;
-use BotLib::Admin qw (FortuneToggleList);
-use BotLib qw (RandomCommonPhrase Command Highlight BotSleep IsCensored);
+
+use BotLib::Admin qw (FortuneToggleList ChanMsgEnabled);
+use BotLib qw (Command Highlight BotSleep IsCensored);
 use BotLib::Conf qw (LoadConf);
-use BotLib::Fortune qw (Fortune);
-use BotLib::Image qw (Oboobs Obutts);
-use BotLib::Karma qw (KarmaSet);
 use BotLib::Util qw (trim fmatch);
 use RedisLib qw (redis_parse_message);
 
@@ -31,7 +29,6 @@ use Exporter qw (import);
 our @EXPORT_OK = qw (RunTelegramBot);
 
 my $c = LoadConf ();
-my $hailo;
 my $myid;
 my $myusername;
 my $myfirst_name;
@@ -40,25 +37,42 @@ my $myfullname;
 
 has token => $c->{telegrambot}->{token};
 
+my $redismsg->{from} = 'telegram';
+$redismsg->{plugin}  = 'telegram';
+$redismsg->{misc}->{answer} = 1;
+$redismsg->{misc}->{csign} = $c->{telegrambot}->{csign};
+$redismsg->{misc}->{msg_format} = 0;
+$redismsg->{misc}->{fwd_cnt} = 1;
+
 sub __cron {
 	my $self = shift;
 
-	# fortune mod
-	my @intro = (
-		'Сегодняшний день пройдёт под эгидой фразы:',
-		'Крылатая фраза на сегодня:',
-		'Сегодняшняя фраза дня:',
-	);
+	my $rmsg = clone ($redismsg);
+	$rmsg->{mode}    = 'public';
+	# Press 'F' to pay respect
+	$rmsg->{message} = sprintf '%sf', $c->{telegrambot}->{csign};
+	$rmsg->{misc}->{good_morning} = 1;
+	$rmsg->{misc}->{msg_format} = 1;
 
 	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime (time);
 
+	{
+		do {
+			my $ready = eval { $main::RCONN->is_connected; };
+			last if ($ready);
+		} while (sleep 1);
+	}
+
+	my $pubsub = $main::REDIS->pubsub;
+
 	if ($hour == 8 && ($min >= 0 && $min <= 14)) {
 		foreach my $enabledfortunechat (FortuneToggleList ()) {
-			my $send_args;
-			$send_args->{text} = sprintf "%s\n```\n%s\n```\n", $intro[irand ($#intro + 1)], trim (Fortune ());
-			$send_args->{chat_id} = $enabledfortunechat;
-			$send_args->{parse_mode} = 'Markdown';
-			$self->sendMessage ($send_args);
+			$rmsg->{userid}  = $enabledfortunechat;
+			$rmsg->{chatid}  = $enabledfortunechat;
+
+			$pubsub->json ($c->{'redis_router_channel'})->notify (
+				$c->{'redis_router_channel'} => $rmsg
+			);
 		}
 	}
 
@@ -160,23 +174,6 @@ sub __on_msg {
 		return;
 	}
 
-# lazy init chat-bot brains
-	unless (defined $hailo->{$chatid}) {
-		my $brainname = sprintf '%s/%s.brain.sqlite', $c->{telegrambot}->{braindir}, $chatid;
-
-		$hailo->{$chatid} = Hailo->new (
-# we'll got file like this: data/telegrambot-brains/-1001332512695.brain.sqlite
-			brain => $brainname,
-			order => 3
-		);
-
-		if ($chatid < 0) {
-			$log->info ("[INFO] Initialized brain for public chat $chatname ($chatid): $brainname");
-		} else {
-			$log->info ("[INFO] Initialized brain for private chat $chatname ($chatid): $brainname");
-		}
-	}
-
 # is this a 1-on-1 ?
 	if ($msg->chat->type eq 'private') {
 		unless (defined $msg->text) {
@@ -185,62 +182,27 @@ sub __on_msg {
 
 		my $text = $msg->text;
 		$log->debug (sprintf ('[DEBUG] Private chat %s say to bot: %s', $vis_a_vi, $text));
+		# Ответ по-умолчанию
 		my $reply = 'Давайте ещё пообщаемся, а то я ещё не научилась от вас плохому.';
 
 		if (substr ($text, 0, 1) eq $csign) {
+			# Если текст похож на команду, усылаем его в BotLib.pm
 			$reply = Command ($self, $msg, $text, $userid);
 		} else {
-			my $just_message_in_chat = 0;
+			my $rmsg = clone ($redismsg);
+			$rmsg->{mode}    = 'private';
+			$rmsg->{message} = $text;
+			$rmsg->{userid}  = $userid;
+			$rmsg->{chatid}  = $userid;
+			my $pubsub = $main::REDIS->pubsub;
+			$pubsub->json ($c->{'redis_router_channel'})->notify (
+				$c->{'redis_router_channel'} => $rmsg
+			);
 
-			# is it karma adjustment?
-			if (substr ($text, -2) eq '++'  ||  substr ($text, -2) eq '--') {
-				my @arr = split /\n/, $text;
-
-				if ($#arr < 1) {
-					$reply = KarmaSet ($chatid, trim (substr ($text, 0, -2)), substr ($text, -2));
-				} else {
-					$just_message_in_chat = 1;
-				}
-			} else {
-				$just_message_in_chat = 1;
-			}
-
-			if ($just_message_in_chat) {
-				if ($text =~ /^ *кто +все +эти +люди *\?$/ui) {
-					$reply = 'Какие "люди"? Мы здесь вдвоём, только ты и я.';
-				} elsif ($text =~ /^ *кто +я *\?$/ui) {
-					$reply = 'Где?';
-				} elsif ($text =~ /^ *кто +(здесь|тут) *\?$/ui) {
-					$reply = 'Ты да я, да мы с тобой.';
-				} elsif ($text =~ /покажи +(сиськи|сиси|титьки) *$/ui) {
-					$reply = Oboobs ();
-				} elsif ($text =~ /show +(titts|tities|boobs) *$/i) {
-					$reply = Oboobs ();
-				} elsif ($text =~ /покажи +(попку|попу) *$/ui) {
-					$reply = Obutts ();
-				} elsif ($text =~ /show +(ass|butt|butty) *$/i) {
-					$reply = Obutts ();
-				} else {
-					my $str = $hailo->{$msg->chat->id}->learn_reply ($text);
-
-					if (defined ($str) && $str ne '') {
-						$reply = $str;
-						$phrase = trim $text;
-
-						while ($phrase =~ /[\.|\,|\?|\!]$/) {
-							chop $phrase;
-						}
-
-						$phrase = lc $phrase;
-
-						if (fmatch (lc ($reply), $phrase)) {
-							$reply = RandomCommonPhrase ();
-						}
-					}
-				}
-			}
+			return;
 		}
 
+		# Команды раздела Admin ответ таки возвращают
 		if (defined $reply) {
 			$msg->typing ();
 			sleep 1;
@@ -251,46 +213,75 @@ sub __on_msg {
 	} elsif (($msg->chat->type eq 'supergroup') or ($msg->chat->type eq 'group')) {
 		my $reply;
 
+		# Некоторые виды сообщений можно "зацензурить" ботом, например, голосовые сообщения, картинки итд.
+		# И вот тут как раз такая проверка и происходит
 		if (IsCensored $msg) {
 			$log->info (sprintf '[INFO] In public chat %s (%s) message from %s was censored', $chatname, $chatid, $vis_a_vi);
 			$self->deleteMessage ({chat_id => $chatid, message_id => $msg->{message_id}});
 		}
 
-		# detect and log messages without text, noop here
+		# Некоторые рекламные товарищи пыьаются срать своими каналами в чятик это тоже можно зацензурить ботом и это
+		# пидорство он будет удалять asap
+		# 136817688 - это специальный id пользователя, который принимает облик канала, на него можно нажать и попасть
+		#              на рекламируемый канал
+		if ($msg->from->id == 136817688) {
+			my $sender_chat = eval { $msg->sender_chat->id };
+
+			if (defined $sender_chat) {
+				unless (ChanMsgEnabled ($chatid)) {
+					$self->deleteMessage ({chat_id => $chatid, message_id => $msg->{message_id}});
+				}
+			}
+		}
+
+		# Если обнаруживаем здесь сообщение без текста, просто ничего не делаем и выходим из процедуры обработки
+		# сообщения
 		unless (defined $msg->text) {
 			$log->debug (sprintf ('[DEBUG] No text in message from %s', $vis_a_vi));
 			return;
 		}
 
-		# we have text here! so potentially we can chit-chat
+		# Текст есть, потенциально можно будет поболтать!
 		my $text = $msg->text;
 		$log->debug (sprintf ('[DEBUG] In public chat %s (%s) %s say: %s', $chatname, $chatid, $vis_a_vi, $text));
 
-		# are they quote something, maybe, us?
+		# Если это ответ на сообщение, то вдруг, на наше?
 		if (defined ($msg->reply_to_message) &&
 		            defined ($msg->reply_to_message->from) &&
 		                    defined ($msg->reply_to_message->from->username) &&
 		                            ($msg->reply_to_message->from->username eq $myusername)) {
 			$log->debug (sprintf ('[DEBUG] In public chat %s (%s) %s quote us!', $chatname, $chatid, $vis_a_vi));
 
-			# do not answer back if someone quote our new member greet
+			# Если новый участник чата ответил на наше приветствие, проигнорируем его ответ (и попробуем сойти за
+			# человека :)
 			if ((substr ($msg->reply_to_message->text, 0, 9) eq 'Дратути, ') &&
 			    (substr ($msg->reply_to_message->text, -61) eq 'Представьтес, пожалуйста, и расскажите, что вас сюда привело.')) {
 				return;
 			} else {
-				# remove our name from users reply, just in case
+				# На всякий случай, попробуем убрать наше имя из фразы.
 				my $pat1 = quotemeta ('@' . $myusername);
 				my $pat2 = quotemeta $myfullname;
 				$phrase = $text;
 				$phrase =~ s/$pat1//g;
 				$phrase =~ s/$pat2//g;
 
-			# figure out reply :)
-				$reply = $hailo->{$msg->chat->id}->learn_reply ($phrase) if (length ($phrase) > 3);
+				# Попробуем сгенерить ответ
+				my $rmsg = clone ($redismsg);
+				$rmsg->{mode}    = 'public';
+				$rmsg->{message} = $phrase;
+				$rmsg->{userid}  = $userid;
+				$rmsg->{chatid}  = $chatid;
+				my $pubsub = $main::REDIS->pubsub;
+				$pubsub->json ($c->{'redis_router_channel'})->notify (
+					$c->{'redis_router_channel'} => $rmsg
+				);
+
+				return;
 			}
-		# simple commands
+		# Если текст похож на команду, усылаем его в BotLib.pm
 		} elsif (substr ($text, 0, 1) eq $csign) {
 			$reply = Command ($self, $msg, $text, $chatid);
+		# Похоже кто-то написал наше имя в чятике, но ничего не захотел дописывать к нему
 		} elsif (
 				($text eq $myusername) or
 				($text eq '@' . $myusername) or
@@ -299,6 +290,7 @@ sub __on_msg {
 				($text eq $myfullname . ' ')
 			) {
 				$reply = 'Чего?';
+		# А тут кто-то к нам обратился с чем-то по имени
 		} else {
 			my $qname = quotemeta ('@' . $myusername);
 			my $qtname = quotemeta $myfullname;
@@ -307,63 +299,61 @@ sub __on_msg {
 			if ((lc ($text) =~ /^${qname}[\,|\:]? (.+)/) or (lc ($text) =~ /^${qtname}[\,|\:]? (.+)/)){
 				$phrase = $1;
 
-				if ($phrase =~ /^ *кто +все +эти +люди *\?$/ui) {
-					$reply = 'Кто здесь?';
-				} elsif ($phrase =~ /^ *кто +я *?$/ui){
-					$reply = 'Где?';
-				} elsif ($phrase =~ /^ *кто +(здесь|тут) *\?$/ui) {
-					$reply = 'Здесь все: Никита, Стас, Гена, Турбо и Дюша Метёлкин.';
-				} else {
-					$reply = $hailo->{$msg->chat->id}->learn_reply ($phrase);
-				}
+				my $rmsg = clone ($redismsg);
+				$rmsg->{mode}    = 'public';
+				$rmsg->{message} = $phrase;
+				$rmsg->{userid}  = $userid;
+				$rmsg->{chatid}  = $chatid;
+				my $pubsub = $main::REDIS->pubsub;
+				$pubsub->json ($c->{'redis_router_channel'})->notify (
+					$c->{'redis_router_channel'} => $rmsg
+				);
+
+				return;
 			# bot mention by name
 			} elsif ((lc ($text) =~ /.+ ${qname}[\,|\!|\?|\.| ]/) or (lc ($text) =~ / $qname$/)) {
 				$phrase = $text;
 
-				if ($phrase =~ /^ *кто +все +эти +люди *\?$/ui) {
-					$reply = 'Кто здесь?';
-				} elsif ($phrase =~ /^ *кто +я *?$/ui){
-					$reply = 'Где?';
-				} elsif ($phrase =~ /^ *кто +(здесь|тут) *\?$/ui) {
-					$reply = 'Здесь все: Никита, Стас, Гена, Турбо и Дюша Метёлкин.';
-				} else {
-					$reply = $hailo->{$msg->chat->id}->learn_reply ($phrase);
-				}
+				my $rmsg = clone ($redismsg);
+				$rmsg->{mode}    = 'public';
+				$rmsg->{message} = $phrase;
+				$rmsg->{userid}  = $userid;
+				$rmsg->{chatid}  = $chatid;
+				my $pubsub = $main::REDIS->pubsub;
+				$pubsub->json ($c->{'redis_router_channel'})->notify (
+					$c->{'redis_router_channel'} => $rmsg
+				);
+
+				return;
 			# bot mention by telegram name
 			} elsif ((lc ($text) =~ /.+ ${qtname}[\,|\!|\?|\.| ]/) or (lc ($text) =~ / $qtname$/)) {
 				$phrase = $text;
 
-				if ($phrase =~ /^ *кто +все +эти +люди *\?$/ui) {
-					$reply = 'Кто здесь?';
-				} elsif ($phrase =~ /^ *кто +я *?$/ui){
-					$reply = 'Где?';
-				} elsif ($phrase =~ /^ *кто +(здесь|тут) *\?$/ui) {
-					$reply = 'Здесь все: Никита, Стас, Гена, Турбо и Дюша Метёлкин.';
-				} else {
-					$reply = $hailo->{$msg->chat->id}->learn_reply ($phrase);
-				}
-			# karma adjustment
-			} elsif (substr ($text, -2) eq '++'  ||  substr ($text, -2) eq '--') {
-				my @arr = split /\n/, $text;
+				my $rmsg = clone ($redismsg);
+				$rmsg->{mode}    = 'public';
+				$rmsg->{message} = $phrase;
+				$rmsg->{userid}  = $userid;
+				$rmsg->{chatid}  = $chatid;
+				my $pubsub = $main::REDIS->pubsub;
+				$pubsub->json ($c->{'redis_router_channel'})->notify (
+					$c->{'redis_router_channel'} => $rmsg
+				);
 
-				if ($#arr < 1) {
-					$reply = KarmaSet ($chatid, trim (substr ($text, 0, -2)), substr ($text, -2));
-				} else {
-					# just message in chat
-					$hailo->{$msg->chat->id}->learn ($text);
-				}
-			# just message in chat
-			} else {
-				if ($text =~ /^ *кто +все +эти +люди *\?$/ui) {
-					$reply = 'Кто здесь?';
-				} elsif ($phrase =~ /^ *кто +я *?$/ui){
-					$reply = 'Где?';
-				} elsif ($phrase =~ /^ *кто +(здесь|тут) *\?$/ui) {
-					$reply = 'Здесь все: Никита, Стас, Гена, Турбо и Дюша Метёлкин.';
-				} else {
-					$hailo->{$msg->chat->id}->learn ($text);
-				}
+				return;
 			}
+
+			my $rmsg = clone ($redismsg);
+			$rmsg->{mode}    = 'public';
+			$rmsg->{message} = $text;
+			$rmsg->{userid}  = $userid;
+			$rmsg->{chatid}  = $chatid;
+			$rmsg->{misc}->{answer} = 0;
+			my $pubsub = $main::REDIS->pubsub;
+			$pubsub->json ($c->{'redis_router_channel'})->notify (
+				$c->{'redis_router_channel'} => $rmsg
+			);
+
+			return;
 		}
 
 		if (defined ($reply) && $reply ne '') {
@@ -453,6 +443,24 @@ sub __redisListener {
 	}
 
 	return;
+}
+
+sub RandomCommonPhrase {
+	my @myphrase = (
+		'Так, блядь...',
+		'*Закатывает рукава* И ради этого ты меня позвал?',
+		'Ну чего ты начинаешь, нормально же общались',
+		'Повтори свой вопрос, не поняла',
+		'Выйди и зайди нормально',
+		'Я подумаю',
+		'Даже не знаю, что на это ответить',
+		'Ты упал такие вопросы девочке задавать?',
+		'Можно и так, но не уверена',
+		'А как ты думаешь?',
+		'А ви, таки, почему интересуетесь?',
+	);
+
+	return $myphrase[irand ($#myphrase + 1)];
 }
 
 # setup our bot
