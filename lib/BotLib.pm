@@ -16,8 +16,6 @@ use BotLib::Conf qw (LoadConf);
 use BotLib::Admin qw (@ForbiddenMessageTypes GetForbiddenTypes AddForbiddenType
                       DelForbiddenType ListForbidden FortuneToggle FortuneStatus
                       PluginToggle PluginStatus PluginEnabled ChanMsgToggle ChanMsgStatus);
-use BotLib::Archeologist qw (Dig);
-use BotLib::Fisher qw (Fish);
 use BotLib::Util qw (trim);
 
 use version; our $VERSION = qw (1.0);
@@ -75,7 +73,7 @@ sub Command {
 	@cmds = qw (ping пинг пинх pong понг понх coin монетка roll dice кости ver version версия хэлп halp kde кде lat
 	            лат friday пятница proverb пословица fortune фортунка f ф anek анек анекдот buni cat кис drink праздник fox лис
 				frog лягушка horse лошадь лошадка monkeyuser owl сова сыч rabbit bunny кролик snail улитка tits boobs tities
-				boobies сиси сисечки butt booty ass попа попка xkcd);
+				boobies сиси сисечки butt booty ass попа попка xkcd dig копать fish fishing рыба рыбка рыбалка);
 
 	my $bingo = 0;
 
@@ -108,6 +106,17 @@ sub Command {
 			}
 		}
 
+		$#cmds = -1;
+		@cmds = qw (dig копать fish fishing рыба рыбка рыбалка);
+
+		while (my $check = pop @cmds) {
+			if ($cmd eq $check) {
+				$rmsg->{misc}->{msg_format} = 1;
+				$rmsg->{misc}->{username} = $highlight;
+				last;
+			}
+		}
+
 		{
 			do {
 				my $ready = eval { $main::RCONN->is_connected; };
@@ -120,18 +129,6 @@ sub Command {
 		$pubsub->json ($c->{'redis_router_channel'})->notify (
 			$c->{'redis_router_channel'} => $rmsg
 		);
-	} elsif (substr ($text, 1) eq 'dig' || substr ($text, 1) eq 'копать') {
-		$msg->typing ();
-		$reply = Dig $highlight;
-		sleep (irand (2) + 1);
-		$msg->replyMd ($reply);
-		return;
-	} elsif (substr ($text, 1) eq 'fish' || substr ($text, 1) eq 'fishing' || substr ($text, 1) eq 'рыба' || substr ($text, 1) eq 'рыбка' || substr ($text, 1) eq 'рыбалка' ) {
-		$msg->typing ();
-		$reply = Fish $highlight;
-		sleep (irand (2) + 1);
-		$msg->replyMd ($reply);
-		return;
 	} elsif (substr ($text, 1) eq 'help'  ||  substr ($text, 1) eq 'помощь') {
 		$reply = << "MYHELP";
 ```
