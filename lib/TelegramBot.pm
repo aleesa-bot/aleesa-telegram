@@ -145,17 +145,22 @@ sub __on_msg {
 		foreach my $member (@{$msg->new_chat_members}) {
 			my $member_str = '';
 
-			if ($member->can ('first_name') && defined ($member->first_name)) {
+			# avoid naming people by spacing symbols, or empty names
+			if ($member->can ('first_name') && defined ($member->first_name) && $member->first_name !~ /^\s+$/ui) {
 				$member_str .= $member->first_name;
 
-				if ($member->can ('last_name') && defined ($member->last_name)) {
+				if ($member->can ('last_name') && defined ($member->last_name) && $member->last_name !~ /^\s+$/ui) {
 					$member_str .= ' ' . $member->last_name;
 				}
 			} else {
-				if ($member->can ('last_name') && defined ($member->last_name)) {
+				if ($member->can ('last_name') && defined ($member->last_name) && $member->last_name !~ /^\s+$/ui) {
 					$member_str .= ' ' . $member->last_name;
-				} else {
+				# username must be uniq and should contain only english letters and numbers, so...
+				} elsif ($member->can ('username') && defined ($member->username)) {
 					$member_str .= '@' . $member->username;
+				# fallback to id if uose trying to be smartass and use only spacing chars in it's firstname and/or lastname
+				} else {
+					$member_str .= $member->id;
 				}
 			}
 
@@ -254,6 +259,7 @@ sub __on_msg {
 
 			# Если новый участник чата ответил на наше приветствие, проигнорируем его ответ (и попробуем сойти за
 			# человека :)
+			# TODO: учитывать и остальные варианты приветствия
 			if ((substr ($msg->reply_to_message->text, 0, 9) eq 'Дратути, ') &&
 			    (substr ($msg->reply_to_message->text, -61) eq 'Представьтес, пожалуйста, и расскажите, что вас сюда привело.')) {
 				return;
