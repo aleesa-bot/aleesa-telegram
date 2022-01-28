@@ -13,16 +13,12 @@ use File::Path qw (make_path);
 use Log::Any qw ($log);
 use Math::Random::Secure qw (irand);
 use Mojo::Base 'Teapot::Bot::Brain';
-# Чтобы "уж точно" использовать hiredis-биндинги, загрузим этот модуль перед Mojo::Redis
-use Protocol::Redis::XS;
-use Mojo::Redis;
-use Mojo::Redis::Connection;
 
 use BotLib::Admin qw (FortuneToggleList ChanMsgEnabled);
 use BotLib qw (Command Highlight BotSleep IsCensored);
 use BotLib::Conf qw (LoadConf);
 use BotLib::Util qw (trim fmatch);
-use RedisLib qw (redis_parse_message);
+use RedisLib qw (redis_parse_message redis_events_listener);
 
 use version; our $VERSION = qw (1.0);
 use Exporter qw (import);
@@ -225,7 +221,7 @@ sub __on_msg {
 			$self->deleteMessage ({chat_id => $chatid, message_id => $msg->{message_id}});
 		}
 
-		# Некоторые рекламные товарищи пыьаются срать своими каналами в чятик это тоже можно зацензурить ботом и это
+		# Некоторые рекламные товарищи пытаются срать своими каналами в чятик это тоже можно зацензурить ботом и это
 		# пидорство он будет удалять asap
 		# 136817688 - это специальный id пользователя, который принимает облик канала, на него можно нажать и попасть
 		#              на рекламируемый канал
@@ -319,19 +315,20 @@ sub __on_msg {
 			$rmsg->{userid}  = $userid;
 			$rmsg->{chatid}  = $chatid;
 
-			# phrase directed to bot
+			# Сообщение обращено к боту
 			if ((lc ($text) =~ /^${qname}[\,|\:]? (.+)/) or (lc ($text) =~ /^${qtname}[\,|\:]? (.+)/)){
 				$phrase = $1;
 				$rmsg->{message} = $phrase;
-			# bot mention by name
+			# Бота упомянули по имени
 			} elsif ((lc ($text) =~ /.+ ${qname}[\,|\!|\?|\.| ]/) or (lc ($text) =~ / $qname$/)) {
 				$phrase = $text;
 				$rmsg->{message} = $phrase;
-			# bot mention by telegram name
+			# Бота упомянули по телеграммному имени
 			} elsif ((lc ($text) =~ /.+ ${qtname}[\,|\!|\?|\.| ]/) or (lc ($text) =~ / $qtname$/)) {
 				$phrase = $text;
 
 				$rmsg->{message} = $phrase;
+
 			} else {
 				$rmsg->{message} = $text;
 				$rmsg->{misc}->{answer} = 0;
@@ -376,65 +373,6 @@ sub __on_msg {
 	return;
 }
 
-sub __redisListener {
-	$log->error ('Run redis listener');
-	# If we already connected there is no point to disconnect
-	if (defined $main::REDIS) {
-		my $connected = eval { Mojo::Redis::Connection->is_connected ($main::REDIS); };
-
-		if ($connected) {
-			$log->notice ('[NOTICE] Redis client already running and connected');
-			return;
-		} else {
-			$log->notice ('[NOTICE] Redis client registered, but looks like it is not connected, try to re-connect');
-			$main::REDIS = undef;
-		}
-	}
-
-	my $r = Mojo::Redis->new (
-		sprintf 'redis://%s:%s/1', $c->{redis_server}, $c->{redis_port}
-	);
-
-	$log->notice ('[NOTICE] New redis client registered, registering callbacks');
-	# Don't forget to update global ref to our redis context
-	$main::REDIS = $r;
-
-	$r->on (
-		connection => sub {
-			my ($redis, $connection) = @_;
-			$main::RCONN = $connection;
-
-			# Log error
-			$connection->on (
-				error => sub {
-					my ($conn, $error) = @_;
-					$log->error ("[ERROR] Redis connection error: $error");
-					$main::RCONN = undef;
-					return;
-				}
-			);
-
-			return;
-		}
-	);
-
-	# Subscribe to channels
-	my $pubsub = $r->pubsub;
-	my $sub;
-	my $rpm = \&redis_parse_message;
-	$log->notice ('[NOTICE] Subscribing to redis channels');
-
-	foreach my $channel (@{$c->{redis_channels}}) {
-		$log->info ("[INFO] Subscribing to $channel");
-
-		$sub->{$channel} = $pubsub->json ($channel)->listen (
-			$channel => sub { $rpm->(@_); }
-		);
-	}
-
-	return;
-}
-
 sub RandomCommonPhrase {
 	my @myphrase = (
 		'Так, блядь...',
@@ -462,7 +400,7 @@ sub init {
 
 	$self->add_listener (\&__on_msg);
 	$self->add_repeating_task (900, \&__cron);
-	__redisListener ();
+	redis_events_listener ();
 	return;
 }
 

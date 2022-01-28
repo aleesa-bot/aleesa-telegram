@@ -7,7 +7,9 @@ use warnings;
 use utf8;
 use open qw (:std :utf8);
 use English qw ( -no_match_vars );
+
 use Carp qw (carp);
+use Clone qw (clone);
 use Math::Random::Secure qw (irand);
 use Data::Dumper;
 use Log::Any qw ($log);
@@ -24,6 +26,12 @@ our @EXPORT_OK = qw (Command Highlight BotSleep IsCensored);
 
 my $c = LoadConf ();
 my $csign = $c->{telegrambot}->{csign};
+my $redismsg->{from} = 'telegram';
+$redismsg->{plugin}  = 'telegram';
+$redismsg->{misc}->{answer} = 1;
+$redismsg->{misc}->{csign} = $c->{telegrambot}->{csign};
+$redismsg->{misc}->{msg_format} = 0;
+$redismsg->{misc}->{fwd_cnt} = 1;
 
 sub Command {
 	my $self = shift;
@@ -33,13 +41,9 @@ sub Command {
 
 	my $reply;
 	my ($userid, $username, $fullname, $highlight, $visavi) = Highlight ($msg);
-
-	my $rmsg->{from} = 'telegram';
-	$rmsg->{misc}->{answer} = 1;
-	$rmsg->{misc}->{csign} = $csign;
+	my $rmsg = clone ($redismsg);
 	$rmsg->{userid}  = $userid;
 	$rmsg->{chatid}  = $chatid;
-	$rmsg->{plugin}  = 'telegram';
 
 	if ($chatid >= 0) {
 		$rmsg->{mode}    = 'private';
@@ -48,7 +52,9 @@ sub Command {
 	}
 
 	my $cmd = substr $text, 1;
-	my @cmds = qw (tits boobs tities boobies сиси сисечки butt booty ass попа попка);
+
+	# Проверка #1 на админское разрешение некоторых команд
+	my @cmds = qw (tits boobs tities boobies сиси сисечки);
 
 	while (my $check = pop @cmds) {
 		if ($cmd eq $check) {
@@ -58,6 +64,7 @@ sub Command {
 		}
 	}
 
+	# Проверка #2 на админское разрешение некоторых команд
 	$#cmds = -1;
 	@cmds = qw (butt booty ass попа попка);
 
@@ -69,6 +76,7 @@ sub Command {
 		}
 	}
 
+	# Полноценный поиск простой команды во входящем сообщении
 	$#cmds = -1;
 	@cmds = qw (ping пинг пинх pong понг понх coin монетка roll dice кости ver version версия хэлп halp kde кде lat
 	            лат friday пятница proverb пословица fortune фортунка f ф anek анек анекдот buni cat кис drink праздник fox лис
@@ -84,16 +92,18 @@ sub Command {
 		}
 	}
 
-	# TODO: Заменить на сравнение со строкой?
+	# Поиск "сложных" команд во входящем сообщении
 	if (($cmd =~ /^w\s/u) || ($cmd =~ /^п\s/u) || ($cmd =~ /^weather\s/u) || ($cmd =~ /^погода\s/u) ||
 	    ($cmd =~ /^погодка\s/u) || ($cmd =~ /^погадка\s/u) || ($cmd =~ /^karma\s/u) || ($cmd =~ /карма\s/u)) {
 		$bingo = 1;
 	}
 
+	# Если команда найдена...
 	if ($bingo) {
 		$rmsg->{message} = $text;
 		$self->log->debug ('[DEBUG] Sending message to redis ' . Dumper ($rmsg));
 
+		# Для некоторых команд мы хотим получать форматированный вывод
 		$#cmds = -1;
 		@cmds = qw (fortune фортунка f ф anek анек анекдот buni cat кис fox лис frog лягушка horse лошадь
 		            лошадка monkeyuser owl сова сыч rabbit bunny кролик snail улитка tits boobs tities boobies сиси сисечки
@@ -106,6 +116,7 @@ sub Command {
 			}
 		}
 
+		# Для других команд, хотим, чтобы было упоминание пользователя в ответе, чтобы подсветить его
 		$#cmds = -1;
 		@cmds = qw (dig копать fish fishing рыба рыбка рыбалка);
 
@@ -117,6 +128,7 @@ sub Command {
 			}
 		}
 
+		# Если соединения с редиской нету, ждём, пока оно появится. Своего рода костыль на всякий случай.
 		{
 			do {
 				my $ready = eval { $main::RCONN->is_connected; };
@@ -129,6 +141,7 @@ sub Command {
 		$pubsub->json ($c->{'redis_router_channel'})->notify (
 			$c->{'redis_router_channel'} => $rmsg
 		);
+	# Если команда не найдена, но строка подозрительно напоминает команду help
 	} elsif (substr ($text, 1) eq 'help'  ||  substr ($text, 1) eq 'помощь') {
 		$reply = << "MYHELP";
 ```
@@ -170,10 +183,11 @@ ${csign}karma фраза | ${csign}карма фраза - посмотреть 
 MYHELP
 		$msg->replyMd ($reply);
 		return;
+	# Если строка не найдена, но это команда admin
 	} elsif (substr ($text, 1) eq 'admin'  ||  substr ($text, 1) eq 'админ') {
 		my $member = $self->getChatMember ({ 'chat_id' => $msg->chat->id, 'user_id' => $msg->from->id });
 
-		# this msg should be shown only if admins of chat request it
+		# Это должно показываться только админам чата
 		if (($member->status eq 'administrator') || ($member->status eq 'creator')) {
 			$reply = << "MYADMIN";
 ```
@@ -200,19 +214,24 @@ MYADMIN
 		}
 
 		return;
+	# Если строка не найдена, но это команда admin с параметрами
 	} elsif ((substr ($text, 1, 5) eq 'admin'  ||  substr ($text, 1, 5) eq 'админ') && (length ($text) >= 8)) {
 		my $member = $self->getChatMember ({ 'chat_id' => $msg->chat->id, 'user_id' => $msg->from->id });
 
-		# this msg should be shown only if admins of chat request it
+		# Это должно показываться только админам чата
 		if (($member->status eq 'administrator') || ($member->status eq 'creator')) {
+			# Вынем субкоманду, это первый аргумент команды admin
 			my $command = trim (substr $text, 7);
 			$cmd = undef;
 			my $args;
 			($cmd, $args) = split /\s+/, $command, 2;
 
+			# Субкоманды не нашлось, ну и какбэ досвидонья
 			if ($cmd eq '') {
 				return;
+			# Субкоманда censor...
 			} elsif ($cmd eq 'censor' || $cmd eq 'ценз') {
+				# Censor с аргументами
 				if (defined ($args) && ($args ne '')) {
 					my ($msgType, $toggle) = split /\s/, $args, 2;
 
@@ -229,9 +248,11 @@ MYADMIN
 							}
 						}
 					}
+				# Censor без аргументов, выдаёт список типов сообщений и будут ли они автоматически удаляться
 				} else {
 					$reply = ListForbidden ($chatid);
 				}
+			# Хотим ли мы показывать фортунку с утра
 			} elsif ($cmd eq 'fortune' || $cmd eq 'фортунка') {
 				if (defined $args) {
 					if ($args == 1) {
@@ -242,6 +263,7 @@ MYADMIN
 				} else {
 					$reply = FortuneStatus ($chatid);
 				}
+			# Хотим ли мы удалять "сообщения от каналов"
 			} elsif ($cmd eq 'chan_msg') {
 				if (defined $args) {
 					if ($args == 1) {
@@ -252,6 +274,7 @@ MYADMIN
 				} else {
 					$reply = ChanMsgStatus ($chatid);
 				}
+			# Работает ли плагин oboobs в чатике
 			} elsif ($cmd eq 'oboobs') {
 				if (defined $args) {
 					if ($args == 1) {
@@ -262,6 +285,7 @@ MYADMIN
 				} else {
 					$reply = PluginStatus ($chatid, 'oboobs');
 				}
+			# Работает ли плагин obutts в чатике
 			} elsif ($cmd eq 'obutts') {
 				if (defined $args) {
 					if ($args == 1) {
