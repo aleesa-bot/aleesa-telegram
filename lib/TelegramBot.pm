@@ -259,31 +259,44 @@ sub __on_msg {
 
 			# Если новый участник чата ответил на наше приветствие, проигнорируем его ответ (и попробуем сойти за
 			# человека :)
-			# TODO: учитывать и остальные варианты приветствия
-			if ((substr ($msg->reply_to_message->text, 0, 9) eq 'Дратути, ') &&
-			    (substr ($msg->reply_to_message->text, -61) eq 'Представьтес, пожалуйста, и расскажите, что вас сюда привело.')) {
-				return;
-			} else {
-				# На всякий случай, попробуем убрать наше имя из фразы.
-				my $pat1 = quotemeta ('@' . $myusername);
-				my $pat2 = quotemeta $myfullname;
-				$phrase = $text;
-				$phrase =~ s/$pat1//g;
-				$phrase =~ s/$pat2//g;
-
-				# Попробуем сгенерить ответ
-				my $rmsg = clone ($redismsg);
-				$rmsg->{mode}    = 'public';
-				$rmsg->{message} = $phrase;
-				$rmsg->{userid}  = $userid;
-				$rmsg->{chatid}  = $chatid;
-				my $pubsub = $main::REDIS->pubsub;
-				$pubsub->json ($c->{'redis_router_channel'})->notify (
-					$c->{'redis_router_channel'} => $rmsg
+			if (substr ($msg->reply_to_message->text, -61) eq 'Представьтес, пожалуйста, и расскажите, что вас сюда привело.') {
+				my $match = 0;
+				my @hello = (
+					'Дратути, ',
+					'Дарована, ',
+					'Доброе утро, день или вечер, ',
+					'Добро пожаловать в наше скромное коммунити, ',
+					'Наше вам с кисточкой тут, на канальчике, '
 				);
 
-				return;
+				foreach my $hi (@hello) {
+					if (substr ($msg->reply_to_message->text, 0, length $hi) eq $hi) {
+						return;
+					}
+				}
 			}
+
+			# На всякий случай, попробуем убрать наше имя из фразы.
+			my $pat1 = quotemeta ('@' . $myusername);
+			my $pat2 = quotemeta $myfullname;
+			$phrase = $text;
+			$phrase =~ s/$pat1//g;
+			$phrase =~ s/$pat2//g;
+
+			# Попробуем сгенерить ответ
+			my $rmsg = clone ($redismsg);
+			$rmsg->{mode}    = 'public';
+			$rmsg->{message} = $phrase;
+			$rmsg->{userid}  = $userid;
+			$rmsg->{chatid}  = $chatid;
+
+			my $pubsub = $main::REDIS->pubsub;
+
+			$pubsub->json ($c->{'redis_router_channel'})->notify (
+				$c->{'redis_router_channel'} => $rmsg
+			);
+
+			return;
 		# Если текст похож на команду, усылаем его в BotLib.pm
 		} elsif (substr ($text, 0, 1) eq $csign) {
 			$reply = Command ($self, $msg, $text, $chatid);
