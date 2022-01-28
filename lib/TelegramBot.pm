@@ -475,14 +475,6 @@ sub init {
 
 	# Don't forget to update global ref to our telegram context
 	$main::TGM = $self;
-	my $braindir = $c->{telegrambot}->{braindir};
-
-	unless (-d $braindir) {
-		make_path ($braindir, 0, 0755) or do { ## no critic (ValuesAndExpressions::ProhibitLeadingZeros)
-			$log->fatal ("[FATAL] Unable to create $braindir: $OS_ERROR");
-			exit 1;
-		};
-	}
 
 	$self->add_listener (\&__on_msg);
 	$self->add_repeating_task (900, \&__cron);
