@@ -72,8 +72,8 @@ sub Command {
 	$#cmds = -1;
 	@cmds = qw (ping пинг пинх pong понг понх coin монетка roll dice кости ver version версия хэлп halp kde кде lat
 	            лат friday пятница proverb пословица fortune фортунка f ф anek анек анекдот buni cat кис drink праздник fox лис
-				frog лягушка horse лошадь лошадка monkeyuser owl сова сыч rabbit bunny кролик snail улитка tits boobs tities
-				boobies сиси сисечки butt booty ass попа попка xkcd dig копать fish fishing рыба рыбка рыбалка);
+	            frog лягушка horse лошадь лошадка monkeyuser owl сова сыч rabbit bunny кролик snail улитка tits boobs tities
+	            boobies сиси сисечки butt booty ass попа попка xkcd dig копать fish fishing рыба рыбка рыбалка);
 
 	my $bingo = 0;
 
@@ -86,7 +86,7 @@ sub Command {
 
 	# TODO: Заменить на сравнение со строкой?
 	if (($cmd =~ /^w\s/u) || ($cmd =~ /^п\s/u) || ($cmd =~ /^weather\s/u) || ($cmd =~ /^погода\s/u) ||
-		($cmd =~ /^погодка\s/u) || ($cmd =~ /^погадка\s/u) || ($cmd =~ /^karma\s/u) || ($cmd =~ /карма\s/u)) {
+	    ($cmd =~ /^погодка\s/u) || ($cmd =~ /^погадка\s/u) || ($cmd =~ /^karma\s/u) || ($cmd =~ /карма\s/u)) {
 		$bingo = 1;
 	}
 
@@ -97,7 +97,7 @@ sub Command {
 		$#cmds = -1;
 		@cmds = qw (fortune фортунка f ф anek анек анекдот buni cat кис fox лис frog лягушка horse лошадь
 		            лошадка monkeyuser owl сова сыч rabbit bunny кролик snail улитка tits boobs tities boobies сиси сисечки
-					butt booty ass попа попка xkcd);
+		            butt booty ass попа попка xkcd);
 
 		while (my $check = pop @cmds) {
 			if ($cmd eq $check) {
