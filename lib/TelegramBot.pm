@@ -314,60 +314,31 @@ sub __on_msg {
 			my $qname = quotemeta ('@' . $myusername);
 			my $qtname = quotemeta $myfullname;
 
+			my $rmsg = clone ($redismsg);
+			$rmsg->{mode}    = 'public';
+			$rmsg->{userid}  = $userid;
+			$rmsg->{chatid}  = $chatid;
+
 			# phrase directed to bot
 			if ((lc ($text) =~ /^${qname}[\,|\:]? (.+)/) or (lc ($text) =~ /^${qtname}[\,|\:]? (.+)/)){
 				$phrase = $1;
-
-				my $rmsg = clone ($redismsg);
-				$rmsg->{mode}    = 'public';
 				$rmsg->{message} = $phrase;
-				$rmsg->{userid}  = $userid;
-				$rmsg->{chatid}  = $chatid;
-				my $pubsub = $main::REDIS->pubsub;
-				$pubsub->json ($c->{'redis_router_channel'})->notify (
-					$c->{'redis_router_channel'} => $rmsg
-				);
-
-				return;
 			# bot mention by name
 			} elsif ((lc ($text) =~ /.+ ${qname}[\,|\!|\?|\.| ]/) or (lc ($text) =~ / $qname$/)) {
 				$phrase = $text;
-
-				my $rmsg = clone ($redismsg);
-				$rmsg->{mode}    = 'public';
 				$rmsg->{message} = $phrase;
-				$rmsg->{userid}  = $userid;
-				$rmsg->{chatid}  = $chatid;
-				my $pubsub = $main::REDIS->pubsub;
-				$pubsub->json ($c->{'redis_router_channel'})->notify (
-					$c->{'redis_router_channel'} => $rmsg
-				);
-
-				return;
 			# bot mention by telegram name
 			} elsif ((lc ($text) =~ /.+ ${qtname}[\,|\!|\?|\.| ]/) or (lc ($text) =~ / $qtname$/)) {
 				$phrase = $text;
 
-				my $rmsg = clone ($redismsg);
-				$rmsg->{mode}    = 'public';
 				$rmsg->{message} = $phrase;
-				$rmsg->{userid}  = $userid;
-				$rmsg->{chatid}  = $chatid;
-				my $pubsub = $main::REDIS->pubsub;
-				$pubsub->json ($c->{'redis_router_channel'})->notify (
-					$c->{'redis_router_channel'} => $rmsg
-				);
-
-				return;
+			} else {
+				$rmsg->{message} = $text;
+				$rmsg->{misc}->{answer} = 0;
 			}
 
-			my $rmsg = clone ($redismsg);
-			$rmsg->{mode}    = 'public';
-			$rmsg->{message} = $text;
-			$rmsg->{userid}  = $userid;
-			$rmsg->{chatid}  = $chatid;
-			$rmsg->{misc}->{answer} = 0;
 			my $pubsub = $main::REDIS->pubsub;
+
 			$pubsub->json ($c->{'redis_router_channel'})->notify (
 				$c->{'redis_router_channel'} => $rmsg
 			);
