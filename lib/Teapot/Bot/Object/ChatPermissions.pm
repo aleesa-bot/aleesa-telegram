@@ -36,7 +36,7 @@ sub canTalk {
 
   if ($chatid < 0) {
     # group chat
-    my $chatobj = $self->_brain->getChat ({ 'chat_id' => $chatid });
+    my $chatobj = $self->getChat ({ 'chat_id' => $chatid });
 
     # on api error, keep silence
     unless ($chatobj) {
@@ -44,7 +44,7 @@ sub canTalk {
       return 0;
     }
 
-    my $myObj = $self->_brain->getMe ();
+    my $myObj = $self->getMe ();
 
     # on api error, keep silence
     unless ($chatobj) {
@@ -53,7 +53,7 @@ sub canTalk {
     }
 
     my $myid = $myObj->id;
-    my $me = $self->_brain->getChatMember ({ 'chat_id' => $chatid, 'user_id' => $myid });
+    my $me = $self->getChatMember ({ 'chat_id' => $chatid, 'user_id' => $myid });
 
     # on api error, keep silence
     unless ($me) {
