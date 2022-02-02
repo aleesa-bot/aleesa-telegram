@@ -13,6 +13,7 @@ use Mojo::Redis;
 use Mojo::Redis::Connection;
 
 use BotLib::Conf qw (LoadConf);
+use Teapot::Bot::Object::ChatPermissions;
 
 use version; our $VERSION = qw (1.0);
 use Exporter qw (import);
@@ -39,7 +40,9 @@ sub redis_parse_message {
 	$message->{chat_id} = $m->{chatid};
 	$message->{text} = $m->{message};
 
-	if (Teapot::Bot::Object::ChatPermissions::canTalk ($main::TGM, $m->{chatid})) {
+	my $can_talk = Teapot::Bot::Object::ChatPermissions->canTalk ($main::TGM, $m->{chatid});
+
+	if ($can_talk) {
 		# Результат этого действия нас не сильно волнует, т.к. если будет ошибка, то в лог попадёт трейс
 		$main::TGM->sendMessage ($message);
 	}
@@ -48,7 +51,7 @@ sub redis_parse_message {
 };
 
 sub redis_events_listener {
-	$log->notice ('[NOTICE]Run redis events listener');
+	$log->notice ('[NOTICE] Run redis events listener');
 	# If we already connected there is no point to disconnect
 	if (defined $main::REDIS) {
 		my $connected = eval { Mojo::Redis::Connection->is_connected ($main::REDIS); };

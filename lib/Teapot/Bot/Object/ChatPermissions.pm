@@ -33,11 +33,12 @@ sub canTalk {
   my $self = shift;
   my $chatid = shift;
 
+  my $args->{chat_id} = $chatid;
   my $can_talk = 0;
 
   if ($chatid < 0) {
     # group chat
-    my $chatobj = Teapot::Bot::Brain->getChat ($self, { 'chat_id' => $chatid });
+    my $chatobj = Teapot::Bot::Brain->getChat ($args);
 
     # on api error, keep silence
     if ($chatobj == 0 || $chatobj->{error}) {
@@ -54,7 +55,8 @@ sub canTalk {
     }
 
     my $myid = $myObj->id;
-    my $me = Teapot::Bot::Brain->getChatMember ($self, { 'chat_id' => $chatid, 'user_id' => $myid });
+    $args->{user_id} = $myid;
+    my $me = Teapot::Bot::Brain->getChatMember ($self, $args);
 
     # on api error, keep silence
     if ($me == 0 || $me->{error}) {
