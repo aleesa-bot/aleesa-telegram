@@ -187,7 +187,7 @@ sub typing {
 
   my $chatid = $self->chat->id;
 
-  if (Teapot::Bot::Object::ChatPermissions::canTalk ($self, $chatid)) {
+  if (Teapot::Bot::Object::ChatPermissions->canTalk ($self, $chatid)) {
     return $self->_brain->sendChatAction({chat_id => $chatid});
   }
 
