@@ -1,8 +1,13 @@
 package Teapot::Bot::Object::InlineKeyboardMarkup;
 # ABSTRACT: The base class for Telegram 'InlineKeyboardMarkup' type objects
 
+use strict;
+use warnings;
+use 5.018; ## no critic (ProhibitImplicitImport)
+use utf8;
+
 use Mojo::Base 'Teapot::Bot::Object::Base';
-use Teapot::Bot::Object::InlineKeyboardButton;
+use Teapot::Bot::Object::InlineKeyboardButton ();
 
 $Teapot::Bot::Object::InlineKeyboardMarkup::VERSION = '0.022';
 
@@ -22,7 +27,7 @@ __END__
 
 =pod
 
-=encoding UTF-8
+=encoding utf8
 
 =head1 NAME
 
@@ -36,7 +41,7 @@ version 0.022
 The base class for Telegram 'InlineKeyboardMarkup' type objects.
 
 See L<https://core.telegram.org/bots/api#inlinekeyboardmarkup> for details of the
-attributes available for L<Teapot::Bot::Object::InlineKeyboardMarkup> objects.
+attributes available for C<Teapot::Bot::Object::InlineKeyboardMarkup> objects.
 
 =head1 AUTHOR
 

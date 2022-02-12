@@ -1,16 +1,16 @@
 package BotLib::Util;
 
-use 5.018;
+use 5.018; ## no critic (ProhibitImplicitImport)
 use strict;
 use warnings;
 use utf8;
 use open qw (:std :utf8);
 use English qw ( -no_match_vars );
 use Digest::SHA qw (sha1_base64);
-use Encode;
-use MIME::Base64;
+use Encode qw (encode_utf8);
+use MIME::Base64 qw (encode_base64);
 use Text::Fuzzy qw (distance_edits);
-use URI::URL;
+use URI::URL qw (url);
 
 use version; our $VERSION = qw (1.0);
 use Exporter qw (import);

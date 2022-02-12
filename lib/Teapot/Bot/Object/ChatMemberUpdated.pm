@@ -1,12 +1,17 @@
 package Teapot::Bot::Object::ChatMemberUpdated;
 # ABSTRACT: The base class for Telegram 'ChatMemberUpdated' type objects
 
+use strict;
+use warnings;
+use 5.018; ## no critic (ProhibitImplicitImport)
+use utf8;
+
 use Mojo::Base 'Teapot::Bot::Object::Base';
-use Teapot::Bot::Object::Chat;
-use Teapot::Bot::Object::User;
-use Teapot::Bot::Object::ChatMember;
-use Teapot::Bot::Object::ChatInviteLink;
-use Teapot::Bot::Object::Voice;
+use Teapot::Bot::Object::Chat ();
+use Teapot::Bot::Object::User ();
+use Teapot::Bot::Object::ChatMember ();
+use Teapot::Bot::Object::ChatInviteLink ();
+use Teapot::Bot::Object::Voice ();
 
 $Teapot::Bot::Object::ChatMemberUpdated::VERSION = '0.022';
 
@@ -27,7 +32,7 @@ sub fields {
           'scalar'                              => [qw/date text/],
           'Teapot::Bot::Object::ChatMember'     => [qw/old_chat_member new_chat_member/],
           'Teapot::Bot::Object::Voice'          => [qw/voice/],
-          'Teapot::Bot::Object::ChatInviteLink' => [qw/invite_link/]
+          'Teapot::Bot::Object::ChatInviteLink' => [qw/invite_link/],
         };
 }
 
@@ -37,7 +42,7 @@ __END__
 
 =pod
 
-=encoding UTF-8
+=encoding utf8
 
 =head1 NAME
 
@@ -51,7 +56,7 @@ version 0.022
 The base class for Telegram 'ChatMemberUpdated' type objects.
 
 See L<https://core.telegram.org/bots/api#chatmemberupdated> for details of the
-attributes available for L<Teapot::Bot::Object::ChatMemberUpdated> objects.
+attributes available for C<Teapot::Bot::Object::ChatMemberUpdated> objects.
 
 =head1 AUTHOR
 

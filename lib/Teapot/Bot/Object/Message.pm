@@ -1,42 +1,44 @@
 package Teapot::Bot::Object::Message;
 # ABSTRACT: The base class for the Telegram type "Message".
 
+use strict;
+use warnings;
+use 5.018; ## no critic (ProhibitImplicitImport)
+use utf8;
+
 use Mojo::Base 'Teapot::Bot::Object::Base';
 
-use Teapot::Bot::Object::User;
-use Teapot::Bot::Object::Chat;
-use Teapot::Bot::Object::ChatMember;
-use Teapot::Bot::Object::ChatPermissions;
-use Teapot::Bot::Object::MessageEntity;
-use Teapot::Bot::Object::Audio;
-use Teapot::Bot::Object::Document;
-use Teapot::Bot::Object::Animation;
-use Teapot::Bot::Object::Game;
-use Teapot::Bot::Object::PhotoSize;
-use Teapot::Bot::Object::Sticker;
-use Teapot::Bot::Object::Video;
-use Teapot::Bot::Object::Voice;
-use Teapot::Bot::Object::VideoNote;
-use Teapot::Bot::Object::Contact;
-use Teapot::Bot::Object::Location;
-use Teapot::Bot::Object::Poll;
-use Teapot::Bot::Object::Location;
-use Teapot::Bot::Object::PhotoSize;
-use Teapot::Bot::Object::Invoice;
-use Teapot::Bot::Object::Venue;
-use Teapot::Bot::Object::SuccessfulPayment;
-use Teapot::Bot::Object::PassportData;
-use Teapot::Bot::Object::InlineKeyboardMarkup;
-use Teapot::Bot::Object::ProximityAlertTriggered;
-use Teapot::Bot::Object::Dice;
-use Teapot::Bot::Object::MessageAutoDeleteTimerChanged;
-use Teapot::Bot::Object::VoiceChatScheduled;
-use Teapot::Bot::Object::VoiceChatStarted;
-use Teapot::Bot::Object::VoiceChatEnded;
-use Teapot::Bot::Object::VoiceChatParticipantsInvited;
-
-use Data::Dumper;
-use Carp qw(cluck);
+use Teapot::Bot::Object::User ();
+use Teapot::Bot::Object::Chat ();
+use Teapot::Bot::Object::ChatMember ();
+use Teapot::Bot::Object::ChatPermissions ();
+use Teapot::Bot::Object::MessageEntity ();
+use Teapot::Bot::Object::Audio ();
+use Teapot::Bot::Object::Document ();
+use Teapot::Bot::Object::Animation ();
+use Teapot::Bot::Object::Game ();
+use Teapot::Bot::Object::PhotoSize ();
+use Teapot::Bot::Object::Sticker ();
+use Teapot::Bot::Object::Video ();
+use Teapot::Bot::Object::Voice ();
+use Teapot::Bot::Object::VideoNote ();
+use Teapot::Bot::Object::Contact ();
+use Teapot::Bot::Object::Location ();
+use Teapot::Bot::Object::Poll ();
+use Teapot::Bot::Object::Location ();
+use Teapot::Bot::Object::PhotoSize ();
+use Teapot::Bot::Object::Invoice ();
+use Teapot::Bot::Object::Venue ();
+use Teapot::Bot::Object::SuccessfulPayment ();
+use Teapot::Bot::Object::PassportData ();
+use Teapot::Bot::Object::InlineKeyboardMarkup ();
+use Teapot::Bot::Object::ProximityAlertTriggered ();
+use Teapot::Bot::Object::Dice ();
+use Teapot::Bot::Object::MessageAutoDeleteTimerChanged ();
+use Teapot::Bot::Object::VoiceChatScheduled ();
+use Teapot::Bot::Object::VoiceChatStarted ();
+use Teapot::Bot::Object::VoiceChatEnded ();
+use Teapot::Bot::Object::VoiceChatParticipantsInvited ();
 
 $Teapot::Bot::Object::Message::VERSION = '0.022';
 
@@ -200,7 +202,7 @@ __END__
 
 =pod
 
-=encoding UTF-8
+=encoding utf8
 
 =head1 NAME
 
@@ -214,7 +216,7 @@ version 0.022
 The base class for the Telegram type "Message".
 
 See L<https://core.telegram.org/bots/api#message> for details of the
-attributes available for L<Teapot::Bot::Object::Message> objects.
+attributes available for C<Teapot::Bot::Object::Message> objects.
 
 =head1 METHODS
 
@@ -222,7 +224,7 @@ attributes available for L<Teapot::Bot::Object::Message> objects.
 
 A convenience method to reply to a message with text.
 
-Will return the L<Teapot::Bot::Object::Message> object representing the message
+Will return the C<Teapot::Bot::Object::Message> object representing the message
 sent.
 
 =head2 typing

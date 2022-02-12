@@ -2,6 +2,8 @@ package Teapot::Bot;
 
 use strict;
 use warnings;
+use 5.018; ## no critic (ProhibitImplicitImport)
+use utf8;
 $Teapot::Bot::VERSION = '0.022';
 # ABSTRACT: A base class to make your very own Telegram bot
 
@@ -11,7 +13,7 @@ __END__
 
 =pod
 
-=encoding UTF-8
+=encoding utf8
 
 =head1 NAME
 

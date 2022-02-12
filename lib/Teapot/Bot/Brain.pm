@@ -6,25 +6,27 @@ use Mojo::Base -base;
 
 use strict;
 use warnings;
+use 5.018; ## no critic (ProhibitImplicitImport)
+use utf8;
 use English qw ( -no_match_vars );
 
-use Mojo::IOLoop;
-use Mojo::UserAgent;
+use Mojo::IOLoop ();
+use Mojo::UserAgent ();
 use Carp qw/croak cluck confess/; # use croak where we return error up to app that supply something wrong
                                   # use cluck where we want to say that something bad but non-critical happen in
                                   #     lower layer (Mojo loop)
                                   # use confess where we want to say that fatal error happen in lower layer (Mojo loop)
-use Log::Any;
-use Data::Dumper;
+use Log::Any ();
+use Data::Dumper qw (Dumper);
 
-use Teapot::Bot::Object::Message;
-use Teapot::Bot::Object::Poll;
-use Teapot::Bot::Object::PollAnswer;
-use Teapot::Bot::Object::ChatMemberUpdated;
-use Teapot::Bot::Object::User;
-use Teapot::Bot::Object::Chat;
-use Teapot::Bot::Object::ChatMember;
-use Teapot::Bot::Object::ChatInviteLink;
+use Teapot::Bot::Object::Message ();
+use Teapot::Bot::Object::Poll ();
+use Teapot::Bot::Object::PollAnswer ();
+use Teapot::Bot::Object::ChatMemberUpdated ();
+use Teapot::Bot::Object::User ();
+use Teapot::Bot::Object::Chat ();
+use Teapot::Bot::Object::ChatMember ();
+use Teapot::Bot::Object::ChatInviteLink ();
 
 $Teapot::Bot::Brain::VERSION = '0.022';
 
@@ -706,7 +708,7 @@ __END__
 
 =pod
 
-=encoding UTF-8
+=encoding utf8
 
 =head1 NAME
 
@@ -764,7 +766,7 @@ This method will add a sub to run every C<$seconds> seconds. Pass this method
 two parameters, the number of seconds between executions, and the coderef to
 execute.
 
-Your coderef will be passed the L<Teapot::Bot::Brain> object when it is
+Your coderef will be passed the C<Teapot::Bot::Brain> object when it is
 executed.
 
 =head2 add_listener

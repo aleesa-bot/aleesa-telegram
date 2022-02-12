@@ -1,9 +1,13 @@
 package Teapot::Bot::Object::Document;
 # ABSTRACT: The base class for Telegram 'Document' objects
 
-use Mojo::Base 'Teapot::Bot::Object::Base';
+use strict;
+use warnings;
+use 5.018; ## no critic (ProhibitImplicitImport)
+use utf8;
 
-use Teapot::Bot::Object::PhotoSize;
+use Mojo::Base 'Teapot::Bot::Object::Base';
+use Teapot::Bot::Object::PhotoSize ();
 
 $Teapot::Bot::Object::Document::VERSION = '0.022';
 
@@ -17,7 +21,7 @@ has 'file_size';
 sub fields {
   return {
             scalar                          => [qw/file_id file_unique_id file_name mime_type file_size/],
-           'Teapot::Bot::Object::PhotoSize' => [qw/thumb/]
+           'Teapot::Bot::Object::PhotoSize' => [qw/thumb/],
          };
 }
 
@@ -27,7 +31,7 @@ __END__
 
 =pod
 
-=encoding UTF-8
+=encoding utf8
 
 =head1 NAME
 
@@ -41,7 +45,7 @@ version 0.022
 The base class for Telegram 'Document' objects.
 
 See L<https://core.telegram.org/bots/api#document> for details of the
-attributes available for L<Teapot::Bot::Object::Document> objects.
+attributes available for C<Teapot::Bot::Object::Document> objects.
 
 =head1 AUTHOR
 

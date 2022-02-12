@@ -1,11 +1,17 @@
 package Teapot::Bot::Object::Base;
 # ABSTRACT: The base class for all Teapot::Bot::Object objects.
 
-use Mojo::Base -base;
-use List::Util qw/any/;
+use strict;
+use warnings;
+use 5.018; ## no critic (ProhibitImplicitImport)
+use utf8;
+
 use Carp qw/croak cluck/;
-use Data::Dumper;
+use Data::Dumper qw (Dumper);
 use JSON::PP ();
+use List::Util qw/any/;
+
+use Mojo::Base -base;
 
 $Teapot::Bot::Object::Base::VERSION = '0.022';
 
@@ -26,7 +32,6 @@ sub _field_is_array {
   }
   return;
 }
-
 
 sub array_of_arrays {  return qw// } #override if needed
 sub _field_is_array_of_arrays {
@@ -58,9 +63,6 @@ sub create_from_array {
     cluck 'Not array ' . Dumper ($array);
     return $obj;
   }
-
-  cluck "Dumping class: " . Dumper ($class);
-  cluck "Dumping array: " . Dumper ($array);
 
 # it's stub, return $obj
   return $obj;
@@ -163,7 +165,7 @@ sub as_hashref {
           if (ref($self->$field) ne 'ARRAY' && defined $self->$field);
         # array types
         $hash->{$field} = [
-          map { $_->as_hashref } @{ $self->$field }
+          map { $_->as_hashref } @{ $self->$field },
         ] if (ref($self->$field) eq 'ARRAY');
       }
     }
@@ -177,7 +179,7 @@ __END__
 
 =pod
 
-=encoding UTF-8
+=encoding utf8
 
 =head1 NAME
 
@@ -193,7 +195,7 @@ The base class for all Telegram::Bot::Object objects.
 
 This class should not be instantiated itself. Instead, instantiate a sub-class.
 
-You should generally not need to instantiate objects of sub-classes of L<Teapot::Bot::Object::Base>,
+You should generally not need to instantiate objects of sub-classes of C<Teapot::Bot::Object::Base>,
 instead the appropriate objects will be created from an incoming request via
 L<Teapot::Bot::Brain>.
 

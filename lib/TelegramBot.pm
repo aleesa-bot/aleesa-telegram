@@ -1,15 +1,13 @@
 package TelegramBot;
 # main bot gears are here
 
-use 5.018;
+use 5.018; ## no critic (ProhibitImplicitImport)
 use strict;
 use warnings;
 use utf8;
 use open qw (:std :utf8);
 use English qw ( -no_match_vars );
-use Carp qw (cluck carp);
 use Clone qw (clone);
-use File::Path qw (make_path);
 use Log::Any qw ($log);
 use Math::Random::Secure qw (irand);
 use Mojo::Base 'Teapot::Bot::Brain';
@@ -18,7 +16,7 @@ use BotLib::Admin qw (FortuneToggleList ChanMsgEnabled);
 use BotLib qw (Command Highlight BotSleep IsCensored);
 use BotLib::Conf qw (LoadConf);
 use BotLib::Util qw (trim fmatch);
-use RedisLib qw (redis_parse_message redis_events_listener);
+use RedisLib qw (redis_events_listener);
 
 use version; our $VERSION = qw (1.0);
 use Exporter qw (import);
@@ -67,7 +65,7 @@ sub __cron {
 			$rmsg->{chatid}  = $enabledfortunechat;
 
 			$pubsub->json ($c->{'redis_router_channel'})->notify (
-				$c->{'redis_router_channel'} => $rmsg
+				$c->{'redis_router_channel'} => $rmsg,
 			);
 		}
 	}
@@ -81,7 +79,7 @@ sub __on_msg {
 	my $chatid;
 	my $chatname = 'Noname chat';
 	# user sending message info
-	my ($userid, $username, $fullname, $highlight, $vis_a_vi) = BotLib::Highlight ($msg);
+	my ($userid, $username, $fullname, $highlight, $vis_a_vi) = Highlight ($msg);
 	my $csign = $c->{telegrambot}->{csign};
 
 	unless ($myid) {
@@ -161,7 +159,7 @@ sub __on_msg {
 			}
 
 			push @members, sprintf '[%s](tg://user?id=%s)', $member_str, $member->id;
-		};
+		}
 
 		if ($#members > 1) {
 			my $lastone = pop @members;
@@ -197,7 +195,7 @@ sub __on_msg {
 			$rmsg->{chatid}  = $userid;
 			my $pubsub = $main::REDIS->pubsub;
 			$pubsub->json ($c->{'redis_router_channel'})->notify (
-				$c->{'redis_router_channel'} => $rmsg
+				$c->{'redis_router_channel'} => $rmsg,
 			);
 
 			return;
@@ -289,7 +287,7 @@ sub __on_msg {
 			my $pubsub = $main::REDIS->pubsub;
 
 			$pubsub->json ($c->{'redis_router_channel'})->notify (
-				$c->{'redis_router_channel'} => $rmsg
+				$c->{'redis_router_channel'} => $rmsg,
 			);
 
 			return;
@@ -337,7 +335,7 @@ sub __on_msg {
 			my $pubsub = $main::REDIS->pubsub;
 
 			$pubsub->json ($c->{'redis_router_channel'})->notify (
-				$c->{'redis_router_channel'} => $rmsg
+				$c->{'redis_router_channel'} => $rmsg,
 			);
 
 			return;
@@ -408,7 +406,7 @@ sub RunTelegramBot {
 	while (sleep 3) {
 		eval {                                       ## no critic (ErrorHandling::RequireCheckingReturnValueOfEval)
 			TelegramBot->new->think;
-		}
+		};
 	}
 
 	return;

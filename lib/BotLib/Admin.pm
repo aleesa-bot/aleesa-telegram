@@ -1,14 +1,13 @@
 package BotLib::Admin;
 
-use 5.018;
+use 5.018; ## no critic (ProhibitImplicitImport)
 use strict;
 use warnings;
 use utf8;
 use open qw (:std :utf8);
 use English qw ( -no_match_vars );
-use Carp qw (cluck croak);
-use CHI;
-use CHI::Driver::BerkeleyDB;
+use CHI ();
+use CHI::Driver::BerkeleyDB ();
 use BotLib::Conf qw (LoadConf);
 use BotLib::Util qw (utf2sha1);
 
@@ -33,7 +32,7 @@ sub GetForbiddenTypes {
 	my $cache = CHI->new (
 		driver => 'BerkeleyDB',
 		root_dir => $cachedir,
-		namespace => __PACKAGE__ . '_' . 'censor' . '_' . utf2sha1 ($chatid)
+		namespace => __PACKAGE__ . '_' . 'censor' . '_' . utf2sha1 ($chatid),
 	);
 
 	foreach (@ForbiddenMessageTypes) {
@@ -60,7 +59,7 @@ sub AddForbiddenType {
 	my $cache = CHI->new (
 		driver => 'BerkeleyDB',
 		root_dir => $cachedir,
-		namespace => __PACKAGE__ . '_' . 'censor' . '_' . utf2sha1 ($chatid)
+		namespace => __PACKAGE__ . '_' . 'censor' . '_' . utf2sha1 ($chatid),
 	);
 
 	$cache->set ($type, 1, 'never');
@@ -74,7 +73,7 @@ sub DelForbiddenType {
 	my $cache = CHI->new (
 		driver => 'BerkeleyDB',
 		root_dir => $cachedir,
-		namespace => __PACKAGE__ . '_' . 'censor' . '_' . utf2sha1 ($chatid)
+		namespace => __PACKAGE__ . '_' . 'censor' . '_' . utf2sha1 ($chatid),
 	);
 
 	$cache->remove ($type);
@@ -88,7 +87,7 @@ sub ListForbidden {
 	my $cache = CHI->new (
 		driver => 'BerkeleyDB',
 		root_dir => $cachedir,
-		namespace => __PACKAGE__ . '_' . 'censor' . '_' . utf2sha1 ($chatid)
+		namespace => __PACKAGE__ . '_' . 'censor' . '_' . utf2sha1 ($chatid),
 	);
 
 	foreach (@ForbiddenMessageTypes) {
@@ -116,7 +115,7 @@ sub FortuneToggle (@) {
 	my $cache = CHI->new (
 		driver => 'BerkeleyDB',
 		root_dir => $cachedir,
-		namespace => __PACKAGE__ . '_' . 'fortune'
+		namespace => __PACKAGE__ . '_' . 'fortune',
 	);
 
 	my $state = $cache->get ($chatid);
@@ -152,7 +151,7 @@ sub FortuneStatus ($) {
 	my $cache = CHI->new (
 		driver => 'BerkeleyDB',
 		root_dir => $cachedir,
-		namespace => __PACKAGE__ . '_' . 'fortune'
+		namespace => __PACKAGE__ . '_' . 'fortune',
 	);
 
 	my $state = $cache->get ($chatid);
@@ -170,7 +169,7 @@ sub FortuneToggleList () {
 	my $cache = CHI->new (
 		driver => 'BerkeleyDB',
 		root_dir => $cachedir,
-		namespace => __PACKAGE__ . '_' . 'fortune'
+		namespace => __PACKAGE__ . '_' . 'fortune',
 	);
 
 	return $cache->get_keys ();
@@ -184,7 +183,7 @@ sub ChanMsgToggle (@) {
 	my $cache = CHI->new (
 		driver => 'BerkeleyDB',
 		root_dir => $cachedir,
-		namespace => __PACKAGE__ . '_' . 'chan_msg'
+		namespace => __PACKAGE__ . '_' . 'chan_msg',
 	);
 
 	my $state = $cache->get ($chatid);
@@ -227,7 +226,7 @@ sub ChanMsgStatus ($) {
 	my $cache = CHI->new (
 		driver => 'BerkeleyDB',
 		root_dir => $cachedir,
-		namespace => __PACKAGE__ . '_' . 'chan_msg'
+		namespace => __PACKAGE__ . '_' . 'chan_msg',
 	);
 
 	my $state = $cache->get ($chatid);
@@ -251,7 +250,7 @@ sub ChanMsgEnabled ($) {
 	my $cache = CHI->new (
 		driver => 'BerkeleyDB',
 		root_dir => $cachedir,
-		namespace => __PACKAGE__ . '_' . 'chan_msg'
+		namespace => __PACKAGE__ . '_' . 'chan_msg',
 	);
 
 	my $state = $cache->get ($chatid);
@@ -271,7 +270,7 @@ sub ChanMsgToggleList () {
 	my $cache = CHI->new (
 		driver => 'BerkeleyDB',
 		root_dir => $cachedir,
-		namespace => __PACKAGE__ . '_' . 'chan_msg'
+		namespace => __PACKAGE__ . '_' . 'chan_msg',
 	);
 
 	return $cache->get_keys ();
@@ -285,7 +284,7 @@ sub PluginStatus (@) {
 	my $cache = CHI->new (
 		driver => 'BerkeleyDB',
 		root_dir => $cachedir,
-		namespace => __PACKAGE__ . '_' . 'plugin' . '_' . utf2sha1 ($chatid)
+		namespace => __PACKAGE__ . '_' . 'plugin' . '_' . utf2sha1 ($chatid),
 	);
 
 	my $state = $cache->get ($plugin);
@@ -315,7 +314,7 @@ sub PluginEnabled (@) {
 	my $cache = CHI->new (
 		driver => 'BerkeleyDB',
 		root_dir => $cachedir,
-		namespace => __PACKAGE__ . '_' . 'plugin' . '_' . utf2sha1 ($chatid)
+		namespace => __PACKAGE__ . '_' . 'plugin' . '_' . utf2sha1 ($chatid),
 	);
 
 	my $state = $cache->get ($plugin);
@@ -336,7 +335,7 @@ sub PluginToggle (@) {
 	my $cache = CHI->new (
 		driver => 'BerkeleyDB',
 		root_dir => $cachedir,
-		namespace => __PACKAGE__ . '_' . 'plugin' . '_' . utf2sha1 ($chatid)
+		namespace => __PACKAGE__ . '_' . 'plugin' . '_' . utf2sha1 ($chatid),
 	);
 
 	my $state = $cache->get ($plugin);

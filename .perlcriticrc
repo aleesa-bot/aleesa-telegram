@@ -96,3 +96,35 @@ lib_sections    = NAME | VERSION | DESCRIPTION | AUTHOR | LICENSE AND COPYRIGHT
 [-ControlStructures::ProhibitUntilBlocks]
 # Until is really useful if condition is simple, so let's assume condition is
 # always simple to read
+
+[-CodeLayout::RequireASCII]
+# Nope
+
+[-Editor::RequireEmacsFileVariables]
+
+[-TooMuchCode::ProhibitUnnecessaryUTF8Pragma]
+
+[-ErrorHandling::RequireUseOfExceptions]
+
+[-Lax::ProhibitEmptyQuotes::ExceptAsFallback]
+
+[-TooMuchCode::ProhibitDuplicateLiteral]
+
+[-ValuesAndExpressions::RequireConstantOnLeftSideOfEquality]
+# But constants on the right side of coditional expression are more readable!
+
+[-Lax::RequireConstantOnLeftSideOfEquality::ExceptEq]
+# same as previous
+
+[ValuesAndExpressions::RestrictLongStrings]
+max_length = 200
+
+[-TooMuchCode::ProhibitExtraStricture]
+
+[-Documentation::ProhibitUnbalancedParens]
+# closing paren on the next, you fucking fuck, so shut your ass up and stop farting on me
+
+[-Subroutines::ProhibitCallsToUndeclaredSubs]
+# Can't find how to mark DSL keywords
+# (Moo{,se} provides has/with/extends/etc., Dancer{,2} provides more)
+# This is problematic

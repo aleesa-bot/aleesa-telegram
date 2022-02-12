@@ -1,8 +1,13 @@
 package Teapot::Bot::Object::MessageEntity;
 # ABSTRACT: The base class for Telegram 'MessageEntity' type objects
 
+use strict;
+use warnings;
+use 5.018; ## no critic (ProhibitImplicitImport)
+use utf8;
+
 use Mojo::Base 'Teapot::Bot::Object::Base';
-use Teapot::Bot::Object::User;
+use Teapot::Bot::Object::User ();
 
 $Teapot::Bot::Object::MessageEntity::VERSION = '0.022';
 
@@ -26,7 +31,7 @@ __END__
 
 =pod
 
-=encoding UTF-8
+=encoding utf8
 
 =head1 NAME
 
@@ -40,7 +45,7 @@ version 0.022
 The base class for Telegram 'MessageEntity' type objects.
 
 See L<https://core.telegram.org/bots/api#messageentity> for details of the
-attributes available for L<Teapot::Bot::Object::MessageEntity> objects.
+attributes available for C<Teapot::Bot::Object::MessageEntity> objects.
 
 =head1 AUTHOR
 

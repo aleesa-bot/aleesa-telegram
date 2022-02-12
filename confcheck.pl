@@ -1,13 +1,13 @@
 #!/usr/bin/perl
 
-use 5.018;
+use 5.018; ## no critic (ProhibitImplicitImport)
 use strict;
 use warnings;
 use utf8;
 use open qw (:std :utf8);
 use English qw ( -no_match_vars );
 use lib qw (./lib ./vendor_perl ./vendor_perl/lib/perl5);
-use JSON::XS;
+use JSON::XS ();
 
 use version; our $VERSION = qw (1.0);
 

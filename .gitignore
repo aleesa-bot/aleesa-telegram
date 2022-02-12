@@ -2,15 +2,7 @@ _Deparsed_XSubs.pm
 .idea/**
 .vscode/**
 .vstags
-aleesa-telegram-bot.pid
+aleesa-telegram.pid
 data/cache/**
 data/config.json
-data/fortune/**
-data/friday/**
-data/gamestat/**
-data/image/**
-data/karma/**
-data/lat/**
-data/proverb/**
-data/telegrambot-brains/**
 vendor_perl/**

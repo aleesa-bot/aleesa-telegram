@@ -1,6 +1,11 @@
 package Teapot::Bot::Object::VoiceChatScheduled;
 # ABSTRACT: The base class for Telegram message 'VoiceChatEnded' type.
 
+use strict;
+use warnings;
+use 5.018; ## no critic (ProhibitImplicitImport)
+use utf8;
+
 use Mojo::Base 'Teapot::Bot::Object::Base';
 
 $Teapot::Bot::Object::VoiceChatScheduled::VERSION = '0.022';
@@ -18,7 +23,7 @@ __END__
 
 =pod
 
-=encoding UTF-8
+=encoding utf8
 
 =head1 NAME
 
@@ -32,7 +37,7 @@ version 0.022
 The base class for Telegram message 'VoiceChatScheduled' type.
 
 See L<https://core.telegram.org/bots/api#voicechatscheduled> for details of the
-attributes available for L<Teapot::Bot::Object::VoiceChatScheduled> objects.
+attributes available for C<Teapot::Bot::Object::VoiceChatScheduled> objects.
 
 =head1 AUTHOR
 

@@ -1,6 +1,10 @@
 package Teapot::Bot::Object::User;
 # ABSTRACT: The base class for Telegram message 'User' type.
 
+use strict;
+use warnings;
+use 5.018; ## no critic (ProhibitImplicitImport)
+use utf8;
 
 use Mojo::Base 'Teapot::Bot::Object::Base';
 
@@ -19,7 +23,7 @@ has 'supports_inline_queries';    # optional, only for getMe() method
 sub fields {
   return {
            scalar => [qw/id is_bot first_name last_name username language_code can_join_groups
-                         can_read_all_group_messages supports_inline_queries/]
+                         can_read_all_group_messages supports_inline_queries/],
          };
 }
 
@@ -29,7 +33,7 @@ __END__
 
 =pod
 
-=encoding UTF-8
+=encoding utf8
 
 =head1 NAME
 
@@ -43,7 +47,7 @@ version 0.022
 The base class for Telegram message 'User' type.
 
 See L<https://core.telegram.org/bots/api#user> for details of the
-attributes available for L<Teapot::Bot::Object::User> objects.
+attributes available for C<Teapot::Bot::Object::User> objects.
 
 =head1 AUTHOR
 

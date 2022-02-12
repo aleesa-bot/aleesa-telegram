@@ -1,18 +1,16 @@
 package BotLib;
 # store here utility functions that are not protocol-specified
 
-use 5.018;
+use 5.018; ## no critic (ProhibitImplicitImport)
 use strict;
 use warnings;
 use utf8;
 use open qw (:std :utf8);
 use English qw ( -no_match_vars );
 
-use Carp qw (carp);
 use Clone qw (clone);
 use Math::Random::Secure qw (irand);
-use Data::Dumper;
-use Log::Any qw ($log);
+use Data::Dumper qw (Dumper);
 
 use BotLib::Conf qw (LoadConf);
 use BotLib::Admin qw (@ForbiddenMessageTypes GetForbiddenTypes AddForbiddenType
@@ -139,7 +137,7 @@ sub Command {
 		my $pubsub = $main::REDIS->pubsub;
 
 		$pubsub->json ($c->{'redis_router_channel'})->notify (
-			$c->{'redis_router_channel'} => $rmsg
+			$c->{'redis_router_channel'} => $rmsg,
 		);
 	# Если команда не найдена, но строка подозрительно напоминает команду help
 	} elsif (substr ($text, 1) eq 'help'  ||  substr ($text, 1) eq 'помощь') {

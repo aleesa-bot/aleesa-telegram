@@ -1,6 +1,6 @@
 package RedisLib;
 
-use 5.018;
+use 5.018; ## no critic (ProhibitImplicitImport)
 use strict;
 use warnings;
 use utf8;
@@ -8,12 +8,12 @@ use open qw (:std :utf8);
 
 use Log::Any qw ($log);
 # Чтобы "уж точно" использовать hiredis-биндинги, загрузим этот модуль перед Mojo::Redis
-use Protocol::Redis::XS;
-use Mojo::Redis;
-use Mojo::Redis::Connection;
+use Protocol::Redis::XS ();
+use Mojo::Redis ();
+use Mojo::Redis::Connection ();
 
 use BotLib::Conf qw (LoadConf);
-use Teapot::Bot::Object::ChatPermissions;
+use Teapot::Bot::Object::ChatPermissions ();
 
 use version; our $VERSION = qw (1.0);
 use Exporter qw (import);
@@ -48,7 +48,7 @@ sub redis_parse_message {
 	}
 
 	return;
-};
+}
 
 sub redis_events_listener {
 	$log->notice ('[NOTICE] Run redis events listener');
@@ -66,7 +66,7 @@ sub redis_events_listener {
 	}
 
 	my $r = Mojo::Redis->new (
-		sprintf 'redis://%s:%s/1', $c->{redis_server}, $c->{redis_port}
+		sprintf 'redis://%s:%s/1', $c->{redis_server}, $c->{redis_port},
 	);
 
 	$log->notice ('[NOTICE] New redis client registered, registering callbacks');
@@ -85,11 +85,11 @@ sub redis_events_listener {
 					$log->error ("[ERROR] Redis connection error: $error");
 					$main::RCONN = undef;
 					return;
-				}
+				},
 			);
 
 			return;
-		}
+		},
 	);
 
 	# Subscribe to channels
@@ -102,7 +102,7 @@ sub redis_events_listener {
 		$log->info ("[INFO] Subscribing to $channel");
 
 		$sub->{$channel} = $pubsub->json ($channel)->listen (
-			$channel => sub { $rpm->(@_); }
+			$channel => sub { $rpm->(@_); },
 		);
 	}
 

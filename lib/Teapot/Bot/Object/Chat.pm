@@ -1,11 +1,16 @@
 package Teapot::Bot::Object::Chat;
 # ABSTRACT: The base class for Telegram 'Chat' type objects
 
+use strict;
+use warnings;
+use 5.018; ## no critic (ProhibitImplicitImport)
+use utf8;
+
 use Mojo::Base 'Teapot::Bot::Object::Base';
-use Teapot::Bot::Object::ChatPhoto;
-use Teapot::Bot::Object::Message;
-use Teapot::Bot::Object::ChatPermissions;
-use Teapot::Bot::Object::ChatLocation;
+use Teapot::Bot::Object::ChatPhoto ();
+use Teapot::Bot::Object::Message ();
+use Teapot::Bot::Object::ChatPermissions ();
+use Teapot::Bot::Object::ChatLocation ();
 
 $Teapot::Bot::Object::Chat::VERSION = '0.022';
 
@@ -64,7 +69,7 @@ __END__
 
 =pod
 
-=encoding UTF-8
+=encoding utf8
 
 =head1 NAME
 
@@ -78,7 +83,7 @@ version 0.022
 The base class for Telegram 'Chat' type objects.
 
 See L<https://core.telegram.org/bots/api#chat> for details of the
-attributes available for L<Teapot::Bot::Object::Chat> objects.
+attributes available for C<Teapot::Bot::Object::Chat> objects.
 
 =head1 METHODS
 

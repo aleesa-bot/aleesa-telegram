@@ -1,13 +1,13 @@
 package BotLib::Conf;
-# loads config
+# Загружает конфиг файл
 
-use 5.018;
+use 5.018; ## no critic (ProhibitImplicitImport)
 use strict;
 use warnings;
 use utf8;
 use open qw (:std :utf8);
 use English qw ( -no_match_vars );
-use JSON::XS;
+use JSON::XS ();
 
 use version; our $VERSION = qw (1.0);
 use Exporter qw (import);
@@ -15,7 +15,12 @@ our @EXPORT_OK = qw (LoadConf);
 
 sub LoadConf {
 	my $c = 'data/config.json';
-	open my $CH, '<', $c or die "[FATAL] No conf at $c: $OS_ERROR\n";
+	my $CH;
+
+	unless (open $CH, '<', $c) {
+		die "[FATAL] No conf at $c: $OS_ERROR\n";
+	}
+
 	my $len = (stat $c) [7];
 	my $json;
 	my $readlen = read $CH, $json, $len;

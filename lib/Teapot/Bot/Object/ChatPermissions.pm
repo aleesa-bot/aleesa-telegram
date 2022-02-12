@@ -1,8 +1,14 @@
 package Teapot::Bot::Object::ChatPermissions;
 # ABSTRACT: The base class for Telegram 'ChatPermissions' type objects
+
+use strict;
+use warnings;
+use 5.018; ## no critic (ProhibitImplicitImport)
+use utf8;
+
 use Carp qw(carp);
 use Mojo::Base 'Teapot::Bot::Object::Base';
-use Teapot::Bot::Brain;
+use Teapot::Bot::Brain ();
 
 $Teapot::Bot::Object::ChatPermissions::VERSION = '0.022';
 
@@ -25,7 +31,7 @@ sub fields {
   return {
           'scalar'                           => [qw/can_send_messages can_send_media_messages can_send_polls
                                                     can_send_other_messages can_add_web_page_previews can_change_info
-                                                    can_invite_users can_pin_messages/]
+                                                    can_invite_users can_pin_messages/],
          };
 }
 
@@ -84,7 +90,7 @@ __END__
 
 =pod
 
-=encoding UTF-8
+=encoding utf8
 
 =head1 NAME
 
@@ -98,7 +104,7 @@ version 0.022
 The base class for Telegram 'ChatPermissions' type objects.
 
 See L<https://core.telegram.org/bots/api#chatpermissions> for details of the
-attributes available for L<Teapot::Bot::Object::ChatPermissions> objects.
+attributes available for C<Teapot::Bot::Object::ChatPermissions> objects.
 
 =head1 METHODS
 

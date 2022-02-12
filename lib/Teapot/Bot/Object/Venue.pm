@@ -1,8 +1,13 @@
 package Teapot::Bot::Object::Venue;
 # ABSTRACT: The base class for Telegram 'LoginUrl' type objects
 
+use strict;
+use warnings;
+use 5.018; ## no critic (ProhibitImplicitImport)
+use utf8;
+
 use Mojo::Base 'Teapot::Bot::Object::Base';
-use Teapot::Bot::Object::Location;
+use Teapot::Bot::Object::Location ();
 
 $Teapot::Bot::Object::Venue::VERSION = '0.022';
 
@@ -17,7 +22,7 @@ has 'google_place_type';
 sub fields {
   return {
            'scalar'                        => [qw/title address foursquare_id foursquare_type google_place_id google_place_type/],
-           'Teapot::Bot::Object::Location' => [qw/location/]
+           'Teapot::Bot::Object::Location' => [qw/location/],
          };
 
 }
@@ -28,7 +33,7 @@ __END__
 
 =pod
 
-=encoding UTF-8
+=encoding utf8
 
 =head1 NAME
 
@@ -42,7 +47,7 @@ version 0.022
 The base class for Telegram 'LoginUrl' type objects.
 
 See L<https://core.telegram.org/bots/api#venue> for details of the
-attributes available for L<Teapot::Bot::Object::Venue> objects.
+attributes available for C<Teapot::Bot::Object::Venue> objects.
 
 =head1 AUTHOR
 

@@ -1,8 +1,13 @@
 package Teapot::Bot::Object::Poll;
 # ABSTRACT: The base class for Telegram 'Poll' type objects
 
+use strict;
+use warnings;
+use 5.018; ## no critic (ProhibitImplicitImport)
+use utf8;
+
 use Mojo::Base 'Teapot::Bot::Object::Base';
-use Teapot::Bot::Object::PollOption;
+use Teapot::Bot::Object::PollOption ();
 
 $Teapot::Bot::Object::Poll::VERSION = '0.022';
 
@@ -39,7 +44,7 @@ __END__
 
 =pod
 
-=encoding UTF-8
+=encoding utf8
 
 =head1 NAME
 
@@ -53,7 +58,7 @@ version 0.022
 The base class for Telegram 'Poll' type objects
 
 See L<https://core.telegram.org/bots/api#poll> for details of the
-attributes available for L<Teapot::Bot::Object::Poll> objects.
+attributes available for C<Teapot::Bot::Object::Poll> objects.
 
 =head1 AUTHOR
 
