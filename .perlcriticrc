@@ -128,3 +128,5 @@ max_length = 200
 # Can't find how to mark DSL keywords
 # (Moo{,se} provides has/with/extends/etc., Dancer{,2} provides more)
 # This is problematic
+
+[-Miscellanea::ProhibitUnrestrictedNoCritic]
