@@ -16,7 +16,7 @@ use BotLib::Conf qw (LoadConf);
 use BotLib::Admin qw (@ForbiddenMessageTypes GetForbiddenTypes AddForbiddenType
                       DelForbiddenType ListForbidden FortuneToggle FortuneStatus
                       PluginToggle PluginStatus PluginEnabled ChanMsgToggle ChanMsgStatus
-					  GreetMsgToggle GreetMsgStatus);
+					  GreetMsgToggle GreetMsgStatus GoodbyeMsgToggle GoodbyeMsgStatus);
 use BotLib::Util qw (trim);
 
 use version; our $VERSION = qw (1.1);
@@ -202,6 +202,10 @@ ${csign}admin greet #       - где 1 - вкл, 0 - выкл приветств
 ${csign}admin приветствие # - где 1 - вкл, 0 - выкл приветствия новых участников чата
 ${csign}admin greet         - приветствуем ли новых участников чата
 ${csign}admin приветствие   - приветствуем ли новых участников чата
+${csign}admin goodbye #     - где 1 - вкл, 0 - выкл прощание с ушедшими участниками чата
+${csign}admin прощание #    - где 1 - вкл, 0 - выкл прощание с ушедшими участниками чата
+${csign}admin goodbye       - прощаемся ли с ушедшими участниками чата
+${csign}admin прощание      - прощаемся ли с ушедшими участниками чата
 ${csign}admin oboobs #      - где 1 - вкл, 0 - выкл плагина oboobs
 ${csign}admin oboobs        - показываем ли сисечки по просьбе участников чата (команды ${csign}tits, ${csign}tities, ${csign}boobs, ${csign}boobies, ${csign}сиси, ${csign}сисечки)
 ${csign}admin obutts #      - где 1 - вкл, 0 - выкл плагина obutts
@@ -287,6 +291,16 @@ MYADMIN
 					}
 				} else {
 					$reply = GreetMsgStatus ($chatid);
+				}
+			} elsif ($cmd eq 'goodbye' || $cmd eq 'прощание') {
+				if (defined $args) {
+					if ($args == 1) {
+						$reply = GoodbyeMsgToggle ($chatid, 1);
+					} elsif ($args == 0) {
+						$reply = GoodbyeMsgToggle ($chatid, 0);
+					}
+				} else {
+					$reply = GoodbyeMsgStatus ($chatid);
 				}
 			# Работает ли плагин oboobs в чатике
 			} elsif ($cmd eq 'oboobs') {

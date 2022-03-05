@@ -18,7 +18,7 @@ our @ISA    = qw / Exporter /; ## no critic (ClassHierarchies::ProhibitExplicitI
 our @EXPORT_OK = qw (@ForbiddenMessageTypes @PluginList GetForbiddenTypes AddForbiddenType DelForbiddenType
                      ListForbidden FortuneToggle FortuneToggleList FortuneStatus PluginToggle PluginStatus
                      PluginEnabled ChanMsgToggle ChanMsgStatus ChanMsgEnabled GreetMsgToggle GreetMsgStatus
-					 GreetMsgEnabled);
+					 GreetMsgEnabled GoodbyeMsgToggle GoodbyeMsgStatus GoodbyeMsgEnabled);
 
 my $c = LoadConf ();
 my $cachedir = $c->{cachedir};
@@ -365,6 +365,92 @@ sub GreetMsgEnabled ($) {
 		}
 	} else {
 		return 1;
+	}
+}
+
+sub GoodbyeMsgToggle (@) {
+	my $chatid = shift;
+	my $action = shift // undef;
+	my $phrase = 'Прощание с ушедшими участниками чата ';
+
+	my $cache = CHI->new (
+		driver => 'BerkeleyDB',
+		root_dir => $cachedir,
+		namespace => __PACKAGE__ . '_' . 'goodbye_msg',
+	);
+
+	my $state = $cache->get ($chatid);
+
+	if (defined $action) {
+		if ($action) {
+			$cache->set ($chatid, 1, 'never');
+			$phrase .= 'включены.';
+		} else {
+			$cache->set ($chatid, 0, 'never');
+			$phrase .= 'выключены.';
+		}
+	} else {
+		if (defined $state){
+			if ($state) {
+				$cache->set ($chatid, 0, 'never');
+				$phrase .= 'выключены.';
+			} else {
+				$cache->set ($chatid, 1, 'never');
+				$phrase .= 'включены.';
+			}
+		} else {
+			$cache->set ($chatid, 1, 'never');
+			$phrase .= 'включены.';
+		}
+	}
+
+	return $phrase;
+}
+
+sub GoodbyeMsgStatus ($) {
+	my $chatid = shift;
+	my $phrase = 'Прощание с ушедшими участниками чата ';
+
+	my $cache = CHI->new (
+		driver => 'BerkeleyDB',
+		root_dir => $cachedir,
+		namespace => __PACKAGE__ . '_' . 'goodbye_msg',
+	);
+
+	my $state = $cache->get ($chatid);
+
+	if (defined $state) {
+		if ($state) {
+			$phrase .= 'включены.';
+		} else {
+			$phrase .= 'выключены.';
+		}
+	} else {
+		$phrase .= 'выключены.';
+	}
+
+	return $phrase;
+}
+
+sub GoodbyeMsgEnabled ($) {
+	my $chatid = shift;
+
+	my $cache = CHI->new (
+		driver => 'BerkeleyDB',
+		root_dir => $cachedir,
+		namespace => __PACKAGE__ . '_' . 'goodbye_msg',
+	);
+
+	my $state = $cache->get ($chatid);
+
+	if (defined $state) {
+		if ($state) {
+			return 1;
+		} else {
+			return 0;
+		}
+	} else {
+		return 0;
 	}
 }
 

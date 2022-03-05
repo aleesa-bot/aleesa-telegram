@@ -12,7 +12,7 @@ use Log::Any qw ($log);
 use Math::Random::Secure qw (irand);
 use Mojo::Base 'Teapot::Bot::Brain';
 
-use BotLib::Admin qw (FortuneToggleList ChanMsgEnabled GreetMsgEnabled);
+use BotLib::Admin qw (FortuneToggleList ChanMsgEnabled GreetMsgEnabled GoodbyeMsgEnabled);
 use BotLib qw (Command Highlight BotSleep IsCensored);
 use BotLib::Conf qw (LoadConf);
 use BotLib::Util qw (trim fmatch);
@@ -178,6 +178,48 @@ sub __on_msg {
 		return;
 	}
 
+	# Leaving event, say goodbye to member just left chat
+	if ($msg->can ('left_chat_member') && defined ($msg->left_chat_member)) {
+		unless (GoodbyeMsgEnabled ($chatid)) {
+			return;
+		}
+
+		my @goodbye = (
+			'Чат покинул(а) %s',
+			'Из чата вышел(ла) %s',
+			'До свидания, %s, приходите ещё',
+			'Покеда, %s',
+			'Удачи тебе, %s',
+			'Бывай, %s',
+		);
+
+		my $member = $msg->left_chat_member;
+		my $member_str = '';
+
+		# avoid naming people by spacing symbols, or empty names
+		if ($member->can ('first_name') && defined ($member->first_name) && $member->first_name !~ /^\s+$/ui) {
+			$member_str .= $member->first_name;
+
+			if ($member->can ('last_name') && defined ($member->last_name) && $member->last_name !~ /^\s+$/ui) {
+				$member_str .= ' ' . $member->last_name;
+			}
+		} else {
+			if ($member->can ('last_name') && defined ($member->last_name) && $member->last_name !~ /^\s+$/ui) {
+				$member_str .= ' ' . $member->last_name;
+			# username must be uniq and should contain only english letters and numbers, so...
+			} elsif ($member->can ('username') && defined ($member->username)) {
+				$member_str .= '@' . $member->username;
+			# fallback to id if uose trying to be smartass and use only spacing chars in it's firstname and/or lastname
+			} else {
+				$member_str .= $member->id;
+			}
+		}
+
+		my $leftuser = sprintf '[%s](tg://user?id=%s)', $member_str, $member->id;
+		$phrase = sprintf $goodbye[irand ($#goodbye + 1)], $leftuser;
+		$msg->replyMd ($phrase);
+		return;
+	}
 # is this a 1-on-1 ?
 	if ($msg->chat->type eq 'private') {
 		unless (defined $msg->text) {
