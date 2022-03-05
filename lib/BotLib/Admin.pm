@@ -293,28 +293,28 @@ sub GreetMsgToggle (@) {
 	if (defined $action) {
 		if ($action) {
 			$cache->set ($chatid, 1, 'never');
-			$phrase .= 'включены.';
+			$phrase .= 'включено.';
 		} else {
 			if (defined $state && $state) {
 				$cache->set ($chatid, 0, 'never');
-				$phrase .= 'выключены.';
+				$phrase .= 'выключено.';
 			} else {
 				$cache->set ($chatid, 1, 'never');
-				$phrase .= 'включены.';
+				$phrase .= 'включено.';
 			}
 		}
 	} else {
 		if (defined $state){
 			if ($state) {
 				$cache->set ($chatid, 0, 'never');
-				$phrase .= 'выключены.';
+				$phrase .= 'выключено.';
 			} else {
 				$cache->set ($chatid, 1, 'never');
-				$phrase .= 'включены.';
+				$phrase .= 'включено.';
 			}
 		} else {
-			$cache->set ($chatid, 1, 'never');
-			$phrase .= 'выключены.';
+			$cache->set ($chatid, 0, 'never');
+			$phrase .= 'выключено.';
 		}
 	}
 
@@ -335,12 +335,12 @@ sub GreetMsgStatus ($) {
 
 	if (defined $state) {
 		if ($state) {
-			$phrase .= 'включены.';
+			$phrase .= 'включено.';
 		} else {
-			$phrase .= 'выключены.';
+			$phrase .= 'выключено.';
 		}
 	} else {
-		$phrase .= 'включены.';
+		$phrase .= 'включено.';
 	}
 
 	return $phrase;
@@ -384,23 +384,23 @@ sub GoodbyeMsgToggle (@) {
 	if (defined $action) {
 		if ($action) {
 			$cache->set ($chatid, 1, 'never');
-			$phrase .= 'включены.';
+			$phrase .= 'включено.';
 		} else {
 			$cache->set ($chatid, 0, 'never');
-			$phrase .= 'выключены.';
+			$phrase .= 'выключено.';
 		}
 	} else {
 		if (defined $state){
 			if ($state) {
 				$cache->set ($chatid, 0, 'never');
-				$phrase .= 'выключены.';
+				$phrase .= 'выключено.';
 			} else {
 				$cache->set ($chatid, 1, 'never');
-				$phrase .= 'включены.';
+				$phrase .= 'включено.';
 			}
 		} else {
 			$cache->set ($chatid, 1, 'never');
-			$phrase .= 'включены.';
+			$phrase .= 'включено.';
 		}
 	}
 
@@ -421,12 +421,12 @@ sub GoodbyeMsgStatus ($) {
 
 	if (defined $state) {
 		if ($state) {
-			$phrase .= 'включены.';
+			$phrase .= 'включено.';
 		} else {
-			$phrase .= 'выключены.';
+			$phrase .= 'выключено.';
 		}
 	} else {
-		$phrase .= 'выключены.';
+		$phrase .= 'выключено.';
 	}
 
 	return $phrase;
