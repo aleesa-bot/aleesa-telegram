@@ -12,7 +12,7 @@ use Log::Any qw ($log);
 use Math::Random::Secure qw (irand);
 use Mojo::Base 'Teapot::Bot::Brain';
 
-use BotLib::Admin qw (FortuneToggleList ChanMsgEnabled);
+use BotLib::Admin qw (FortuneToggleList ChanMsgEnabled GreetMsgEnabled);
 use BotLib qw (Command Highlight BotSleep IsCensored);
 use BotLib::Conf qw (LoadConf);
 use BotLib::Util qw (trim fmatch);
@@ -127,6 +127,11 @@ sub __on_msg {
 
 	# Newcommer event, greet our new member and suggest to introduce themself.
 	if ($msg->can ('new_chat_members') && defined ($msg->new_chat_members)) {
+
+		unless (GreetMsgEnabled ($chatid)) {
+			return;
+		}
+
 		my @members;
 		my @introduce = (
 			'Дратути',

@@ -11,13 +11,14 @@ use CHI::Driver::BerkeleyDB ();
 use BotLib::Conf qw (LoadConf);
 use BotLib::Util qw (utf2sha1);
 
-use version; our $VERSION = qw (1.0);
+use version; our $VERSION = qw (1.1);
 use Exporter qw (import);
 # to export array we need @ISA here
 our @ISA    = qw / Exporter /; ## no critic (ClassHierarchies::ProhibitExplicitISA)
 our @EXPORT_OK = qw (@ForbiddenMessageTypes @PluginList GetForbiddenTypes AddForbiddenType DelForbiddenType
                      ListForbidden FortuneToggle FortuneToggleList FortuneStatus PluginToggle PluginStatus
-                     PluginEnabled ChanMsgToggle ChanMsgStatus ChanMsgEnabled);
+                     PluginEnabled ChanMsgToggle ChanMsgStatus ChanMsgEnabled GreetMsgToggle GreetMsgStatus
+					 GreetMsgEnabled);
 
 my $c = LoadConf ();
 my $cachedir = $c->{cachedir};
@@ -274,6 +275,97 @@ sub ChanMsgToggleList () {
 	);
 
 	return $cache->get_keys ();
+}
+
+sub GreetMsgToggle (@) {
+	my $chatid = shift;
+	my $action = shift // undef;
+	my $phrase = 'Приветствия новых участников чата ';
+
+	my $cache = CHI->new (
+		driver => 'BerkeleyDB',
+		root_dir => $cachedir,
+		namespace => __PACKAGE__ . '_' . 'greet_msg',
+	);
+
+	my $state = $cache->get ($chatid);
+
+	if (defined $action) {
+		if ($action) {
+			$cache->set ($chatid, 1, 'never');
+			$phrase .= 'включены.';
+		} else {
+			if (defined $state && $state) {
+				$cache->set ($chatid, 0, 'never');
+				$phrase .= 'выключены.';
+			} else {
+				$cache->set ($chatid, 1, 'never');
+				$phrase .= 'включены.';
+			}
+		}
+	} else {
+		if (defined $state){
+			if ($state) {
+				$cache->set ($chatid, 0, 'never');
+				$phrase .= 'выключены.';
+			} else {
+				$cache->set ($chatid, 1, 'never');
+				$phrase .= 'включены.';
+			}
+		} else {
+			$cache->set ($chatid, 1, 'never');
+			$phrase .= 'выключены.';
+		}
+	}
+
+	return $phrase;
+}
+
+sub GreetMsgStatus ($) {
+	my $chatid = shift;
+	my $phrase = 'Приветствия новых участников чата ';
+
+	my $cache = CHI->new (
+		driver => 'BerkeleyDB',
+		root_dir => $cachedir,
+		namespace => __PACKAGE__ . '_' . 'greet_msg',
+	);
+
+	my $state = $cache->get ($chatid);
+
+	if (defined $state) {
+		if ($state) {
+			$phrase .= 'включены.';
+		} else {
+			$phrase .= 'выключены.';
+		}
+	} else {
+		$phrase .= 'включены.';
+	}
+
+	return $phrase;
+}
+
+sub GreetMsgEnabled ($) {
+	my $chatid = shift;
+
+	my $cache = CHI->new (
+		driver => 'BerkeleyDB',
+		root_dir => $cachedir,
+		namespace => __PACKAGE__ . '_' . 'greet_msg',
+	);
+
+	my $state = $cache->get ($chatid);
+
+	if (defined $state) {
+		if ($state) {
+			return 1;
+		} else {
+			return 0;
+		}
+	} else {
+		return 1;
+	}
 }
 
 sub PluginStatus (@) {

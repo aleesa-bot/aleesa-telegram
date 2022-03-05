@@ -15,10 +15,11 @@ use Data::Dumper qw (Dumper);
 use BotLib::Conf qw (LoadConf);
 use BotLib::Admin qw (@ForbiddenMessageTypes GetForbiddenTypes AddForbiddenType
                       DelForbiddenType ListForbidden FortuneToggle FortuneStatus
-                      PluginToggle PluginStatus PluginEnabled ChanMsgToggle ChanMsgStatus);
+                      PluginToggle PluginStatus PluginEnabled ChanMsgToggle ChanMsgStatus
+					  GreetMsgToggle GreetMsgStatus);
 use BotLib::Util qw (trim);
 
-use version; our $VERSION = qw (1.0);
+use version; our $VERSION = qw (1.1);
 use Exporter qw (import);
 our @EXPORT_OK = qw (Command Highlight BotSleep IsCensored);
 
@@ -197,6 +198,10 @@ ${csign}admin fortune #     - где 1 - вкл, 0 - выкл фортунку �
 ${csign}admin фортунка #    - где 1 - вкл, 0 - выкл фортунку с утра
 ${csign}admin fortune       - показываем ли с утра фортунку для чата
 ${csign}admin фортунка      - показываем ли с утра фортунку для чата
+${csign}admin greet #       - где 1 - вкл, 0 - выкл приветствия новых участников чата
+${csign}admin приветствие # - где 1 - вкл, 0 - выкл приветствия новых участников чата
+${csign}admin greet         - приветствуем ли новых участников чата
+${csign}admin приветствие   - приветствуем ли новых участников чата
 ${csign}admin oboobs #      - где 1 - вкл, 0 - выкл плагина oboobs
 ${csign}admin oboobs        - показываем ли сисечки по просьбе участников чата (команды ${csign}tits, ${csign}tities, ${csign}boobs, ${csign}boobies, ${csign}сиси, ${csign}сисечки)
 ${csign}admin obutts #      - где 1 - вкл, 0 - выкл плагина obutts
@@ -271,6 +276,17 @@ MYADMIN
 					}
 				} else {
 					$reply = ChanMsgStatus ($chatid);
+				}
+			# Приветствуем ли мы новых участников чата
+			} elsif ($cmd eq 'greet' || $cmd eq 'приветствие') {
+				if (defined $args) {
+					if ($args == 1) {
+						$reply = GreetMsgToggle ($chatid, 1);
+					} elsif ($args == 0) {
+						$reply = GreetMsgToggle ($chatid, 0);
+					}
+				} else {
+					$reply = GreetMsgStatus ($chatid);
 				}
 			# Работает ли плагин oboobs в чатике
 			} elsif ($cmd eq 'oboobs') {
