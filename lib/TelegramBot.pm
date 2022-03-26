@@ -61,8 +61,9 @@ sub __cron {
 
 	if ($hour == 8 && ($min >= 0 && $min <= 14)) {
 		foreach my $enabledfortunechat (FortuneToggleList ()) {
-			$rmsg->{userid}  = $enabledfortunechat;
-			$rmsg->{chatid}  = $enabledfortunechat;
+			# Set it to number, explicitly, maybe it will help to avoid stringification values in output json
+			$rmsg->{userid}  = 0 + $enabledfortunechat;
+			$rmsg->{chatid}  = 0 + $enabledfortunechat;
 
 			$pubsub->json ($c->{'redis_router_channel'})->notify (
 				$c->{'redis_router_channel'} => $rmsg,
@@ -238,8 +239,8 @@ sub __on_msg {
 			my $rmsg = clone ($redismsg);
 			$rmsg->{mode}    = 'private';
 			$rmsg->{message} = $text;
-			$rmsg->{userid}  = $userid;
-			$rmsg->{chatid}  = $userid;
+			$rmsg->{userid}  = 0 + $userid;
+			$rmsg->{chatid}  = 0 + $userid;
 			my $pubsub = $main::REDIS->pubsub;
 			$pubsub->json ($c->{'redis_router_channel'})->notify (
 				$c->{'redis_router_channel'} => $rmsg,
@@ -328,8 +329,8 @@ sub __on_msg {
 			my $rmsg = clone ($redismsg);
 			$rmsg->{mode}    = 'public';
 			$rmsg->{message} = $phrase;
-			$rmsg->{userid}  = $userid;
-			$rmsg->{chatid}  = $chatid;
+			$rmsg->{userid}  = 0 + $userid;
+			$rmsg->{chatid}  = 0 + $chatid;
 
 			my $pubsub = $main::REDIS->pubsub;
 
@@ -357,8 +358,8 @@ sub __on_msg {
 
 			my $rmsg = clone ($redismsg);
 			$rmsg->{mode}    = 'public';
-			$rmsg->{userid}  = $userid;
-			$rmsg->{chatid}  = $chatid;
+			$rmsg->{userid}  = 0 + $userid;
+			$rmsg->{chatid}  = 0 + $chatid;
 
 			# Сообщение обращено к боту
 			if ((lc ($text) =~ /^${qname}[\,|\:]? (.+)/) or (lc ($text) =~ /^${qtname}[\,|\:]? (.+)/)){

@@ -41,8 +41,8 @@ sub Command {
 	my $reply;
 	my ($userid, $username, $fullname, $highlight, $visavi) = Highlight ($msg);
 	my $rmsg = clone ($redismsg);
-	$rmsg->{userid}  = $userid;
-	$rmsg->{chatid}  = $chatid;
+	$rmsg->{userid}  = 0 + $userid;
+	$rmsg->{chatid}  = 0 + $chatid;
 
 	if ($chatid >= 0) {
 		$rmsg->{mode}    = 'private';
