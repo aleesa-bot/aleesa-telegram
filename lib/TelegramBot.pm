@@ -41,12 +41,12 @@ $redismsg->{misc}->{fwd_cnt} = 1;
 sub __cron {
 	my $self = shift;
 
-	my $rmsg = clone ($redismsg);
-	$rmsg->{mode}    = 'public';
+	my $rmsg                      = clone ($redismsg);
+	$rmsg->{mode}                 = 'public';
 	# Press 'F' to pay respect
-	$rmsg->{message} = sprintf '%sf', $c->{telegrambot}->{csign};
-	$rmsg->{misc}->{good_morning} = 1;
-	$rmsg->{misc}->{msg_format} = 1;
+	$rmsg->{message}              = sprintf '%sf', $c->{telegrambot}->{csign};
+	$rmsg->{misc}->{msg_format}   = 1;
+	$rmsg->{misc}->{answer}       = 1;
 
 	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime (time);
 
@@ -232,16 +232,19 @@ sub __on_msg {
 		# Ответ по-умолчанию
 		my $reply = 'Давайте ещё пообщаемся, а то я ещё не научилась от вас плохому.';
 
-		if (substr ($text, 0, 1) eq $csign) {
+		if (substr ($text, 0, length ($csign)) eq $csign) {
 			# Если текст похож на команду, усылаем его в BotLib.pm
 			$reply = Command ($self, $msg, $text, $userid);
 		} else {
-			my $rmsg = clone ($redismsg);
-			$rmsg->{mode}    = 'private';
-			$rmsg->{message} = $text;
-			$rmsg->{userid}  = 0 + $userid;
-			$rmsg->{chatid}  = 0 + $userid;
+			my $rmsg                = clone ($redismsg);
+			$rmsg->{mode}           = 'private';
+			$rmsg->{message}        = $text;
+			$rmsg->{userid}         = 0 + $userid;
+			$rmsg->{chatid}         = 0 + $userid;
+			$rmsg->{misc}->{answer} = 1;
+
 			my $pubsub = $main::REDIS->pubsub;
+
 			$pubsub->json ($c->{'redis_router_channel'})->notify (
 				$c->{'redis_router_channel'} => $rmsg,
 			);
@@ -301,7 +304,8 @@ sub __on_msg {
 
 			# Если новый участник чата ответил на наше приветствие, проигнорируем его ответ (и попробуем сойти за
 			# человека :)
-			if (substr ($msg->reply_to_message->text, -61) eq 'Представьтес, пожалуйста, и расскажите, что вас сюда привело.') {
+			my $greetphrase = 'Представьтес, пожалуйста, и расскажите, что вас сюда привело.';
+			if (substr ($msg->reply_to_message->text, length ($greetphrase)) eq $greetphrase) {
 				my $match = 0;
 				my @hello = (
 					'Дратути, ',
@@ -326,11 +330,12 @@ sub __on_msg {
 			$phrase =~ s/$pat2//g;
 
 			# Попробуем сгенерить ответ
-			my $rmsg = clone ($redismsg);
-			$rmsg->{mode}    = 'public';
-			$rmsg->{message} = $phrase;
-			$rmsg->{userid}  = 0 + $userid;
-			$rmsg->{chatid}  = 0 + $chatid;
+			my $rmsg                = clone ($redismsg);
+			$rmsg->{mode}           = 'public';
+			$rmsg->{message}        = $phrase;
+			$rmsg->{userid}         = 0 + $userid;
+			$rmsg->{chatid}         = 0 + $chatid;
+			$rmsg->{misc}->{answer} = 1;
 
 			my $pubsub = $main::REDIS->pubsub;
 
@@ -340,7 +345,7 @@ sub __on_msg {
 
 			return;
 		# Если текст похож на команду, усылаем его в BotLib.pm
-		} elsif (substr ($text, 0, 1) eq $csign) {
+		} elsif (substr ($text, 0, length ($csign)) eq $csign) {
 			$reply = Command ($self, $msg, $text, $chatid);
 		# Похоже кто-то написал наше имя в чятике, но ничего не захотел дописывать к нему
 		} elsif (
@@ -356,10 +361,11 @@ sub __on_msg {
 			my $qname = quotemeta ('@' . $myusername);
 			my $qtname = quotemeta $myfullname;
 
-			my $rmsg = clone ($redismsg);
-			$rmsg->{mode}    = 'public';
-			$rmsg->{userid}  = 0 + $userid;
-			$rmsg->{chatid}  = 0 + $chatid;
+			my $rmsg                = clone ($redismsg);
+			$rmsg->{mode}           = 'public';
+			$rmsg->{userid}         = 0 + $userid;
+			$rmsg->{chatid}         = 0 + $chatid;
+			$rmsg->{misc}->{answer} = 1;
 
 			# Сообщение обращено к боту
 			if ((lc ($text) =~ /^${qname}[\,|\:]? (.+)/) or (lc ($text) =~ /^${qtname}[\,|\:]? (.+)/)){

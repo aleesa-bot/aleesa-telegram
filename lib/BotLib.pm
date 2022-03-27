@@ -40,9 +40,11 @@ sub Command {
 
 	my $reply;
 	my ($userid, $username, $fullname, $highlight, $visavi) = Highlight ($msg);
-	my $rmsg = clone ($redismsg);
-	$rmsg->{userid}  = 0 + $userid;
-	$rmsg->{chatid}  = 0 + $chatid;
+
+	my $rmsg                = clone ($redismsg);
+	$rmsg->{userid}         = 0 + $userid;
+	$rmsg->{chatid}         = 0 + $chatid;
+	$rmsg->{misc}->{answer} = 1;
 
 	if ($chatid >= 0) {
 		$rmsg->{mode}    = 'private';
@@ -50,7 +52,7 @@ sub Command {
 		$rmsg->{mode}    = 'public';
 	}
 
-	my $cmd = substr $text, 1;
+	my $cmd = substr $text, length ($csign);
 
 	# Проверка #1 на админское разрешение некоторых команд
 	my @cmds = qw (tits boobs tities boobies сиси сисечки);
