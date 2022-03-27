@@ -37,10 +37,10 @@ sub redis_parse_message {
 		$message->{parse_mode} = 'Markdown';
 	}
 
-	$message->{chat_id} = $m->{chatid};
+	$message->{chat_id} = 0 + $m->{chatid};
 	$message->{text} = $m->{message};
 
-	my $can_talk = Teapot::Bot::Object::ChatPermissions->canTalk ($main::TGM, $m->{chatid});
+	my $can_talk = Teapot::Bot::Object::ChatPermissions->canTalk ($main::TGM, 0 + $m->{chatid});
 
 	if ($can_talk) {
 		# Результат этого действия нас не сильно волнует, т.к. если будет ошибка, то в лог попадёт трейс
