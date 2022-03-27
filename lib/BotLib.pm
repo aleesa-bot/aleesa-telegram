@@ -80,7 +80,7 @@ sub Command {
 	@cmds = qw (ping пинг пинх pong понг понх coin монетка roll dice кости ver version версия хэлп halp kde кде lat
 	            лат friday пятница proverb пословица fortune фортунка f ф anek анек анекдот buni cat кис drink праздник fox лис
 	            frog лягушка horse лошадь лошадка monkeyuser owl сова сыч rabbit bunny кролик snail улитка tits boobs tities
-	            boobies сиси сисечки butt booty ass попа попка xkcd dig копать fish fishing рыба рыбка рыбалка);
+	            boobies сиси сисечки butt booty ass попа попка xkcd dig копать fish fishing рыба рыбка рыбалка karma карма);
 
 	my $bingo = 0;
 
