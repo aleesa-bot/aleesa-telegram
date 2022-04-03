@@ -23,13 +23,8 @@ sub trim {
 		return $str;
 	}
 
-	while (substr ($str, 0, 1) =~ /^\s$/xms) {
-		$str = substr $str, 1;
-	}
-
-	while (substr ($str, -1, 1) =~ /^\s$/xms) {
-		chop $str;
-	}
+	$str =~ s/^\s+//;
+	$str =~ s/\s+$//;
 
 	return $str;
 }
