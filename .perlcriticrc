@@ -144,3 +144,6 @@ max_length = 200
 # This is problematic
 
 [-Miscellanea::ProhibitUnrestrictedNoCritic]
+
+[-RegularExpressions::ProhibitFixedStringMatches]
+# no, just no. I'm too lazy to everytime check string length before substr

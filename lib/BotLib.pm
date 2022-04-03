@@ -94,8 +94,7 @@ sub Command {
 	}
 
 	# Поиск "сложных" команд во входящем сообщении
-	if (($cmd =~ /^w\s/u) || ($cmd =~ /^п\s/u) || ($cmd =~ /^weather\s/u) || ($cmd =~ /^погода\s/u) ||
-	    ($cmd =~ /^погодка\s/u) || ($cmd =~ /^погадка\s/u) || ($cmd =~ /^karma\s/u) || ($cmd =~ /карма\s/u)) {
+	if ($cmd =~ /^(w|п|weather|погода|погодка|погадка|karma|карма)\s+/) { ## no critic (RegularExpressions::ProhibitComplexRegexes)
 		$bingo = 1;
 	}
 
@@ -143,7 +142,7 @@ sub Command {
 			$c->{'redis_router_channel'} => $rmsg,
 		);
 	# Если команда не найдена, но строка подозрительно напоминает команду help
-	} elsif (substr ($text, length ('help')) eq 'help'  ||  substr ($text, length ('помощь')) eq 'помощь') {
+	} elsif ($cmd =~ /^(help|помощь)$/u) {
 		$reply = << "MYHELP";
 ```
 ${csign}help | ${csign}помощь             - список команд
@@ -184,8 +183,8 @@ ${csign}karma фраза | ${csign}карма фраза - посмотреть 
 MYHELP
 		$msg->replyMd ($reply);
 		return;
-	# Если строка не найдена, но это команда admin
-	} elsif (substr ($text, length ($csign)) eq 'admin'  ||  substr ($text, length ($csign)) eq 'админ') {
+	# Если команда не найдена, но это команда admin
+	} elsif ($cmd =~ /^(admin|админ)$/u) {
 		my $member = $self->getChatMember ({ 'chat_id' => $msg->chat->id, 'user_id' => $msg->from->id });
 
 		# Это должно показываться только админам чата
@@ -220,22 +219,21 @@ MYADMIN
 
 		return;
 	# Если строка не найдена, но это команда admin с параметрами
-	} elsif ((substr ($text, length ($csign), length ('admin')) eq 'admin'  ||  substr ($text, length ($csign), length ('админ')) eq 'админ') && (length ($text) >= 8)) {
+	} elsif ($cmd =~ /^admin\s+.+$/u  ||  $cmd =~ /^админ\s+.+$/u) {
 		my $member = $self->getChatMember ({ 'chat_id' => $msg->chat->id, 'user_id' => $msg->from->id });
 
 		# Это должно показываться только админам чата
 		if (($member->status eq 'administrator') || ($member->status eq 'creator')) {
 			# Вынем субкоманду, это первый аргумент команды admin
-			my $command = trim (substr $text, 7);
-			$cmd = undef;
-			my $args;
-			($cmd, $args) = split /\s+/, $command, 2;
+			$cmd =~ /^(admin|админ)\s+(.+)$/u;
+			my $command = trim ($2); ## no critic (RegularExpressions::ProhibitCaptureWithoutTest)
+			my ($subcmd, $args) = split /\s+/, $command, 2;
 
 			# Субкоманды не нашлось, ну и какбэ досвидонья
-			if ($cmd eq '') {
+			if ($subcmd eq '') {
 				return;
 			# Субкоманда censor...
-			} elsif ($cmd eq 'censor' || $cmd eq 'ценз') {
+			} elsif ($subcmd eq 'censor' || $subcmd eq 'ценз') {
 				# Censor с аргументами
 				if (defined ($args) && ($args ne '')) {
 					my ($msgType, $toggle) = split /\s/, $args, 2;
@@ -258,7 +256,7 @@ MYADMIN
 					$reply = ListForbidden ($chatid);
 				}
 			# Хотим ли мы показывать фортунку с утра
-			} elsif ($cmd eq 'fortune' || $cmd eq 'фортунка') {
+			} elsif ($subcmd eq 'fortune' || $subcmd eq 'фортунка') {
 				if (defined $args) {
 					if ($args == 1) {
 						$reply = FortuneToggle ($chatid, 1);
@@ -269,7 +267,7 @@ MYADMIN
 					$reply = FortuneStatus ($chatid);
 				}
 			# Хотим ли мы удалять "сообщения от каналов"
-			} elsif ($cmd eq 'chan_msg') {
+			} elsif ($subcmd eq 'chan_msg') {
 				if (defined $args) {
 					if ($args == 1) {
 						$reply = ChanMsgToggle ($chatid, 1);
@@ -280,7 +278,7 @@ MYADMIN
 					$reply = ChanMsgStatus ($chatid);
 				}
 			# Приветствуем ли мы новых участников чата
-			} elsif ($cmd eq 'greet' || $cmd eq 'приветствие') {
+			} elsif ($subcmd eq 'greet' || $subcmd eq 'приветствие') {
 				if (defined $args) {
 					if ($args == 1) {
 						$reply = GreetMsgToggle ($chatid, 1);
@@ -290,7 +288,7 @@ MYADMIN
 				} else {
 					$reply = GreetMsgStatus ($chatid);
 				}
-			} elsif ($cmd eq 'goodbye' || $cmd eq 'прощание') {
+			} elsif ($subcmd eq 'goodbye' || $subcmd eq 'прощание') {
 				if (defined $args) {
 					if ($args == 1) {
 						$reply = GoodbyeMsgToggle ($chatid, 1);
@@ -301,7 +299,7 @@ MYADMIN
 					$reply = GoodbyeMsgStatus ($chatid);
 				}
 			# Работает ли плагин oboobs в чатике
-			} elsif ($cmd eq 'oboobs') {
+			} elsif ($subcmd eq 'oboobs') {
 				if (defined $args) {
 					if ($args == 1) {
 						$reply = PluginToggle ($chatid, 'oboobs', 1);
@@ -312,7 +310,7 @@ MYADMIN
 					$reply = PluginStatus ($chatid, 'oboobs');
 				}
 			# Работает ли плагин obutts в чатике
-			} elsif ($cmd eq 'obutts') {
+			} elsif ($subcmd eq 'obutts') {
 				if (defined $args) {
 					if ($args == 1) {
 						$reply = PluginToggle ($chatid, 'obutts', 1);
