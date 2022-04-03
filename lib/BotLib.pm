@@ -143,7 +143,7 @@ sub Command {
 			$c->{'redis_router_channel'} => $rmsg,
 		);
 	# Если команда не найдена, но строка подозрительно напоминает команду help
-	} elsif (substr ($text, 1) eq 'help'  ||  substr ($text, 1) eq 'помощь') {
+	} elsif (substr ($text, length ('help')) eq 'help'  ||  substr ($text, length ('помощь')) eq 'помощь') {
 		$reply = << "MYHELP";
 ```
 ${csign}help | ${csign}помощь             - список команд
@@ -185,7 +185,7 @@ MYHELP
 		$msg->replyMd ($reply);
 		return;
 	# Если строка не найдена, но это команда admin
-	} elsif (substr ($text, 1) eq 'admin'  ||  substr ($text, 1) eq 'админ') {
+	} elsif (substr ($text, length ($csign)) eq 'admin'  ||  substr ($text, length ($csign)) eq 'админ') {
 		my $member = $self->getChatMember ({ 'chat_id' => $msg->chat->id, 'user_id' => $msg->from->id });
 
 		# Это должно показываться только админам чата
@@ -220,7 +220,7 @@ MYADMIN
 
 		return;
 	# Если строка не найдена, но это команда admin с параметрами
-	} elsif ((substr ($text, 1, 5) eq 'admin'  ||  substr ($text, 1, 5) eq 'админ') && (length ($text) >= 8)) {
+	} elsif ((substr ($text, length ($csign), length ('admin')) eq 'admin'  ||  substr ($text, length ($csign), length ('админ')) eq 'админ') && (length ($text) >= 8)) {
 		my $member = $self->getChatMember ({ 'chat_id' => $msg->chat->id, 'user_id' => $msg->from->id });
 
 		# Это должно показываться только админам чата
