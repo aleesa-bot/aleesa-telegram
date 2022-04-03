@@ -31,6 +31,14 @@ my $myfullname;
 
 has token => $c->{telegrambot}->{token};
 
+my @introduce_greet = (
+	'Дратути',
+	'Дарована',
+	'Доброе утро, день или вечер',
+	'Добро пожаловать в наше скромное коммунити',
+	'Наше вам с кисточкой тут, на канальчике',
+);
+
 my $redismsg->{from} = 'telegram';
 $redismsg->{plugin}  = 'telegram';
 $redismsg->{misc}->{answer} = 1;
@@ -128,24 +136,17 @@ sub __on_msg {
 
 	# Newcommer event, greet our new member and suggest to introduce themself.
 	if ($msg->can ('new_chat_members') && defined ($msg->new_chat_members)) {
-
 		unless (GreetMsgEnabled ($chatid)) {
 			return;
 		}
 
+		# Новые юзеры пачками появляются, только если их кто-то добавил через клиента
 		my @members;
-		my @introduce = (
-			'Дратути',
-			'Дарована',
-			'Доброе утро, день или вечер',
-			'Добро пожаловать в наше скромное коммунити',
-			'Наше вам с кисточкой тут, на канальчике',
-		);
 
 		foreach my $member (@{$msg->new_chat_members}) {
 			my $member_str = '';
 
-			# avoid naming people by spacing symbols, or empty names
+			# Избегаем именования по пробельному символу
 			if ($member->can ('first_name') && defined ($member->first_name) && $member->first_name !~ /^\s+$/ui) {
 				$member_str .= $member->first_name;
 
@@ -155,10 +156,10 @@ sub __on_msg {
 			} else {
 				if ($member->can ('last_name') && defined ($member->last_name) && $member->last_name !~ /^\s+$/ui) {
 					$member_str .= ' ' . $member->last_name;
-				# username must be uniq and should contain only english letters and numbers, so...
+				# Username - это у нас валидная строка из только английских символов
 				} elsif ($member->can ('username') && defined ($member->username)) {
 					$member_str .= '@' . $member->username;
-				# fallback to id if uose trying to be smartass and use only spacing chars in it's firstname and/or lastname
+				# Если у юзера нету подходящих имени, фамилии или username, будем пользовать его id
 				} else {
 					$member_str .= $member->id;
 				}
@@ -169,9 +170,18 @@ sub __on_msg {
 
 		if ($#members > 1) {
 			my $lastone = pop @members;
-			$phrase = sprintf '%s, %s и %s. Представьтес, пожалуйста, и расскажите, что вас сюда привело.', $introduce[irand ($#introduce + 1)], join (', ', @members), $lastone;
+			$phrase = sprintf (
+				'%s, %s и %s. Представьтес, пожалуйста, и расскажите, что вас сюда привело.',
+				$introduce_greet[irand ($#introduce_greet + 1)],
+				join (', ', @members),
+				$lastone,
+			);
 		} else {
-			$phrase = sprintf '%s, %s. Представьтес, пожалуйста, и расскажите, что вас сюда привело.', $introduce[irand ($#introduce + 1)], $members[0];
+			$phrase = sprintf (
+				'%s, %s. Представьтес, пожалуйста, и расскажите, что вас сюда привело.',
+				$introduce_greet[irand ($#introduce_greet + 1)],
+				$members[0],
+			);
 		}
 
 		BotSleep $msg;
@@ -221,7 +231,8 @@ sub __on_msg {
 		$msg->replyMd ($phrase);
 		return;
 	}
-# is this a 1-on-1 ?
+
+	# is this a 1-on-1 ?
 	if ($msg->chat->type eq 'private') {
 		unless (defined $msg->text) {
 			return;
@@ -259,7 +270,7 @@ sub __on_msg {
 			$log->debug (sprintf ('[DEBUG] Private chat bot reply to %s: %s', $vis_a_vi, $reply));
 			$msg->reply ($reply);
 		}
-# group chat
+	# group chat
 	} elsif (($msg->chat->type eq 'supergroup') or ($msg->chat->type eq 'group')) {
 		my $reply;
 
@@ -305,18 +316,10 @@ sub __on_msg {
 			# Если новый участник чата ответил на наше приветствие, проигнорируем его ответ (и попробуем сойти за
 			# человека :)
 			my $greetphrase = 'Представьтес, пожалуйста, и расскажите, что вас сюда привело.';
-			if (substr ($msg->reply_to_message->text, length ($greetphrase)) eq $greetphrase) {
-				my $match = 0;
-				my @hello = (
-					'Дратути, ',
-					'Дарована, ',
-					'Доброе утро, день или вечер, ',
-					'Добро пожаловать в наше скромное коммунити, ',
-					'Наше вам с кисточкой тут, на канальчике, ',
-				);
 
-				foreach my $hi (@hello) {
-					if (substr ($msg->reply_to_message->text, 0, length $hi) eq $hi) {
+			if ($msg->reply_to_message->text =~ /\Q$greetphrase\E$/u) {
+				foreach my $hi (@introduce_greet) {
+					if ($msg->reply_to_message->text =~ /^\Q$hi\E\, /u) {
 						return;
 					}
 				}
@@ -417,7 +420,7 @@ sub __on_msg {
 			$log->debug (sprintf ('[DEBUG] In public chat %s (%s) bot is not required to reply to %s', $chatname, $chatid, $vis_a_vi));
 		}
 
-# should be channel, so we can't talk
+	# should be channel, so we can't talk
 	} else {
 		return;
 	}
