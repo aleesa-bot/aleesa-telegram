@@ -243,7 +243,7 @@ sub __on_msg {
 		# Ответ по-умолчанию
 		my $reply = 'Давайте ещё пообщаемся, а то я ещё не научилась от вас плохому.';
 
-		if (substr ($text, 0, length ($csign)) eq $csign) {
+		if ((length $text > length $csign)  &&  substr ($text, 0, length ($csign)) eq $csign) {
 			# Если текст похож на команду, усылаем его в BotLib.pm
 			$reply = Command ($self, $msg, $text, $userid);
 		} else {
@@ -348,7 +348,7 @@ sub __on_msg {
 
 			return;
 		# Если текст похож на команду, усылаем его в BotLib.pm
-		} elsif (substr ($text, 0, length ($csign)) eq $csign) {
+		} elsif ((length $text > length $csign)  &&  substr ($text, 0, length ($csign)) eq $csign) {
 			$reply = Command ($self, $msg, $text, $chatid);
 		# Похоже кто-то написал наше имя в чятике, но ничего не захотел дописывать к нему
 		} elsif (
