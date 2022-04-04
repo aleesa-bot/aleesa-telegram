@@ -55,6 +55,7 @@ sub __cron {
 	$rmsg->{message}              = sprintf '%sf', $c->{telegrambot}->{csign};
 	$rmsg->{misc}->{msg_format}   = 1;
 	$rmsg->{misc}->{answer}       = 1;
+	$rmsg->{misc}->{good_morning} = 1;
 
 	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime (time);
 
