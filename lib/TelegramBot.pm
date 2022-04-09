@@ -42,7 +42,7 @@ my @introduce_greet = (
 my $redismsg->{from} = 'telegram';
 $redismsg->{plugin}  = 'telegram';
 $redismsg->{misc}->{answer} = 1;
-$redismsg->{misc}->{csign} = $c->{telegrambot}->{csign};
+$redismsg->{misc}->{csign} = "$c->{telegrambot}->{csign}";
 $redismsg->{misc}->{msg_format} = 0;
 $redismsg->{misc}->{fwd_cnt} = 1;
 
@@ -70,9 +70,9 @@ sub __cron {
 
 	if ($hour == 8 && ($min >= 0 && $min <= 14)) {
 		foreach my $enabledfortunechat (FortuneToggleList ()) {
-			# Set it to number, explicitly, maybe it will help to avoid stringification values in output json
-			$rmsg->{userid}  = 0 + $enabledfortunechat;
-			$rmsg->{chatid}  = 0 + $enabledfortunechat;
+			# Set it to strings, explicitly
+			$rmsg->{userid}  = "$enabledfortunechat";
+			$rmsg->{chatid}  = "$enabledfortunechat";
 
 			$pubsub->json ($c->{'redis_router_channel'})->notify (
 				$c->{'redis_router_channel'} => $rmsg,
@@ -250,9 +250,10 @@ sub __on_msg {
 		} else {
 			my $rmsg                = clone ($redismsg);
 			$rmsg->{mode}           = 'private';
-			$rmsg->{message}        = $text;
-			$rmsg->{userid}         = 0 + $userid;
-			$rmsg->{chatid}         = 0 + $userid;
+			$rmsg->{message}        = "$text";
+			# Set it to strings, explicitly
+			$rmsg->{userid}         = "$userid";
+			$rmsg->{chatid}         = "$userid";
 			$rmsg->{misc}->{answer} = 1;
 
 			my $pubsub = $main::REDIS->pubsub;
@@ -336,9 +337,10 @@ sub __on_msg {
 			# Попробуем сгенерить ответ
 			my $rmsg                = clone ($redismsg);
 			$rmsg->{mode}           = 'public';
-			$rmsg->{message}        = $phrase;
-			$rmsg->{userid}         = 0 + $userid;
-			$rmsg->{chatid}         = 0 + $chatid;
+			$rmsg->{message}        = "$phrase";
+			# Set it to strings, explicitly
+			$rmsg->{userid}         = "$userid";
+			$rmsg->{chatid}         = "$chatid";
 			$rmsg->{misc}->{answer} = 1;
 
 			my $pubsub = $main::REDIS->pubsub;
@@ -367,26 +369,26 @@ sub __on_msg {
 
 			my $rmsg                = clone ($redismsg);
 			$rmsg->{mode}           = 'public';
-			$rmsg->{userid}         = 0 + $userid;
-			$rmsg->{chatid}         = 0 + $chatid;
+			# Set it to strings, explicitly
+			$rmsg->{userid}         = "$userid";
+			$rmsg->{chatid}         = "$chatid";
 			$rmsg->{misc}->{answer} = 1;
 
 			# Сообщение обращено к боту
 			if ((lc ($text) =~ /^${qname}[\,|\:]? (.+)/) or (lc ($text) =~ /^${qtname}[\,|\:]? (.+)/)){
 				$phrase = $1;
-				$rmsg->{message} = $phrase;
+				$rmsg->{message} = "$phrase";
 			# Бота упомянули по имени
 			} elsif ((lc ($text) =~ /.+ ${qname}[\,|\!|\?|\.| ]/) or (lc ($text) =~ / $qname$/)) {
 				$phrase = $text;
-				$rmsg->{message} = $phrase;
+				$rmsg->{message} = "$phrase";
 			# Бота упомянули по телеграммному имени
 			} elsif ((lc ($text) =~ /.+ ${qtname}[\,|\!|\?|\.| ]/) or (lc ($text) =~ / $qtname$/)) {
 				$phrase = $text;
 
-				$rmsg->{message} = $phrase;
-
+				$rmsg->{message} = "$phrase";
 			} else {
-				$rmsg->{message} = $text;
+				$rmsg->{message} = "$text";
 				$rmsg->{misc}->{answer} = 0;
 			}
 

@@ -38,7 +38,7 @@ sub redis_parse_message {
 	}
 
 	$message->{chat_id} = 0 + $m->{chatid};
-	$message->{text} = $m->{message};
+	$message->{text} = "$m->{message}";
 
 	my $can_talk = Teapot::Bot::Object::ChatPermissions->canTalk ($main::TGM, 0 + $m->{chatid});
 

@@ -28,7 +28,7 @@ my $csign = $c->{telegrambot}->{csign};
 my $redismsg->{from} = 'telegram';
 $redismsg->{plugin}  = 'telegram';
 $redismsg->{misc}->{answer} = 1;
-$redismsg->{misc}->{csign} = $c->{telegrambot}->{csign};
+$redismsg->{misc}->{csign} = "$c->{telegrambot}->{csign}";
 $redismsg->{misc}->{msg_format} = 0;
 $redismsg->{misc}->{fwd_cnt} = 1;
 
@@ -42,8 +42,8 @@ sub Command {
 	my ($userid, $username, $fullname, $highlight, $visavi) = Highlight ($msg);
 
 	my $rmsg                = clone ($redismsg);
-	$rmsg->{userid}         = 0 + $userid;
-	$rmsg->{chatid}         = 0 + $chatid;
+	$rmsg->{userid}         = "$userid";
+	$rmsg->{chatid}         = "$chatid";
 	$rmsg->{misc}->{answer} = 1;
 
 	if ($chatid >= 0) {
@@ -100,7 +100,7 @@ sub Command {
 
 	# Если команда найдена...
 	if ($bingo) {
-		$rmsg->{message} = $text;
+		$rmsg->{message} = "$text";
 		$self->log->debug ('[DEBUG] Sending message to redis ' . Dumper ($rmsg));
 
 		# Для некоторых команд мы хотим получать форматированный вывод
@@ -123,7 +123,7 @@ sub Command {
 		while (my $check = pop @cmds) {
 			if ($cmd eq $check) {
 				$rmsg->{misc}->{msg_format} = 1;
-				$rmsg->{misc}->{username} = $highlight;
+				$rmsg->{misc}->{username} = "$highlight";
 				last;
 			}
 		}
@@ -181,11 +181,11 @@ ${csign}karma фраза | ${csign}карма фраза - посмотреть 
 Но на самом деле я бот больше для общения, чем для исполнения команд.
 Поговоришь со мной?
 MYHELP
-		$msg->replyMd ($reply);
+		$msg->replyMd ("$reply");
 		return;
 	# Если команда не найдена, но это команда admin
 	} elsif ($cmd =~ /^(admin|админ)$/u) {
-		my $member = $self->getChatMember ({ 'chat_id' => $msg->chat->id, 'user_id' => $msg->from->id });
+		my $member = $self->getChatMember ({ 'chat_id' => 0 + $msg->chat->id, 'user_id' => 0 + $msg->from->id });
 
 		# Это должно показываться только админам чата
 		if (($member->status eq 'administrator') || ($member->status eq 'creator')) {
@@ -220,7 +220,7 @@ MYADMIN
 		return;
 	# Если строка не найдена, но это команда admin с параметрами
 	} elsif ($cmd =~ /^admin\s+.+$/u  ||  $cmd =~ /^админ\s+.+$/u) {
-		my $member = $self->getChatMember ({ 'chat_id' => $msg->chat->id, 'user_id' => $msg->from->id });
+		my $member = $self->getChatMember ({ 'chat_id' => 0 + $msg->chat->id, 'user_id' => 0 + $msg->from->id });
 
 		# Это должно показываться только админам чата
 		if (($member->status eq 'administrator') || ($member->status eq 'creator')) {
