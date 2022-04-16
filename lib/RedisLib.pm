@@ -44,7 +44,11 @@ sub redis_parse_message {
 
 	if ($can_talk) {
 		# Результат этого действия нас не сильно волнует, т.к. если будет ошибка, то в лог попадёт трейс
-		$main::TGM->sendMessage ($message);
+		my $r = $main::TGM->sendMessage ($message);
+
+		if ($r->{error}) {
+			log->error ("An error occured while sending message to chat $m->{chatid}");
+		}
 	}
 
 	return;
