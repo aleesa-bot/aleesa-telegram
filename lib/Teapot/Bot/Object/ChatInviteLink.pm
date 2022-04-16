@@ -9,7 +9,7 @@ use utf8;
 use Mojo::Base 'Teapot::Bot::Object::Base';
 use Teapot::Bot::Object::User ();
 
-$Teapot::Bot::Object::ChatInviteLink::VERSION = '0.022';
+$Teapot::Bot::Object::ChatInviteLink::VERSION = '0.023';
 
 has 'invite_link';
 has 'creator';
@@ -44,7 +44,7 @@ Teapot::Bot::Object::ChatInviteLink - The base class for Telegram message 'ChatI
 
 =head1 VERSION
 
-version 0.022
+version 0.023
 
 =head1 DESCRIPTION
 The base class for Telegram message 'ChatInviteLink' type.

@@ -10,7 +10,7 @@ use Mojo::Base 'Teapot::Bot::Object::Base';
 use Teapot::Bot::Object::EncryptedPassportElement ();
 use Teapot::Bot::Object::EncryptedCredentials ();
 
-$Teapot::Bot::Object::PassportData::VERSION = '0.022';
+$Teapot::Bot::Object::PassportData::VERSION = '0.023';
 
 has 'data'; # Array of EncryptedPassportElement
 has 'credentials'; # EncryptedCredentials
@@ -40,7 +40,7 @@ Teapot::Bot::Object::PassportData - The base class for Telegram 'PassportData' t
 
 =head1 VERSION
 
-version 0.022
+version 0.023
 
 =head1 DESCRIPTION
 The base class for Telegram 'PassportData' type objects.

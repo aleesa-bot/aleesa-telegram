@@ -8,22 +8,27 @@ use utf8;
 
 use Mojo::Base 'Teapot::Bot::Object::Base';
 use Teapot::Bot::Object::PhotoSize ();
+use Teapot::Bot::Object::MaskPosition ();
 
-$Teapot::Bot::Object::Sticker::VERSION = '0.022';
+$Teapot::Bot::Object::Sticker::VERSION = '0.023';
 
 has 'file_id';
+has 'file_unique_id';
 has 'width';
 has 'height';
+has 'is_animated';
+has 'is_video';
 has 'thumb'; # PhotoSize
 has 'emoji';
 has 'set_name';
-# has 'mask_position'; # XXX TODO
+has 'mask_position';
 has 'file_size';
 
 sub fields {
   return {
-           scalar                           => [ qw/file_id width height emoji set_name file_size/ ],
+           scalar                           => [ qw/file_id file_unique_id width height is_animated is_video emoji set_name file_size/ ],
            'Teapot::Bot::Object::PhotoSize' => [ qw/thumb/ ],
+           'Teapot::Bot::Object::MaskPosition' => [qw/mask_position/],
          };
 }
 
@@ -41,7 +46,7 @@ Teapot::Bot::Object::Sticker - The base class for Telegram message 'Sticker' typ
 
 =head1 VERSION
 
-version 0.022
+version 0.023
 
 =head1 DESCRIPTION
 The base class for Telegram message 'Sticker' type.

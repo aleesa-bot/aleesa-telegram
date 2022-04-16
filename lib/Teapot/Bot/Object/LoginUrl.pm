@@ -8,7 +8,7 @@ use utf8;
 
 use Mojo::Base 'Teapot::Bot::Object::Base';
 
-$Teapot::Bot::Object::LoginUrl::VERSION = '0.022';
+$Teapot::Bot::Object::LoginUrl::VERSION = '0.023';
 
 has 'url';
 has 'forward_text';
@@ -33,7 +33,7 @@ Teapot::Bot::Object::LoginUrl - The base class for Telegram 'LoginUrl' type obje
 
 =head1 VERSION
 
-version 0.022
+version 0.023
 
 =head1 DESCRIPTION
 The base class for Telegram 'LoginUrl' type objects.

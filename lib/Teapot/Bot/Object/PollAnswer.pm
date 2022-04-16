@@ -8,7 +8,7 @@ use utf8;
 
 use Mojo::Base 'Teapot::Bot::Object::Base';
 
-$Teapot::Bot::Object::PollAnswer::VERSION = '0.022';
+$Teapot::Bot::Object::PollAnswer::VERSION = '0.023';
 
 has 'poll_id';
 has 'user';
@@ -39,7 +39,7 @@ Teapot::Bot::Object::PollAnswer - The base class for Telegram 'PollAnswer' type 
 
 =head1 VERSION
 
-version 0.022
+version 0.023
 
 =head1 DESCRIPTION
 The base class for Telegram 'PollAnswer' type objects.

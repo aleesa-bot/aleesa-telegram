@@ -8,7 +8,7 @@ use utf8;
 
 use Mojo::Base 'Teapot::Bot::Object::Base';
 
-$Teapot::Bot::Object::EncryptedCredentials::VERSION = '0.022';
+$Teapot::Bot::Object::EncryptedCredentials::VERSION = '0.023';
 
 has 'data';
 has 'hash';
@@ -32,7 +32,7 @@ Teapot::Bot::Object::EncryptedCredentials - The base class for Telegram 'Encrypt
 
 =head1 VERSION
 
-version 0.022
+version 0.023
 
 =head1 DESCRIPTION
 The base class for Telegram 'EncryptedCredentials' type objects.

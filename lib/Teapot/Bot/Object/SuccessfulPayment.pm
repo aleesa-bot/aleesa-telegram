@@ -9,7 +9,7 @@ use utf8;
 use Mojo::Base 'Teapot::Bot::Object::Base';
 # use Teapot::Bot::Object::OrderInfo;
 
-$Teapot::Bot::Object::SuccessfulPayment::VERSION = '0.022';
+$Teapot::Bot::Object::SuccessfulPayment::VERSION = '0.023';
 
 has 'currency';
 has 'total_amount';
@@ -41,7 +41,7 @@ Teapot::Bot::Object::SuccessfulPayment - The base class for Telegram 'Successful
 
 =head1 VERSION
 
-version 0.022
+version 0.023
 
 =head1 DESCRIPTION
 The base class for Telegram 'SuccessfulPayment' type objects.

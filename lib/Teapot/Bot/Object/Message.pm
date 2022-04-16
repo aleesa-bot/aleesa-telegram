@@ -35,12 +35,12 @@ use Teapot::Bot::Object::InlineKeyboardMarkup ();
 use Teapot::Bot::Object::ProximityAlertTriggered ();
 use Teapot::Bot::Object::Dice ();
 use Teapot::Bot::Object::MessageAutoDeleteTimerChanged ();
-use Teapot::Bot::Object::VoiceChatScheduled ();
-use Teapot::Bot::Object::VoiceChatStarted ();
-use Teapot::Bot::Object::VoiceChatEnded ();
-use Teapot::Bot::Object::VoiceChatParticipantsInvited ();
+use Teapot::Bot::Object::VideoChatScheduled ();
+use Teapot::Bot::Object::VideoChatStarted ();
+use Teapot::Bot::Object::VideoChatEnded ();
+use Teapot::Bot::Object::VideoChatParticipantsInvited ();
 
-$Teapot::Bot::Object::Message::VERSION = '0.022';
+$Teapot::Bot::Object::Message::VERSION = '0.023';
 
 # basic message stuff
 has 'message_id';
@@ -96,10 +96,11 @@ has 'successful_payment'; # SuccessfulPayment
 has 'connected_website';
 has 'passport_data'; # PassportData
 has 'proximity_alert_triggered';
-has 'voice_chat_scheduled'; # Optional. Service message: voice chat scheduled
-has 'voice_chat_started'; # Optional. Service message: voice chat started
-has 'voice_chat_ended'; # Optional. Service message: voice chat ended
-has 'voice_chat_participants_invited'; # Optional. Service message: new participants invited to a voice chat
+has 'video_chat_scheduled';
+has 'video_chat_started';
+has 'video_chat_ended';
+has 'video_chat_participants_invited';
+has 'web_app_data';
 has 'reply_markup'; # Array of InlineKeyboardMarkup
 
 sub fields {
@@ -112,39 +113,40 @@ sub fields {
                                                             group_chat_created supergroup_chat_created
                                                             channel_chat_created migrate_to_chat_id
                                                             migrate_from_chat_id connected_website/],
-          'Teapot::Bot::Object::User'                 => [qw/from forward_from via_bot new_chat_members left_chat_member /],
+          'Teapot::Bot::Object::User'                   => [qw/from forward_from via_bot new_chat_members left_chat_member /],
 
-          'Teapot::Bot::Object::Chat'                 => [qw/sender_chat chat forward_from_chat/],
-          'Teapot::Bot::Object::Message'              => [qw/reply_to_message pinned_message/],
-          'Teapot::Bot::Object::MessageEntity'        => [qw/entities caption_entities /],
+          'Teapot::Bot::Object::Chat'                   => [qw/sender_chat chat forward_from_chat/],
+          'Teapot::Bot::Object::Message'                => [qw/reply_to_message pinned_message/],
+          'Teapot::Bot::Object::MessageEntity'          => [qw/entities caption_entities /],
 
-          'Teapot::Bot::Object::Audio'                => [qw/audio/],
-          'Teapot::Bot::Object::Document'             => [qw/document/],
-          'Teapot::Bot::Object::Animation'            => [qw/animation/],
-          'Teapot::Bot::Object::Game'                 => [qw/game/],
-          'Teapot::Bot::Object::PhotoSize'            => [qw/photo new_chat_photo/],
-          'Teapot::Bot::Object::Sticker'              => [qw/sticker/],
-          'Teapot::Bot::Object::Video'                => [qw/video/],
-          'Teapot::Bot::Object::Voice'                => [qw/voice/],
-          'Teapot::Bot::Object::VideoNote'            => [qw/video_note/],
+          'Teapot::Bot::Object::Audio'                  => [qw/audio/],
+          'Teapot::Bot::Object::Document'               => [qw/document/],
+          'Teapot::Bot::Object::Animation'              => [qw/animation/],
+          'Teapot::Bot::Object::Game'                   => [qw/game/],
+          'Teapot::Bot::Object::PhotoSize'              => [qw/photo new_chat_photo/],
+          'Teapot::Bot::Object::Sticker'                => [qw/sticker/],
+          'Teapot::Bot::Object::Video'                  => [qw/video/],
+          'Teapot::Bot::Object::Voice'                  => [qw/voice/],
+          'Teapot::Bot::Object::VideoNote'              => [qw/video_note/],
 
-          'Teapot::Bot::Object::Contact'              => [qw/contact/],
-          'Teapot::Bot::Object::Location'             => [qw/location/],
-          'Teapot::Bot::Object::Venue'                => [qw/venue/],
+          'Teapot::Bot::Object::Contact'                => [qw/contact/],
+          'Teapot::Bot::Object::Location'               => [qw/location/],
+          'Teapot::Bot::Object::Venue'                  => [qw/venue/],
 
-          'Teapot::Bot::Object::Poll'                 => [qw/poll/],
+          'Teapot::Bot::Object::Poll'                   => [qw/poll/],
 
-          'Teapot::Bot::Object::Invoice'              => [qw/invoice/],
-          'Teapot::Bot::Object::SuccessfulPayment'    => [qw/successful_payment/],
-          'Teapot::Bot::Object::PassportData'         => [qw/passport_data/],
-          'Teapot::Bot::Object::InlineKeyboardMarkup' => [qw/reply_markup/],
+          'Teapot::Bot::Object::Invoice'                => [qw/invoice/],
+          'Teapot::Bot::Object::SuccessfulPayment'      => [qw/successful_payment/],
+          'Teapot::Bot::Object::PassportData'           => [qw/passport_data/],
+          'Teapot::Bot::Object::InlineKeyboardMarkup'   => [qw/reply_markup/],
           'Teapot::Bot::Object::ProximityAlertTriggered' => [qw/proximity_alert_triggered/],
-          'Teapot::Bot::Object::Dice'                 => [qw/dice/],
+          'Teapot::Bot::Object::Dice'                   => [qw/dice/],
           'Teapot::Bot::Object::MessageAutoDeleteTimerChanged' => [qw/message_auto_delete_timer_changed/],
-          'Teapot::Bot::Object::VoiceChatScheduled'   => [qw/voice_chat_scheduled/],
-          'Teapot::Bot::Object::VoiceChatStarted'     => [qw/voice_chat_started/],
-          'Teapot::Bot::Object::VoiceChatEnded'       => [qw/voice_chat_ended/],
-          'Teapot::Bot::Object::VoiceChatParticipantsInvited' => [qw/voice_chat_participants_invited/],
+          'Teapot::Bot::Object::VideoChatScheduled'     => [qw/voice_chat_scheduled/],
+          'Teapot::Bot::Object::VideoChatStarted'       => [qw/voice_chat_started/],
+          'Teapot::Bot::Object::VideoChatEnded'         => [qw/voice_chat_ended/],
+          'Teapot::Bot::Object::VideoChatParticipantsInvited' => [qw/voice_chat_participants_invited/],
+          'Teapot::Bot::Object::WebAppData'             => [qw/web_app_data/],
   };
 }
 
@@ -210,7 +212,7 @@ Teapot::Bot::Object::Message - The base class for the Telegram type "Message"
 
 =head1 VERSION
 
-version 0.022
+version 0.023
 
 =head1 DESCRIPTION
 The base class for the Telegram type "Message".
@@ -223,6 +225,13 @@ attributes available for C<Teapot::Bot::Object::Message> objects.
 =head2 reply
 
 A convenience method to reply to a message with text.
+
+Will return the C<Teapot::Bot::Object::Message> object representing the message
+sent.
+
+=head2 replyMd
+
+A convenience method to reply to a message with markdown formatted text.
 
 Will return the C<Teapot::Bot::Object::Message> object representing the message
 sent.

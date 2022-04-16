@@ -28,7 +28,7 @@ use Teapot::Bot::Object::Chat ();
 use Teapot::Bot::Object::ChatMember ();
 use Teapot::Bot::Object::ChatInviteLink ();
 
-$Teapot::Bot::Brain::VERSION = '0.022';
+$Teapot::Bot::Brain::VERSION = '0.023';
 
 # base class for building telegram robots with Mojolicious
 has longpoll_time => 60;
@@ -716,7 +716,7 @@ Teapot::Bot::Brain - A base class to make your very own Telegram bot
 
 =head1 VERSION
 
-version 0.022
+version 0.023
 
 =head1 SYNOPSIS
 
