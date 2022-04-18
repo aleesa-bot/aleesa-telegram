@@ -37,7 +37,13 @@ sub redis_parse_message {
 		$message->{parse_mode} = 'Markdown';
 	}
 
-	$message->{chat_id} = 0 + $m->{chatid};
+	$message->{chat_id} = eval { 0 + $m->{chatid}; };
+
+	unless (defined $message->{chat_id}) {
+		log->error ('Incoming redis message is incorrect: chat id must be numeric value!');
+		return;
+	}
+
 	$message->{text} = "$m->{message}";
 
 	my $can_talk = Teapot::Bot::Object::ChatPermissions->canTalk ($main::TGM, 0 + $m->{chatid});

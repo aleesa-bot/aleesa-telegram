@@ -71,6 +71,10 @@ sub __cron {
 	if ($hour == 8 && ($min >= 0 && $min <= 14)) {
 		foreach my $enabledfortunechat (FortuneToggleList ()) {
 			# Set it to strings, explicitly
+			next unless (defined $enabledfortunechat);
+			next if ("$enabledfortunechat" eq '');
+			next if ("$enabledfortunechat" eq '0');
+
 			$rmsg->{userid}  = "$enabledfortunechat";
 			$rmsg->{chatid}  = "$enabledfortunechat";
 

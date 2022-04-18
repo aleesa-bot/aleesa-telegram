@@ -16,7 +16,7 @@ use BotLib::Conf qw (LoadConf);
 use BotLib::Admin qw (@ForbiddenMessageTypes GetForbiddenTypes AddForbiddenType
                       DelForbiddenType ListForbidden FortuneToggle FortuneStatus
                       PluginToggle PluginStatus PluginEnabled ChanMsgToggle ChanMsgStatus
-					  GreetMsgToggle GreetMsgStatus GoodbyeMsgToggle GoodbyeMsgStatus);
+                      GreetMsgToggle GreetMsgStatus GoodbyeMsgToggle GoodbyeMsgStatus);
 use BotLib::Util qw (trim);
 
 use version; our $VERSION = qw (1.1);
