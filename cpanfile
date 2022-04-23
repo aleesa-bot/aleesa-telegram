@@ -26,7 +26,7 @@ requires 'Log::Any::Adapter',       '==1.710';
 requires 'Log::Any::For::Std',      '==0.05';
 requires 'Math::Random::Secure',    '==0.080001';
 requires 'MIME::Base64',            '==3.16';
-requires 'Mojolicious',             '==9.22';
+requires 'Mojolicious',             '==9.24';
 # part of Mojolicious
 requires 'Mojo::Base',              '0';
 # part of Mojolicious
@@ -39,8 +39,6 @@ requires 'Mojo::UserAgent',         '0';
 requires 'open',                    '==1.12';
 # part of perl distribution
 requires 'POSIX',                   '0';
-# v0.07 does not pass tests if linked with hiredis >= 1.0, but as pub-sub works ok
-requires 'Protocol::Redis::XS',     '0';
 requires 'Text::Fuzzy',             '==0.29';
 requires 'URI::URL',                '==5.10';
 # part of perl distribution
