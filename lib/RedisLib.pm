@@ -44,6 +44,11 @@ sub redis_parse_message {
 		return;
 	}
 
+	if ($message->{chat_id} == 0) {
+		log->error ('Incoming redis message is incorrect: chat id must not be equal 0!');
+		return;
+	}
+
 	$message->{text} = "$m->{message}";
 
 	my $can_talk = Teapot::Bot::Object::ChatPermissions->canTalk ($main::TGM, 0 + $m->{chatid});
