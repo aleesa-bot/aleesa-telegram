@@ -191,6 +191,10 @@ MYHELP
 	} elsif ($cmd =~ /^(admin|админ)$/u) {
 		my $member = $self->getChatMember ({ 'chat_id' => 0 + $msg->chat->id, 'user_id' => 0 + $msg->from->id });
 
+		if ($member->{error}) {
+			return;
+		}
+
 		# Это должно показываться только админам чата
 		if (($member->status eq 'administrator') || ($member->status eq 'creator')) {
 			$reply = << "MYADMIN";
@@ -227,6 +231,10 @@ MYADMIN
 	} elsif ($cmd =~ /^admin\s+.+$/u  ||  $cmd =~ /^админ\s+.+$/u) {
 		my $member = $self->getChatMember ({ 'chat_id' => 0 + $msg->chat->id, 'user_id' => 0 + $msg->from->id });
 
+		if ($member->{error}) {
+			return;
+		}
+
 		# Мьютить через бота можно только создателю чятика
 		if (($member->status eq 'creator')  &&  $cmd =~ /^(admin|админ)\s+mute\s+(\d+)\s+(\d+)$/gu) {
 			my (undef, undef, $user_id_to_mute, $time) = split /\s+/, $cmd;
@@ -234,7 +242,7 @@ MYADMIN
 			# Бот должен быть админом, чтобы мьютить юзеров
 			my $me = $self->getMe ();
 
-			if (defined $me->{error}) {
+			if ($me->{error}) {
 				return;
 			}
 
@@ -245,7 +253,7 @@ MYADMIN
 			} else {
 				$me = $self->getChatMember ({'chat_id' => $chatid, 'user_id' => $me->id});
 
-				if (defined $me->{error}) {
+				if ($me->{error}) {
 					return;
 				}
 
@@ -253,7 +261,7 @@ MYADMIN
 					# Проверим, что такой юзер есть в чятике
 					my $chatMember = $self->getChatMember ({'chat_id' => $chatid, 'user_id' => $user_id_to_mute});
 
-					if (defined $chatMember->{error}) {
+					if ($chatMember->{error}) {
 						return;
 					}
 

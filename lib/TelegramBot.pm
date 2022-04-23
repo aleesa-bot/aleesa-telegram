@@ -103,8 +103,7 @@ sub __on_msg {
 	unless ($myid) {
 		my $myObj = $self->getMe ();
 
-		unless ($myObj) {
-			$log->error ('[ERROR] Unable to get chatid, API Error?');
+		if ($myObj->{error}) {
 			return;
 		}
 
