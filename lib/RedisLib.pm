@@ -6,9 +6,8 @@ use warnings;
 use utf8;
 use open qw (:std :utf8);
 
+use Data::Dumper qw (Dumper);
 use Log::Any qw ($log);
-# Чтобы "уж точно" использовать hiredis-биндинги, загрузим этот модуль перед Mojo::Redis
-use Protocol::Redis::XS ();
 use Mojo::Redis ();
 use Mojo::Redis::Connection ();
 
@@ -26,6 +25,8 @@ sub redis_parse_message {
 	my $m = shift;
 	my $message;
 
+	$log->debug ('Incoming redis message: ' . Dumper $m);
+
 	# Мы "не можем" отправлять сообщения в телеграм, если мы к нему не подключены
 	# (конечно, можем, но Teapot-lib предполагает, что объектик с чатом - это его собственность, а городить свой что-то
 	# не очень хочется)
@@ -40,12 +41,12 @@ sub redis_parse_message {
 	$message->{chat_id} = eval { 0 + $m->{chatid}; };
 
 	unless (defined $message->{chat_id}) {
-		log->error ('Incoming redis message is incorrect: chat id must be numeric value!');
+		$log->error ('Incoming redis message is incorrect: chat id must be numeric value!');
 		return;
 	}
 
 	if ($message->{chat_id} == 0) {
-		log->error ('Incoming redis message is incorrect: chat id must not be equal 0!');
+		$log->error ('Incoming redis message is incorrect: chat id must not be equal 0!');
 		return;
 	}
 
@@ -58,7 +59,7 @@ sub redis_parse_message {
 		my $r = $main::TGM->sendMessage ($message);
 
 		if ($r->{error}) {
-			log->error ("An error occured while sending message to chat $m->{chatid}");
+			$log->error ("An error occured while sending message to chat $m->{chatid}");
 		}
 	}
 

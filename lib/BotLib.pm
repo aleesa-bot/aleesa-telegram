@@ -9,8 +9,9 @@ use open qw (:std :utf8);
 use English qw ( -no_match_vars );
 
 use Clone qw (clone);
-use Math::Random::Secure qw (irand);
 use Data::Dumper qw (Dumper);
+use Log::Any qw ($log);
+use Math::Random::Secure qw (irand);
 
 use BotLib::Conf qw (LoadConf);
 use BotLib::Admin qw (@ForbiddenMessageTypes GetForbiddenTypes AddForbiddenType
@@ -25,17 +26,18 @@ our @EXPORT_OK = qw (Command Highlight BotSleep IsCensored);
 
 my $c = LoadConf ();
 my $csign = $c->{telegrambot}->{csign};
-my $redismsg->{from} = 'telegram';
-$redismsg->{plugin}  = 'telegram';
-$redismsg->{misc}->{answer} = 1;
-$redismsg->{misc}->{csign} = "$c->{telegrambot}->{csign}";
+
+my $redismsg->{from}            = 'telegram';
+$redismsg->{plugin}             = 'telegram';
+$redismsg->{misc}->{answer}     = 1;
+$redismsg->{misc}->{csign}      = "$c->{telegrambot}->{csign}";
 $redismsg->{misc}->{msg_format} = 0;
-$redismsg->{misc}->{fwd_cnt} = 1;
+$redismsg->{misc}->{fwd_cnt}    = 1;
 
 sub Command {
-	my $self = shift;
-	my $msg = shift;
-	my $text = shift;
+	my $self   = shift;
+	my $msg    = shift;
+	my $text   = shift;
 	my $chatid = shift;
 
 	my $reply;
@@ -135,6 +137,8 @@ sub Command {
 				last if ($ready);
 			} while (sleep 1);
 		}
+
+		$log->debug ('Outgoing redis message: ' . Dumper ($rmsg));
 
 		my $pubsub = $main::REDIS->pubsub;
 
@@ -270,8 +274,8 @@ MYADMIN
 								{
 									'chat_id' => 0 + $chatid,
 									'user_id' => 0 + $user_id_to_mute,
-									'until_date' => $time + time ()
-								}
+									'until_date' => $time + time (),
+								},
 							);
 
 							if ($result->{error}) {

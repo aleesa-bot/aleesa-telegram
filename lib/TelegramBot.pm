@@ -7,7 +7,9 @@ use warnings;
 use utf8;
 use open qw (:std :utf8);
 use English qw ( -no_match_vars );
+
 use Clone qw (clone);
+use Data::Dumper qw (Dumper);
 use Log::Any qw ($log);
 use Math::Random::Secure qw (irand);
 use Mojo::Base 'Teapot::Bot::Brain';
@@ -77,6 +79,8 @@ sub __cron {
 
 			$rmsg->{userid}  = "$enabledfortunechat";
 			$rmsg->{chatid}  = "$enabledfortunechat";
+
+			$log->debug ('Outgoing redis message: ' . Dumper ($rmsg));
 
 			$pubsub->json ($c->{'redis_router_channel'})->notify (
 				$c->{'redis_router_channel'} => $rmsg,
@@ -260,6 +264,15 @@ sub __on_msg {
 			$rmsg->{chatid}         = "$userid";
 			$rmsg->{misc}->{answer} = 1;
 
+			{
+				do {
+					my $ready = eval { $main::RCONN->is_connected; };
+					last if ($ready);
+				} while (sleep 1);
+			}
+
+			$log->debug ('Outgoing redis message: ' . Dumper ($rmsg));
+
 			my $pubsub = $main::REDIS->pubsub;
 
 			$pubsub->json ($c->{'redis_router_channel'})->notify (
@@ -347,6 +360,15 @@ sub __on_msg {
 			$rmsg->{chatid}         = "$chatid";
 			$rmsg->{misc}->{answer} = 1;
 
+			{
+				do {
+					my $ready = eval { $main::RCONN->is_connected; };
+					last if ($ready);
+				} while (sleep 1);
+			}
+
+			$log->debug ('Outgoing redis message: ' . Dumper ($rmsg));
+
 			my $pubsub = $main::REDIS->pubsub;
 
 			$pubsub->json ($c->{'redis_router_channel'})->notify (
@@ -395,6 +417,15 @@ sub __on_msg {
 				$rmsg->{message} = "$text";
 				$rmsg->{misc}->{answer} = 0;
 			}
+
+			{
+				do {
+					my $ready = eval { $main::RCONN->is_connected; };
+					last if ($ready);
+				} while (sleep 1);
+			}
+
+			$log->debug ('Outgoing redis message: ' . Dumper ($rmsg));
 
 			my $pubsub = $main::REDIS->pubsub;
 
