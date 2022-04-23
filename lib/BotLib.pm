@@ -27,12 +27,13 @@ our @EXPORT_OK = qw (Command Highlight BotSleep IsCensored);
 my $c = LoadConf ();
 my $csign = $c->{telegrambot}->{csign};
 
-my $redismsg->{from}            = 'telegram';
-$redismsg->{plugin}             = 'telegram';
-$redismsg->{misc}->{answer}     = 1;
-$redismsg->{misc}->{csign}      = "$c->{telegrambot}->{csign}";
-$redismsg->{misc}->{msg_format} = 0;
-$redismsg->{misc}->{fwd_cnt}    = 1;
+my $redismsg->{from}              = 'telegram';
+$redismsg->{plugin}               = 'telegram';
+$redismsg->{misc}->{answer}       = 1;
+$redismsg->{misc}->{csign}        = "$c->{telegrambot}->{csign}";
+$redismsg->{misc}->{msg_format}   = 0;
+$redismsg->{misc}->{fwd_cnt}      = 1;
+$redismsg->{misc}->{good_morning} = 0;
 
 sub Command {
 	my $self   = shift;
@@ -103,7 +104,6 @@ sub Command {
 	# Если команда найдена...
 	if ($bingo) {
 		$rmsg->{message} = "$text";
-		$self->log->debug ('[DEBUG] Sending message to redis ' . Dumper ($rmsg));
 
 		# Для некоторых команд мы хотим получать форматированный вывод
 		$#cmds = -1;
@@ -138,7 +138,7 @@ sub Command {
 			} while (sleep 1);
 		}
 
-		$log->debug ('Outgoing redis message: ' . Dumper ($rmsg));
+		$log->debug ('[DEBUG] Outgoing redis message: ' . Dumper ($rmsg));
 
 		my $pubsub = $main::REDIS->pubsub;
 

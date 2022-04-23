@@ -41,12 +41,13 @@ my @introduce_greet = (
 	'Наше вам с кисточкой тут, на канальчике',
 );
 
-my $redismsg->{from} = 'telegram';
-$redismsg->{plugin}  = 'telegram';
-$redismsg->{misc}->{answer} = 1;
-$redismsg->{misc}->{csign} = "$c->{telegrambot}->{csign}";
-$redismsg->{misc}->{msg_format} = 0;
-$redismsg->{misc}->{fwd_cnt} = 1;
+my $redismsg->{from}              = 'telegram';
+$redismsg->{plugin}               = 'telegram';
+$redismsg->{misc}->{answer}       = 1;
+$redismsg->{misc}->{csign}        = "$c->{telegrambot}->{csign}";
+$redismsg->{misc}->{msg_format}   = 0;
+$redismsg->{misc}->{fwd_cnt}      = 1;
+$redismsg->{misc}->{good_morning} = 0;
 
 sub __cron {
 	my $self = shift;
@@ -56,7 +57,6 @@ sub __cron {
 	# Press 'F' to pay respect
 	$rmsg->{message}              = sprintf '%sf', $c->{telegrambot}->{csign};
 	$rmsg->{misc}->{msg_format}   = 1;
-	$rmsg->{misc}->{answer}       = 1;
 	$rmsg->{misc}->{good_morning} = 1;
 
 	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime (time);
@@ -80,7 +80,7 @@ sub __cron {
 			$rmsg->{userid}  = "$enabledfortunechat";
 			$rmsg->{chatid}  = "$enabledfortunechat";
 
-			$log->debug ('Outgoing redis message: ' . Dumper ($rmsg));
+			$log->debug ('[DEBUG] Outgoing redis message: ' . Dumper ($rmsg));
 
 			$pubsub->json ($c->{'redis_router_channel'})->notify (
 				$c->{'redis_router_channel'} => $rmsg,
@@ -271,7 +271,7 @@ sub __on_msg {
 				} while (sleep 1);
 			}
 
-			$log->debug ('Outgoing redis message: ' . Dumper ($rmsg));
+			$log->debug ('[DEBUG] Outgoing redis message: ' . Dumper ($rmsg));
 
 			my $pubsub = $main::REDIS->pubsub;
 
@@ -367,7 +367,7 @@ sub __on_msg {
 				} while (sleep 1);
 			}
 
-			$log->debug ('Outgoing redis message: ' . Dumper ($rmsg));
+			$log->debug ('[DEBUG] Outgoing redis message: ' . Dumper ($rmsg));
 
 			my $pubsub = $main::REDIS->pubsub;
 
@@ -425,7 +425,7 @@ sub __on_msg {
 				} while (sleep 1);
 			}
 
-			$log->debug ('Outgoing redis message: ' . Dumper ($rmsg));
+			$log->debug ('[DEBUG] Outgoing redis message: ' . Dumper ($rmsg));
 
 			my $pubsub = $main::REDIS->pubsub;
 
