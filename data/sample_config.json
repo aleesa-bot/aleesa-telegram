@@ -2,13 +2,8 @@
     # Cachedir used not only for caches but for some settings and stats too.
     "cachedir" : "data/cache",
 
-    "gamestat" : {
-        "dir" : "data",
-        "gamestatdir" : "data/gamestat"
-    },
-
     # Required for debugging reasons, if commented out or not exist, no debug logging appears at all.
-    "log" : "/var/log/aleesa-telegram-bot/aleesa.log",
+    "log" : "/var/log/aleesa-telegram/debug.log",
 
     # Verbosity can be trace, debug, info (inform), notice, warning (warn), error (err), critical (crit, fatal), alert, emergency.
     # Currently implemented debug, info, notice, warn, error, fatal. Notice is default logging level.
@@ -16,10 +11,6 @@
 
     # Stuff for telegram itself.
     "telegrambot" : {
-
-        # Directory with per-conversation "brains".
-        "braindir" : "data/telegrambot-brains",
-
         # Prefix-sign for all commands. In many irc-bots (eggdrop/windrop) it is "." (dot), in sulci it was "!".
         # In telegram commands begin with "/" on the start of first (and only) line. In case of this bot you can define what to use.
         "csign" : "!",
@@ -30,10 +21,11 @@
     # Unprivileged user to run this bot from.
     "user" : "nobody",
 
-    "redis_server": "127.0.0.1",
+    "redis_server": "redis",
     "redis_port" : "6379",
     "redis_channels" : [
         "telegram"
     ],
+
     "redis_router_channel" : "misc"
 }
