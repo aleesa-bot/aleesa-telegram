@@ -191,24 +191,25 @@ MYHELP
 		if (($member->status eq 'administrator') || ($member->status eq 'creator')) {
 			$reply = << "MYADMIN";
 ```
-${csign}admin censor type # - где 1 - вкл, 0 - выкл цензуры для означенного типа сообщений
-${csign}админ ценз тип #    - где 1 - вкл, 0 - выкл цензуры для означенного типа сообщений
-${csign}admin censor        - показать список состояния типов сообщений
-${csign}админ ценз          - показать список состояния типов сообщений
-${csign}admin fortune #     - где 1 - вкл, 0 - выкл фортунку с утра
-${csign}admin фортунка #    - где 1 - вкл, 0 - выкл фортунку с утра
-${csign}admin fortune       - показываем ли с утра фортунку для чата
-${csign}admin фортунка      - показываем ли с утра фортунку для чата
-${csign}admin greet #       - где 1 - вкл, 0 - выкл приветствия новых участников чата
-${csign}admin приветствие # - где 1 - вкл, 0 - выкл приветствия новых участников чата
-${csign}admin greet         - приветствуем ли новых участников чата
-${csign}admin приветствие   - приветствуем ли новых участников чата
-${csign}admin oboobs #      - где 1 - вкл, 0 - выкл плагина oboobs
-${csign}admin oboobs        - показываем ли сисечки по просьбе участников чата (команды ${csign}tits, ${csign}tities, ${csign}boobs, ${csign}boobies, ${csign}сиси, ${csign}сисечки)
-${csign}admin obutts #      - где 1 - вкл, 0 - выкл плагина obutts
-${csign}admin obutts        - показываем ли попки по просьбе участников чата (команды ${csign}ass, ${csign}butt, ${csign}booty, ${csign}попа, ${csign}попка)
-${csign}admin chan_msg      - оставляем ли сообщения присланные от имени (других) каналов
-${csign}admin chan_msg #    - где 1 - оставляем, 0 - удаляем
+${csign}admin censor type #   - где 1 - вкл, 0 - выкл цензуры для означенного типа сообщений
+${csign}админ ценз тип #      - где 1 - вкл, 0 - выкл цензуры для означенного типа сообщений
+${csign}admin censor          - показать список состояния типов сообщений
+${csign}админ ценз            - показать список состояния типов сообщений
+${csign}admin fortune #       - где 1 - вкл, 0 - выкл фортунку с утра
+${csign}admin фортунка #      - где 1 - вкл, 0 - выкл фортунку с утра
+${csign}admin fortune         - показываем ли с утра фортунку для чата
+${csign}admin фортунка        - показываем ли с утра фортунку для чата
+${csign}admin greet #         - где 1 - вкл, 0 - выкл приветствия новых участников чата
+${csign}admin приветствие #   - где 1 - вкл, 0 - выкл приветствия новых участников чата
+${csign}admin greet           - приветствуем ли новых участников чата
+${csign}admin приветствие     - приветствуем ли новых участников чата
+${csign}admin oboobs #        - где 1 - вкл, 0 - выкл плагина oboobs
+${csign}admin oboobs          - показываем ли сисечки по просьбе участников чата (команды ${csign}tits, ${csign}tities, ${csign}boobs, ${csign}boobies, ${csign}сиси, ${csign}сисечки)
+${csign}admin obutts #        - где 1 - вкл, 0 - выкл плагина obutts
+${csign}admin obutts          - показываем ли попки по просьбе участников чата (команды ${csign}ass, ${csign}butt, ${csign}booty, ${csign}попа, ${csign}попка)
+${csign}admin chan_msg        - оставляем ли сообщения присланные от имени (других) каналов
+${csign}admin chan_msg #      - где 1 - оставляем, 0 - удаляем
+${csign}admin mute userid sec - выдаём mute указанному user-у на указанное количество секунд (от 30 сек до 1 года), доступно только создателю чата
 ```
 Типы сообщений:
 audio voice photo video animation sticker dice game poll document
@@ -222,8 +223,71 @@ MYADMIN
 	} elsif ($cmd =~ /^admin\s+.+$/u  ||  $cmd =~ /^админ\s+.+$/u) {
 		my $member = $self->getChatMember ({ 'chat_id' => 0 + $msg->chat->id, 'user_id' => 0 + $msg->from->id });
 
+		# Мьютить через бота можно только создателю чятика
+		if (($member->status eq 'creator')  &&  $cmd =~ /^(admin|админ)\s+mute\s+(\d+)\s+(\d+)$/gu) {
+			my (undef, undef, $user_id_to_mute, $time) = split /\s+/, $cmd;
+
+			# Бот должен быть админом, чтобы мьютить юзеров
+			my $me = $self->getMe ();
+
+			if (defined $me->{error}) {
+				return;
+			}
+
+			my $myId = $me->id;
+
+			if ($myId == $user_id_to_mute) {
+				$reply = 'Я не буду себя мьютить.';
+			} else {
+				$me = $self->getChatMember ({'chat_id' => $chatid, 'user_id' => $me->id});
+
+				if (defined $me->{error}) {
+					return;
+				}
+
+				if ($me->status eq 'administrator') {
+					# Проверим, что такой юзер есть в чятике
+					my $chatMember = $self->getChatMember ({'chat_id' => $chatid, 'user_id' => $user_id_to_mute});
+
+					if (defined $chatMember->{error}) {
+						return;
+					}
+
+					# Предположительно, юзер нашёлся
+					my $memberStatus = $chatMember->status;
+
+					if ($memberStatus eq 'creator') {
+						$reply = 'Ты поехал себя мьютить?';
+					} elsif ($memberStatus eq 'administrator') {
+						$reply = 'Админов мьютить не буду.';
+					} else {
+						if ($time < 30) {
+							$reply = 'Ты слишком добр.';
+						} elsif ($time > (60 * 60 * 24 * 366)) {
+							$reply = 'Мьют более чем на 366 дней - перманентный, ты слишком жесток, я так не играю.';
+						} else {
+							my $result = $self->banChatMember (
+								{
+									'chat_id' => 0 + $chatid,
+									'user_id' => 0 + $user_id_to_mute,
+									'until_date' => $time + time ()
+								}
+							);
+
+							if ($result->{error}) {
+								$reply = 'Что-то пошло не так, не получается замьютить.';
+							} else {
+								$reply = 'Готово.';
+							}
+						}
+					}
+				} else {
+					$reply = 'Я так пока не умею, я здесь не админ.'
+				}
+			}
+
 		# Это должно показываться только админам чата
-		if (($member->status eq 'administrator') || ($member->status eq 'creator')) {
+		} elsif (($member->status eq 'administrator') || ($member->status eq 'creator')) {
 			# Вынем субкоманду, это первый аргумент команды admin
 			$cmd =~ /^(admin|админ)\s+(.+)$/u;
 			my $command = trim ($2); ## no critic (RegularExpressions::ProhibitCaptureWithoutTest)
