@@ -142,10 +142,10 @@ sub fields {
           'Teapot::Bot::Object::ProximityAlertTriggered' => [qw/proximity_alert_triggered/],
           'Teapot::Bot::Object::Dice'                   => [qw/dice/],
           'Teapot::Bot::Object::MessageAutoDeleteTimerChanged' => [qw/message_auto_delete_timer_changed/],
-          'Teapot::Bot::Object::VideoChatScheduled'     => [qw/voice_chat_scheduled/],
-          'Teapot::Bot::Object::VideoChatStarted'       => [qw/voice_chat_started/],
-          'Teapot::Bot::Object::VideoChatEnded'         => [qw/voice_chat_ended/],
-          'Teapot::Bot::Object::VideoChatParticipantsInvited' => [qw/voice_chat_participants_invited/],
+          'Teapot::Bot::Object::VideoChatScheduled'     => [qw/video_chat_scheduled/],
+          'Teapot::Bot::Object::VideoChatStarted'       => [qw/video_chat_started/],
+          'Teapot::Bot::Object::VideoChatEnded'         => [qw/video_chat_ended/],
+          'Teapot::Bot::Object::VideoChatParticipantsInvited' => [qw/video_chat_participants_invited/],
           'Teapot::Bot::Object::WebAppData'             => [qw/web_app_data/],
   };
 }
