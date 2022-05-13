@@ -14,7 +14,7 @@ use Exporter qw (import);
 our @EXPORT_OK = qw (LoadConf);
 
 sub LoadConf {
-	my $c = 'data/config.json';
+	my $c = shift // 'data/config.json';
 	my $CH;
 
 	unless (open $CH, '<', $c) {
