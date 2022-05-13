@@ -36,7 +36,8 @@ requires 'Mojo::Redis',             '==3.27';
 requires 'Mojo::Redis::Connection', '0';
 # part of Mojolicious
 requires 'Mojo::UserAgent',         '0';
-requires 'open',                    '==1.12';
+# part of perl distribution
+requires 'open',                    '0';
 # part of perl distribution
 requires 'POSIX',                   '0';
 requires 'Text::Fuzzy',             '==0.29';
