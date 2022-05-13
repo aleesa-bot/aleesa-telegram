@@ -85,6 +85,9 @@ sub __cron {
 			$pubsub->json ($c->{'redis_router_channel'})->notify (
 				$c->{'redis_router_channel'} => $rmsg,
 			);
+
+			# Ratelimit this, just in case
+			sleep (1);
 		}
 	}
 
