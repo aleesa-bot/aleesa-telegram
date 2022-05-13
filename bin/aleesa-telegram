@@ -46,7 +46,12 @@ my $runAsUid = $UID;
 
 my $piddir = '/var/run/' . basename (abs_path ($PROGRAM_NAME));
 my $C = LoadConf ();
-my $loglevel = $C->{'loglevel'} // 'notice';
+my $loglevel = 'notice';
+
+if (defined $C->{'loglevel'}) {
+	$loglevel = $C->{'loglevel'};
+}
+
 my $logfile;
 
 if (defined $C->{'log'}) {
