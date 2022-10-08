@@ -217,7 +217,7 @@ ${csign}admin obutts #        - где 1 - вкл, 0 - выкл плагина o
 ${csign}admin obutts          - показываем ли попки по просьбе участников чата (команды ${csign}ass, ${csign}butt, ${csign}booty, ${csign}попа, ${csign}попка)
 ${csign}admin chan_msg        - оставляем ли сообщения присланные от имени (других) каналов
 ${csign}admin chan_msg #      - где 1 - оставляем, 0 - удаляем
-${csign}admin mute userid sec - выдаём mute указанному user-у на указанное количество секунд (от 30 сек до 1 года), доступно только создателю чата
+${csign}admin ban userid sec  - выдаём ban указанному user-у на указанное количество секунд (от 30 сек до 1 года), доступно только создателю чата
 ```
 Типы сообщений:
 audio voice photo video animation sticker dice game poll document
@@ -235,11 +235,11 @@ MYADMIN
 			return;
 		}
 
-		# Мьютить через бота можно только создателю чятика
-		if (($member->status eq 'creator')  &&  $cmd =~ /^(admin|админ)\s+mute\s+(\d+)\s+(\d+)$/gu) {
-			my (undef, undef, $user_id_to_mute, $time) = split /\s+/, $cmd;
+		# Банить через бота можно только создателю чятика
+		if (($member->status eq 'creator')  &&  $cmd =~ /^(admin|админ)\s+ban\s+(\d+)\s+(\d+)$/gu) {
+			my (undef, undef, $user_id_to_ban, $time) = split /\s+/, $cmd;
 
-			# Бот должен быть админом, чтобы мьютить юзеров
+			# Бот должен быть админом, чтобы банить юзеров
 			my $me = $self->getMe ();
 
 			if ($me->{error}) {
@@ -248,7 +248,7 @@ MYADMIN
 
 			my $myId = $me->id;
 
-			if ($myId == $user_id_to_mute) {
+			if ($myId == $user_id_to_ban) {
 				$reply = 'Я не буду себя мьютить.';
 			} else {
 				$me = $self->getChatMember ({'chat_id' => $chatid, 'user_id' => $me->id});
@@ -259,7 +259,7 @@ MYADMIN
 
 				if ($me->status eq 'administrator') {
 					# Проверим, что такой юзер есть в чятике
-					my $chatMember = $self->getChatMember ({'chat_id' => $chatid, 'user_id' => $user_id_to_mute});
+					my $chatMember = $self->getChatMember ({'chat_id' => $chatid, 'user_id' => $user_id_to_ban});
 
 					if ($chatMember->{error}) {
 						return;
@@ -269,25 +269,25 @@ MYADMIN
 					my $memberStatus = $chatMember->status;
 
 					if ($memberStatus eq 'creator') {
-						$reply = 'Ты поехал себя мьютить?';
+						$reply = 'Ты поехал себя банить?';
 					} elsif ($memberStatus eq 'administrator') {
-						$reply = 'Админов мьютить не буду.';
+						$reply = 'Админов банить не буду.';
 					} else {
 						if ($time < 30) {
 							$reply = 'Ты слишком добр.';
 						} elsif ($time > (60 * 60 * 24 * 366)) {
-							$reply = 'Мьют более чем на 366 дней - перманентный, ты слишком жесток, я так не играю.';
+							$reply = 'Бан более чем на 366 дней - перманентный, ты слишком жесток, я так не играю.';
 						} else {
 							my $result = $self->banChatMember (
 								{
 									'chat_id' => 0 + $chatid,
-									'user_id' => 0 + $user_id_to_mute,
+									'user_id' => 0 + $user_id_to_ban,
 									'until_date' => $time + time (),
 								},
 							);
 
 							if ($result->{error}) {
-								$reply = 'Что-то пошло не так, не получается замьютить.';
+								$reply = 'Что-то пошло не так, не получается забанить.';
 							} else {
 								$reply = 'Готово.';
 							}
