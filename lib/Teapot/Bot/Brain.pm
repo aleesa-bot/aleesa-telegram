@@ -11,6 +11,7 @@ use utf8;
 use English qw ( -no_match_vars );
 
 use Mojo::IOLoop ();
+use Mojo::JSON qw (true false);
 use Mojo::UserAgent ();
 use Carp qw/croak cluck confess/; # use croak where we return error up to app that supply something wrong
                                   # use cluck where we want to say that something bad but non-critical happen in
@@ -169,6 +170,7 @@ sub banChatMember {
   return;
 }
 
+
 sub unbanChatMember {
   my $self = shift;
   my $args = shift || {};
@@ -191,6 +193,43 @@ sub unbanChatMember {
   $send_args->{only_if_banned} = $args->{only_if_banned} if exists $args->{only_if_banned};
 
   my $url = "https://api.telegram.org/bot${token}/unbanChatMember";
+  my $api_response = $self->_post_request($url, $send_args);
+
+  return;
+}
+
+
+sub muteChatMember {
+  my $self = shift;
+  my $args = shift || {};
+
+  my $token = $self->token || croak 'No token supplied to muteChatMember?';
+  my $send_args = {};
+
+  unless ($args->{chat_id}) {
+    cluck 'No chat_id supplied to muteChatMember()';
+    return {'error' => 1};
+  }
+
+  unless ($args->{user_id}) {
+    cluck 'No user_id supplied to muteChatMember()';
+    return {'error' => 1};
+  }
+
+  $send_args->{chat_id} = $args->{chat_id};
+  $send_args->{user_id} = $args->{user_id};
+  $send_args->{until_date} = $args->{until_date} if exists $args->{until_date};
+  # Revoke all known for API v6.2 permissions
+  $send_args->{permissions}->{can_send_messages} = false;
+  $send_args->{permissions}->{can_send_media_messages} = false;
+  $send_args->{permissions}->{can_send_polls} = false;
+  $send_args->{permissions}->{can_send_other_messages} = false;
+  $send_args->{permissions}->{can_add_web_page_previews} = false;
+  $send_args->{permissions}->{can_change_info} = false;
+  $send_args->{permissions}->{can_invite_users} = false;
+  $send_args->{permissions}->{can_pin_messages} = false;
+
+  my $url = "https://api.telegram.org/bot${token}/restrictChatMember";
   my $api_response = $self->_post_request($url, $send_args);
 
   return;
@@ -826,6 +865,17 @@ This is the wrapper around the C<unbanChatMember> API method. See
 L<https://core.telegram.org/bots/api#unbanchatmember>.
 
 Takes chat_id, and user_id as arguments. And optionally only_if_banned.
+
+Returns nothing, it's send-only method (Telegram API returns true on success)
+
+=head2 muteChatMember
+
+This is the wrapper around the C<restrictChatMember> API method. See
+L<https://core.telegram.org/bots/api#restrictchatmember>.
+
+Takes chat_id, and user_id as arguments. And optionally until_date.
+
+Shorthand for revoking all perminnsions for member being muted.
 
 Returns nothing, it's send-only method (Telegram API returns true on success)
 
