@@ -12,7 +12,7 @@ use Mojo::Base 'Teapot::Bot::Object::Base';
 use Teapot::Bot::Object::User ();
 
 
-$Teapot::Bot::Object::ChatMember::VERSION = '0.023';
+$Teapot::Bot::Object::ChatMember::VERSION = '0.024';
 
 # ChatMemberOwner
 has   'user';
@@ -39,7 +39,8 @@ has   'can_promote_members';       # optional. Administrators only.
 has   'can_change_info';           # optional. Administrators and restricted only.
 has   'can_invite_users';          # optional. Administrators and restricted only.
 has   'can_pin_messages';          # optional. Administrators and restricted only.
-
+has   'can_manage_topics';         # Optional. True, if the user is allowed to create, rename, close, and reopen forum
+                                   # topics; supergroups only
 # ChatMemberMember
 # has 'status';
 # has 'user';
@@ -57,6 +58,7 @@ has   'can_send_polls';            # optional. Restricted only.
 has   'can_send_other_messages';   # optional. Restricted only.
 has   'can_add_web_page_previews'; # optional. Restricted only.
 has   'until_date';                # optional. Restricted and kicked only.
+# has   'can_manage_topics';
 
 # ChatMemberLeft
 # has 'status';
@@ -73,7 +75,7 @@ sub fields {
                                              can_edit_messages can_delete_messages can_manage_voice_chats can_restrict_members
                                              can_promote_members can_change_info can_invite_users can_pin_messages is_member
                                              can_send_messages can_send_media_messages can_send_polls can_send_other_messages
-                                             can_add_web_page_previews until_date/],
+                                             can_add_web_page_previews until_date can_manage_topics/],
           'Teapot::Bot::Object::User' => [qw/user/],
         };
 }
@@ -145,7 +147,7 @@ Teapot::Bot::Object::ChatMember - The base class for Telegram 'ChatMember' type 
 
 =head1 VERSION
 
-version 0.023
+version 0.024
 
 =head1 DESCRIPTION
 The base class for Telegram 'ChatMember' type objects.

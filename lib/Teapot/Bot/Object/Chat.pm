@@ -12,7 +12,7 @@ use Teapot::Bot::Object::Message ();
 use Teapot::Bot::Object::ChatPermissions ();
 use Teapot::Bot::Object::ChatLocation ();
 
-$Teapot::Bot::Object::Chat::VERSION = '0.023';
+$Teapot::Bot::Object::Chat::VERSION = '0.024';
 
 has 'id';
 has 'type';
@@ -20,7 +20,12 @@ has 'title';                    # Optional.
 has 'username';                 # Optional.
 has 'first_name';               # Optional.
 has 'last_name';                # Optional.
+has 'is_forum';                 # Optional. True, if the supergroup chat is a forum (has topics enabled)
 has 'photo';                    # Teapot::Bot::Object::ChatPhoto. Optional. Returned only in getChat.
+has 'active_usernames';         # Optional. If non-empty, the list of all active chat usernames; for private chats,
+                                # supergroups and channels. Returned only in getChat.
+has 'emoji_status_custom_emoji_id'; # Optional. Custom emoji identifier of emoji status of the other party in a private
+                                # chat. Returned only in getChat.
 has 'bio';                      # Optional. Bio of the other party in a private chat. Returned only in getChat.
 has 'has_private_forwards';     # Optional. True, if privacy settings of the other party in the private chat allows to
                                 # use tg://user?id=<user_id> links only in chats with the user.
@@ -42,7 +47,8 @@ has 'location';                 # Optional. Returned only in getChat.
 
 sub fields {
   return {
-          'scalar'                               => [qw/id type title username first_name last_name bio
+          'scalar'                               => [qw/id type title username first_name last_name is_forum 
+                                                        emoji_status_custom_emoji_id bio
                                                         has_private_forwards description invite_link slow_mode_delay
                                                         message_auto_delete_time has_protected_content
                                                         sticker_set_name can_set_sticker_set linked_chat_id/],
@@ -53,6 +59,9 @@ sub fields {
         };
 }
 
+sub arrays {
+  return qw/active_usernames/;
+}
 
 sub is_user {
   return shift->id > 0;
@@ -77,7 +86,7 @@ Teapot::Bot::Object::Chat - The base class for Telegram 'Chat' type objects
 
 =head1 VERSION
 
-version 0.023
+version 0.024
 
 =head1 DESCRIPTION
 The base class for Telegram 'Chat' type objects.

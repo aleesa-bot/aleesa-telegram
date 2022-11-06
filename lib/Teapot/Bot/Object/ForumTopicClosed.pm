@@ -1,5 +1,5 @@
-package Teapot::Bot::Object::WebAppData;
-# ABSTRACT: The base class for Telegram 'WebAppData' type objects
+package Teapot::Bot::Object::ForumTopicClosed;
+# ABSTRACT: The base class for Telegram message 'ForumTopicClosed' type.
 
 use strict;
 use warnings;
@@ -8,13 +8,11 @@ use utf8;
 
 use Mojo::Base 'Teapot::Bot::Object::Base';
 
-$Teapot::Bot::Object::WebAppData::VERSION = '0.024';
+$Teapot::Bot::Object::ForumTopicClosed::VERSION = '0.024';
 
-has 'data';
-has 'button_text';
 
 sub fields {
-  return { scalar  => [qw/data button_text/] };
+  return { };
 }
 
 1;
@@ -27,17 +25,17 @@ __END__
 
 =head1 NAME
 
-Teapot::Bot::Object::WebAppData - The base class for Telegram 'WebAppData' type objects
+Teapot::Bot::Object::ForumTopicClosed - The 	base class for Telegram message 'ForumTopicClosed' type
 
 =head1 VERSION
 
 version 0.024
 
 =head1 DESCRIPTION
-The base class for Telegram 'WebAppData' type objects.
+The base class for Telegram message 'ForumTopicClosed' type.
 
-See L<https://core.telegram.org/bots/api#webappdata> for details of the
-attributes available for C<Teapot::Bot::Object::WebAppData> objects.
+See L<https://core.telegram.org/bots/api#forumtopicclosed> for details of the
+attributes available for C<Teapot::Bot::Object::ForumTopicClosed> objects.
 
 =head1 AUTHOR
 

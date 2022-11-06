@@ -28,6 +28,7 @@ my $c = LoadConf ();
 my $csign = $c->{telegrambot}->{csign};
 
 my $redismsg->{from}              = 'telegram';
+$redismsg->{threadid}             = '';
 $redismsg->{plugin}               = 'telegram';
 $redismsg->{misc}->{answer}       = 1;
 $redismsg->{misc}->{csign}        = "$c->{telegrambot}->{csign}";
@@ -127,6 +128,15 @@ sub Command {
 				$rmsg->{misc}->{msg_format} = 1;
 				$rmsg->{misc}->{username} = "$highlight";
 				last;
+			}
+		}
+
+		# Если тип группы supergroup, в ней могут быть треды, попробуем найти message_thread_id, если таковой есть
+		if ($msg->chat->type eq 'supergroup') {
+			if ($msg->can ('is_topic_message') && $msg->is_topic_message) {
+				if ($msg->can ('message_thread_id') && $msg->message_thread_id ne '') {
+					$rmsg->{threadid} = "$msg->message_thread_id";
+				}
 			}
 		}
 

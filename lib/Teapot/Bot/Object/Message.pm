@@ -40,10 +40,12 @@ use Teapot::Bot::Object::VideoChatStarted ();
 use Teapot::Bot::Object::VideoChatEnded ();
 use Teapot::Bot::Object::VideoChatParticipantsInvited ();
 
-$Teapot::Bot::Object::Message::VERSION = '0.023';
+$Teapot::Bot::Object::Message::VERSION = '0.024';
 
 # basic message stuff
 has 'message_id';
+has 'message_thread_id'; # Optional. Unique identifier of a message thread to which the message belongs;
+                         # for supergroups only
 has 'from';  # User
 has 'sender_chat';  # Chat
 has 'date';
@@ -54,6 +56,7 @@ has 'forward_from_message_id';
 has 'forward_signature';
 has 'forward_sender_name';
 has 'forward_date';
+has 'is_topic_message'; # Optional. True, if the message is sent to a forum topic
 has 'is_automatic_forward';
 has 'reply_to_message'; # Message
 has 'via_bot'; # User
@@ -96,6 +99,9 @@ has 'successful_payment'; # SuccessfulPayment
 has 'connected_website';
 has 'passport_data'; # PassportData
 has 'proximity_alert_triggered';
+has 'forum_topic_created'; # ForumTopicCreated
+has 'forum_topic_closed'; # ForumTopicClosed
+has 'forum_topic_reopened'; # ForumTopicReopened
 has 'video_chat_scheduled';
 has 'video_chat_started';
 has 'video_chat_ended';
@@ -105,11 +111,11 @@ has 'reply_markup'; # Array of InlineKeyboardMarkup
 
 sub fields {
   return {
-          'scalar'                                      => [qw/message_id date forward_from_message_id
-                                                            forward_signature forward_sender_name
-                                                            forward_date is_automatic_forward edit_date has_protected_content
-                                                            media_group_id author_signature text caption
-                                                            new_chat_title delete_chat_photo
+          'scalar'                                      => [qw/message_id message_thread_id date forward_from_message_id
+                                                            forward_signature forward_sender_name forward_date
+                                                            is_topic_message is_automatic_forward edit_date
+                                                            has_protected_content media_group_id author_signature text
+                                                            caption new_chat_title delete_chat_photo
                                                             group_chat_created supergroup_chat_created
                                                             channel_chat_created migrate_to_chat_id
                                                             migrate_from_chat_id connected_website/],
@@ -138,6 +144,9 @@ sub fields {
           'Teapot::Bot::Object::Invoice'                => [qw/invoice/],
           'Teapot::Bot::Object::SuccessfulPayment'      => [qw/successful_payment/],
           'Teapot::Bot::Object::PassportData'           => [qw/passport_data/],
+          'Teapot::Bot::Object::ForumTopicCreated'      => [qw/forum_topic_created/],
+          'Teapot::Bot::Object::ForumTopicClosed'       => [qw/forum_topic_closed/],
+          'Teapot::Bot::Object::ForumTopicReopened'     => [qw/forum_topic_reopened/],
           'Teapot::Bot::Object::InlineKeyboardMarkup'   => [qw/reply_markup/],
           'Teapot::Bot::Object::ProximityAlertTriggered' => [qw/proximity_alert_triggered/],
           'Teapot::Bot::Object::Dice'                   => [qw/dice/],
@@ -160,9 +169,14 @@ sub reply {
   my $text = shift;
 
   my $chatid = $self->chat->id;
+  my $message_thread_id = eval {$self->message_thread_id};
 
   if (Teapot::Bot::Object::ChatPermissions->canTalk($self, $chatid)) {
-    return $self->_brain->sendMessage({chat_id => $chatid, text => $text});
+    if (defined $message_thread_id && $message_thread_id ne '') {
+      return $self->_brain->sendMessage({chat_id => $chatid, message_thread_id => $message_thread_id, text => $text});
+    } else {
+      return $self->_brain->sendMessage({chat_id => $chatid, text => $text});
+    }
   }
 
   return {'error' => 1};
@@ -173,13 +187,14 @@ sub replyMd {
   my $text = shift;
 
   my $chatid = $self->chat->id;
+  my $message_thread_id = eval {$self->message_thread_id};
 
   if (Teapot::Bot::Object::ChatPermissions->canTalk ($self, $chatid)) {
     my $send_args;
-    $send_args->{text} = $text;
-    $send_args->{parse_mode} = 'Markdown';
-    $send_args->{chat_id} = $chatid;
-
+    $send_args->{text}              = $text;
+    $send_args->{parse_mode}        = 'Markdown';
+    $send_args->{chat_id}           = $chatid;
+    $send_args->{message_thread_id} = $message_thread_id if (defined $message_thread_id);
     return $self->_brain->sendMessage($send_args);
   }
 
@@ -212,7 +227,7 @@ Teapot::Bot::Object::Message - The base class for the Telegram type "Message"
 
 =head1 VERSION
 
-version 0.023
+version 0.024
 
 =head1 DESCRIPTION
 The base class for the Telegram type "Message".

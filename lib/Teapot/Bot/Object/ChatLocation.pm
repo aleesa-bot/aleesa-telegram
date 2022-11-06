@@ -8,7 +8,7 @@ use utf8;
 
 use Mojo::Base 'Teapot::Bot::Object::Base';
 
-$Teapot::Bot::Object::ChatLocation::VERSION = '0.023';
+$Teapot::Bot::Object::ChatLocation::VERSION = '0.024';
 
 has 'location';
 has 'address';
@@ -34,7 +34,7 @@ Teapot::Bot::Object::ChatLocation - The base class for Telegram message 'ChatLoc
 
 =head1 VERSION
 
-version 0.023
+version 0.024
 
 =head1 DESCRIPTION
 The base class for Telegram message 'ChatLocation' type.

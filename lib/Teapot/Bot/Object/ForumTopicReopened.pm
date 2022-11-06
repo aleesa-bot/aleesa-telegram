@@ -1,5 +1,5 @@
-package Teapot::Bot::Object::WebAppData;
-# ABSTRACT: The base class for Telegram 'WebAppData' type objects
+package Teapot::Bot::Object::ForumTopicReopened;
+# ABSTRACT: The base class for Telegram message 'ForumTopicReopened' type.
 
 use strict;
 use warnings;
@@ -8,13 +8,11 @@ use utf8;
 
 use Mojo::Base 'Teapot::Bot::Object::Base';
 
-$Teapot::Bot::Object::WebAppData::VERSION = '0.024';
+$Teapot::Bot::Object::ForumTopicReopened::VERSION = '0.024';
 
-has 'data';
-has 'button_text';
 
 sub fields {
-  return { scalar  => [qw/data button_text/] };
+  return { };
 }
 
 1;
@@ -27,17 +25,17 @@ __END__
 
 =head1 NAME
 
-Teapot::Bot::Object::WebAppData - The base class for Telegram 'WebAppData' type objects
+Teapot::Bot::Object::ForumTopicReopened - The 	base class for Telegram message 'ForumTopicReopened' type
 
 =head1 VERSION
 
 version 0.024
 
 =head1 DESCRIPTION
-The base class for Telegram 'WebAppData' type objects.
+The base class for Telegram message 'ForumTopicReopened' type.
 
-See L<https://core.telegram.org/bots/api#webappdata> for details of the
-attributes available for C<Teapot::Bot::Object::WebAppData> objects.
+See L<https://core.telegram.org/bots/api#forumtopicreopened> for details of the
+attributes available for C<Teapot::Bot::Object::ForumTopicReopened> objects.
 
 =head1 AUTHOR
 

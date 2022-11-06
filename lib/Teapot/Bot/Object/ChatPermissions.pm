@@ -10,7 +10,7 @@ use Carp qw(carp);
 use Mojo::Base 'Teapot::Bot::Object::Base';
 use Teapot::Bot::Brain ();
 
-$Teapot::Bot::Object::ChatPermissions::VERSION = '0.023';
+$Teapot::Bot::Object::ChatPermissions::VERSION = '0.024';
 
 # all fields are optional
 # N.B. Some of the fields "overlaps" other, so in order to guess valid set of permissions you should check all of them
@@ -26,12 +26,14 @@ has 'can_change_info';           # True, if the user is allowed to change the ch
                                  # Ignored in public supergroups
 has 'can_invite_users';          # True, if the user is allowed to invite new users to the chat
 has 'can_pin_messages';          # True, if the user is allowed to pin messages. Ignored in public supergroups
+has 'can_manage_topics';         # Optional. True, if the user is allowed to create forum topics. If omitted defaults to
+                                # the value of can_pin_messages
 
 sub fields {
   return {
           'scalar'                           => [qw/can_send_messages can_send_media_messages can_send_polls
                                                     can_send_other_messages can_add_web_page_previews can_change_info
-                                                    can_invite_users can_pin_messages/],
+                                                    can_invite_users can_pin_messages can_manage_topics/],
          };
 }
 
@@ -98,7 +100,7 @@ Teapot::Bot::Object::ChatPermissions - The base class for Telegram 'ChatPermissi
 
 =head1 VERSION
 
-version 0.023
+version 0.024
 
 =head1 DESCRIPTION
 The base class for Telegram 'ChatPermissions' type objects.

@@ -29,7 +29,7 @@ use Teapot::Bot::Object::Chat ();
 use Teapot::Bot::Object::ChatMember ();
 use Teapot::Bot::Object::ChatInviteLink ();
 
-$Teapot::Bot::Brain::VERSION = '0.023';
+$Teapot::Bot::Brain::VERSION = '0.024';
 
 # base class for building telegram robots with Mojolicious
 has longpoll_time => 60;
@@ -298,6 +298,10 @@ sub sendMessage {
 
   $send_args->{chat_id} = $args->{chat_id};
 
+  if (defined $args->{message_thread_id}) {
+    $send_args->{message_thread_id} = $args->{message_thread_id};
+  }
+
   unless ($args->{text}) {
     cluck 'No text supplied in sendMessage()';
     return {'error' => 1};
@@ -350,6 +354,10 @@ sub forwardMessage {
   }
 
   $send_args->{chat_id} = $args->{chat_id};
+
+  if (defined $args->{message_thread_id}) {
+    $send_args->{message_thread_id} = $args->{message_thread_id};
+  }
 
   unless ($args->{from_chat_id}) {
     cluck 'No from_chat_id supplied in forwardMessage()';
@@ -418,6 +426,10 @@ sub sendPhoto {
   my $self = shift;
   my $args = shift || {};
   my $send_args = {};
+
+  if (defined $args->{message_thread_id}) {
+    $send_args->{message_thread_id} = $args->{message_thread_id};
+  }
 
   unless ($args->{chat_id}) {
     cluck 'No chat_id supplied to sendPhoto()';
@@ -755,7 +767,7 @@ Teapot::Bot::Brain - A base class to make your very own Telegram bot
 
 =head1 VERSION
 
-version 0.023
+version 0.024
 
 =head1 SYNOPSIS
 

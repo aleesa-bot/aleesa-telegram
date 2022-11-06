@@ -42,6 +42,7 @@ my @introduce_greet = (
 );
 
 my $redismsg->{from}              = 'telegram';
+$redismsg->{threadid}             = '';
 $redismsg->{plugin}               = 'telegram';
 $redismsg->{misc}->{answer}       = 1;
 $redismsg->{misc}->{csign}        = "$c->{telegrambot}->{csign}";
@@ -362,6 +363,15 @@ sub __on_msg {
 			$rmsg->{chatid}         = "$chatid";
 			$rmsg->{misc}->{answer} = 1;
 
+			# Если тип группы supergroup, в ней могут быть треды, попробуем найти message_thread_id, если таковой есть
+			if ($msg->chat->type eq 'supergroup') {
+				if ($msg->can ('is_topic_message') && $msg->is_topic_message) {
+					if ($msg->can ('message_thread_id') && $msg->message_thread_id ne '') {
+						$rmsg->{threadid} = "$msg->message_thread_id";
+					}
+				}
+			}
+
 			{
 				do {
 					my $ready = eval { $main::RCONN->is_connected; };
@@ -401,6 +411,15 @@ sub __on_msg {
 			$rmsg->{userid}         = "$userid";
 			$rmsg->{chatid}         = "$chatid";
 			$rmsg->{misc}->{answer} = 1;
+
+			# Если тип группы supergroup, в ней могут быть треды, попробуем найти message_thread_id, если таковой есть
+			if ($msg->chat->type eq 'supergroup') {
+				if ($msg->can ('is_topic_message') && $msg->is_topic_message) {
+					if ($msg->can ('message_thread_id') && $msg->message_thread_id ne '') {
+						$rmsg->{threadid} = "$msg->message_thread_id";
+					}
+				}
+			}
 
 			# Сообщение обращено к боту
 			if ((lc ($text) =~ /^${qname}[\,|\:]? (.+)/) or (lc ($text) =~ /^${qtname}[\,|\:]? (.+)/)){
@@ -454,10 +473,20 @@ sub __on_msg {
 
 			$msg->typing ();
 			sleep (irand 2);
-			$log->debug (sprintf ('[DEBUG] In public chat %s (%s) bot reply to %s: %s', $chatname, $chatid, $vis_a_vi, $reply));
+			$log->debug (
+				sprintf (
+					'[DEBUG] In public chat %s (%s) bot reply to %s: %s',
+					$chatname, $chatid, $vis_a_vi, $reply,
+				)
+			);
 			$msg->reply ($reply);
 		} else {
-			$log->debug (sprintf ('[DEBUG] In public chat %s (%s) bot is not required to reply to %s', $chatname, $chatid, $vis_a_vi));
+			$log->debug (
+				sprintf (
+					'[DEBUG] In public chat %s (%s) bot is not required to reply to %s',
+					$chatname, $chatid, $vis_a_vi,
+				)
+			);
 		}
 
 	# should be channel, so we can't talk

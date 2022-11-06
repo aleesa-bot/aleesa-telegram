@@ -9,7 +9,7 @@ use utf8;
 use Mojo::Base 'Teapot::Bot::Object::Base';
 use Teapot::Bot::Object::User ();
 
-$Teapot::Bot::Object::VideoChatParticipantsInvited::VERSION = '0.023';
+$Teapot::Bot::Object::VideoChatParticipantsInvited::VERSION = '0.024';
 
 # This object represents a service message about a Video chat started in the chat. Currently holds no information.
 has 'users';
@@ -36,7 +36,7 @@ Teapot::Bot::Object::VideoChatParticipantsInvited - The base class for Telegram 
 
 =head1 VERSION
 
-version 0.023
+version 0.024
 
 =head1 DESCRIPTION
 The base class for Telegram message 'VideoChatParticipantsInvited' type.

@@ -13,7 +13,7 @@ use List::Util qw/any/;
 
 use Mojo::Base -base;
 
-$Teapot::Bot::Object::Base::VERSION = '0.023';
+$Teapot::Bot::Object::Base::VERSION = '0.024';
 
 has '_brain'; # a reference to our brain
 
@@ -187,7 +187,7 @@ Teapot::Bot::Object::Base - The base class for all Telegram::Bot::Object objects
 
 =head1 VERSION
 
-version 0.023
+version 0.024
 
 =head1 DESCRIPTION
 

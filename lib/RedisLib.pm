@@ -51,6 +51,9 @@ sub redis_parse_message {
 	}
 
 	$message->{text} = "$m->{message}";
+	if (defined ($m->{threadid}) && $m->{threadid} ne '') {
+		$message->{message_thread_id} = 0 + $m->{threadid};
+	}
 
 	my $can_talk = Teapot::Bot::Object::ChatPermissions->canTalk ($main::TGM, 0 + $m->{chatid});
 
