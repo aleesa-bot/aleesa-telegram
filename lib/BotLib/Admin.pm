@@ -18,7 +18,7 @@ our @ISA    = qw / Exporter /; ## no critic (ClassHierarchies::ProhibitExplicitI
 our @EXPORT_OK = qw (@ForbiddenMessageTypes @PluginList GetForbiddenTypes AddForbiddenType DelForbiddenType
                      ListForbidden FortuneToggle FortuneToggleList FortuneStatus PluginToggle PluginStatus
                      PluginEnabled ChanMsgToggle ChanMsgStatus ChanMsgEnabled GreetMsgToggle GreetMsgStatus
-					 GreetMsgEnabled GoodbyeMsgToggle GoodbyeMsgStatus GoodbyeMsgEnabled);
+                     GreetMsgEnabled GoodbyeMsgToggle GoodbyeMsgStatus GoodbyeMsgEnabled);
 
 my $c = LoadConf ();
 my $cachedir = $c->{cachedir};
@@ -288,33 +288,28 @@ sub GreetMsgToggle (@) {
 		namespace => __PACKAGE__ . '_' . 'greet_msg',
 	);
 
-	my $state = $cache->get ($chatid);
-
 	if (defined $action) {
-		if ($action) {
-			$cache->set ($chatid, 1, 'never');
-			$phrase .= 'включено.';
+		if ($action == 0) {
+			$cache->set ($chatid, 0, 'never');
+			$phrase .= 'выключены.';
 		} else {
-			if (defined $state && $state) {
-				$cache->set ($chatid, 0, 'never');
-				$phrase .= 'выключено.';
-			} else {
-				$cache->set ($chatid, 1, 'never');
-				$phrase .= 'включено.';
-			}
+			$cache->set ($chatid, 1, 'never');
+			$phrase .= 'включены.';
 		}
 	} else {
-		if (defined $state){
-			if ($state) {
+		my $state = $cache->get ($chatid);
+
+		if (defined $state) {
+			if ($state != 0) {
 				$cache->set ($chatid, 0, 'never');
-				$phrase .= 'выключено.';
+				$phrase .= 'выключены.';
 			} else {
 				$cache->set ($chatid, 1, 'never');
-				$phrase .= 'включено.';
+				$phrase .= 'включены.';
 			}
 		} else {
 			$cache->set ($chatid, 0, 'never');
-			$phrase .= 'выключено.';
+			$phrase .= 'выключены.';
 		}
 	}
 
