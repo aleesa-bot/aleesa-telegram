@@ -18,7 +18,8 @@ our @ISA    = qw / Exporter /; ## no critic (ClassHierarchies::ProhibitExplicitI
 our @EXPORT_OK = qw (@ForbiddenMessageTypes @PluginList GetForbiddenTypes AddForbiddenType DelForbiddenType
                      ListForbidden FortuneToggle FortuneToggleList FortuneStatus PluginToggle PluginStatus
                      PluginEnabled ChanMsgToggle ChanMsgStatus ChanMsgEnabled GreetMsgToggle GreetMsgStatus
-                     GreetMsgEnabled GoodbyeMsgToggle GoodbyeMsgStatus GoodbyeMsgEnabled MigrateSettingsToNewChatID);
+                     GreetMsgEnabled GoodbyeMsgToggle GoodbyeMsgStatus GoodbyeMsgEnabled MigrateSettingsToNewChatID
+                     IsCensored);
 
 my $c = LoadConf ();
 my $cachedir = $c->{cachedir};
@@ -604,6 +605,27 @@ sub MigrateSettingsToNewChatID {
 	}
 
 	return;
+}
+
+sub IsCensored {
+	my $msg = shift;
+
+	my $forbidden = GetForbiddenTypes ($msg->chat->id);
+
+	# voice messages are special
+	if (defined ($msg->voice) && defined ($msg->voice->duration) && ($msg->voice->duration > 0)) {
+		if ($forbidden->{'voice'}) {
+			return 1;
+		}
+	}
+
+	foreach (keys %{$forbidden}) {
+		if ($forbidden->{$_} && (defined $msg->{$_})) {
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 1;

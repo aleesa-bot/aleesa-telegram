@@ -15,7 +15,7 @@ use URI::URL qw (url);
 
 use version; our $VERSION = qw (1.0);
 use Exporter qw (import);
-our @EXPORT_OK = qw (trim urlencode fmatch utf2b64 utf2sha1 BotSleep Highlight IsCensored RandomCommonPhrase);
+our @EXPORT_OK = qw (trim urlencode fmatch utf2b64 utf2sha1 BotSleep Highlight RandomCommonPhrase);
 
 sub trim {
 	my $str = shift;
@@ -122,27 +122,6 @@ sub Highlight {
 	$visavi .= " ($userid)";
 
 	return ($userid, $username, $fullname, $highlight, $visavi);
-}
-
-sub IsCensored {
-	my $msg = shift;
-
-	my $forbidden = GetForbiddenTypes ($msg->chat->id);
-
-	# voice messages are special
-	if (defined ($msg->voice) && defined ($msg->voice->duration) && ($msg->voice->duration > 0)) {
-		if ($forbidden->{'voice'}) {
-			return 1;
-		}
-	}
-
-	foreach (keys %{$forbidden}) {
-		if ($forbidden->{$_} && (defined $msg->{$_})) {
-			return 1;
-		}
-	}
-
-	return 0;
 }
 
 sub RandomCommonPhrase {

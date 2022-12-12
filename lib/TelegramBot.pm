@@ -14,10 +14,11 @@ use Log::Any qw ($log);
 use Math::Random::Secure qw (irand);
 use Mojo::Base 'Teapot::Bot::Brain';
 
-use BotLib::Admin qw (FortuneToggleList ChanMsgEnabled GreetMsgEnabled GoodbyeMsgEnabled MigrateSettingsToNewChatID);
+use BotLib::Admin qw (FortuneToggleList ChanMsgEnabled GreetMsgEnabled GoodbyeMsgEnabled MigrateSettingsToNewChatID
+                      IsCensored);
 use BotLib qw (Command);
 use BotLib::Conf qw (LoadConf);
-use BotLib::Util qw (trim fmatch BotSleep Highlight IsCensored RandomCommonPhrase);
+use BotLib::Util qw (trim fmatch BotSleep Highlight RandomCommonPhrase);
 use RedisLib qw (redis_events_listener);
 
 use version; our $VERSION = qw (1.0);
