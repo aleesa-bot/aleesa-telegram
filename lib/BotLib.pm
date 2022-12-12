@@ -18,11 +18,11 @@ use BotLib::Admin qw (@ForbiddenMessageTypes GetForbiddenTypes AddForbiddenType
                       DelForbiddenType ListForbidden FortuneToggle FortuneStatus
                       PluginToggle PluginStatus PluginEnabled ChanMsgToggle ChanMsgStatus
                       GreetMsgToggle GreetMsgStatus GoodbyeMsgToggle GoodbyeMsgStatus);
-use BotLib::Util qw (trim);
+use BotLib::Util qw (trim Highlight);
 
 use version; our $VERSION = qw (1.1);
 use Exporter qw (import);
-our @EXPORT_OK = qw (Command Highlight BotSleep IsCensored);
+our @EXPORT_OK = qw (Command);
 
 my $c = LoadConf ();
 my $csign = $c->{telegrambot}->{csign};
@@ -445,85 +445,6 @@ MYADMIN
 	}
 
 	return $reply;
-}
-
-sub Highlight {
-	my $msg = shift;
-
-	my $fullname;
-	my $highlight;
-	my $username;
-	my $visavi = '';
-	my $userid = $msg->from->id;
-
-	if ($msg->from->can ('username') && defined $msg->from->username ) {
-		$username = $msg->from->username;
-	}
-
-	if ($msg->from->can ('first_name') && defined $msg->from->first_name) {
-		$fullname = $msg->from->first_name;
-
-		if ($msg->from->can ('last_name') && defined $msg->from->last_name) {
-			$fullname .= ' ' . $msg->from->last_name;
-		}
-	} elsif ($msg->from->can ('last_name') && defined $msg->from->last_name) {
-		$fullname .= $msg->from->last_name;
-	}
-
-	if (defined $username) {
-		$visavi .= '@' . $username;
-
-		if (defined $fullname) {
-			$highlight = "[$fullname](tg://user?id=$userid)";
-			$visavi .= ', ' . $fullname;
-		} else {
-			$highlight = "[$username](tg://user?id=$userid)";
-		}
-	} else {
-		$highlight = "[$fullname](tg://user?id=$userid)";
-		$visavi .= $fullname;
-	}
-
-	$visavi .= " ($userid)";
-
-	return ($userid, $username, $fullname, $highlight, $visavi);
-}
-
-sub BotSleep {
-	# TODO: Parametrise this with fuzzy sleep time in seconds
-	my $msg = shift;
-	# let's emulate real human and delay answer
-	sleep (irand (2) + 1);
-
-	for (0..(4 + irand (3))) {
-		$msg->typing ();
-		sleep 3;
-		sleep 3 unless ($_);
-	}
-
-	sleep ( 3 + irand (2));
-	return;
-}
-
-sub IsCensored {
-	my $msg = shift;
-
-	my $forbidden = GetForbiddenTypes ($msg->chat->id);
-
-	# voice messages are special
-	if (defined ($msg->voice) && defined ($msg->voice->duration) && ($msg->voice->duration > 0)) {
-		if ($forbidden->{'voice'}) {
-			return 1;
-		}
-	}
-
-	foreach (keys %{$forbidden}) {
-		if ($forbidden->{$_} && (defined $msg->{$_})) {
-			return 1;
-		}
-	}
-
-	return 0;
 }
 
 1;

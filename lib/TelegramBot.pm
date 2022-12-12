@@ -15,9 +15,9 @@ use Math::Random::Secure qw (irand);
 use Mojo::Base 'Teapot::Bot::Brain';
 
 use BotLib::Admin qw (FortuneToggleList ChanMsgEnabled GreetMsgEnabled GoodbyeMsgEnabled);
-use BotLib qw (Command Highlight BotSleep IsCensored);
+use BotLib qw (Command);
 use BotLib::Conf qw (LoadConf);
-use BotLib::Util qw (trim fmatch);
+use BotLib::Util qw (trim fmatch BotSleep Highlight IsCensored RandomCommonPhrase);
 use RedisLib qw (redis_events_listener);
 
 use version; our $VERSION = qw (1.0);
@@ -497,23 +497,6 @@ sub __on_msg {
 	return;
 }
 
-sub RandomCommonPhrase {
-	my @myphrase = (
-		'Так, блядь...',
-		'*Закатывает рукава* И ради этого ты меня позвал?',
-		'Ну чего ты начинаешь, нормально же общались',
-		'Повтори свой вопрос, не поняла',
-		'Выйди и зайди нормально',
-		'Я подумаю',
-		'Даже не знаю, что на это ответить',
-		'Ты упал такие вопросы девочке задавать?',
-		'Можно и так, но не уверена',
-		'А как ты думаешь?',
-		'А ви, таки, почему интересуетесь?',
-	);
-
-	return $myphrase[irand ($#myphrase + 1)];
-}
 
 # setup our bot
 sub init {
