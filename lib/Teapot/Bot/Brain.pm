@@ -100,7 +100,7 @@ sub getMe {
   my $url = "https://api.telegram.org/bot${token}/getMe";
   my $api_response = $self->_post_request($url);
 
-  if ($api_response) {
+  unless ($api_response->{error}) {
     return Teapot::Bot::Object::User->create_from_hash($api_response, $self);
   }
   else {
@@ -134,7 +134,7 @@ sub getChatMember {
   my $url = "https://api.telegram.org/bot${token}/getChatMember";
   my $api_response = $self->_post_request($url, $send_args);
 
-  if ($api_response) {
+  unless ($api_response->{error}) {
     return Teapot::Bot::Object::ChatMember->create_from_hash($api_response, $self);
   }
   else {
@@ -254,7 +254,7 @@ sub getChat {
   my $url = "https://api.telegram.org/bot${token}/getChat";
   my $api_response = $self->_post_request($url, $send_args);
 
-  if ($api_response) {
+  unless ($api_response->{error}) {
     return Teapot::Bot::Object::Chat->create_from_hash($api_response, $self);
   }
   else {
@@ -334,11 +334,11 @@ sub sendMessage {
   my $url = "https://api.telegram.org/bot${token}/sendMessage";
   my $api_response = $self->_post_request($url, $send_args);
 
-  if ($api_response) {
+  unless ($api_response->{error}) {
     return Teapot::Bot::Object::Message->create_from_hash($api_response, $self);
   }
   else {
-    return {'error' => 1};
+    return $api_response;
   }
 }
 
@@ -380,7 +380,7 @@ sub forwardMessage {
   my $url = "https://api.telegram.org/bot${token}/forwardMessage";
   my $api_response = $self->_post_request($url, $send_args);
 
-  if ($api_response) {
+  unless ($api_response->{error}) {
     return Teapot::Bot::Object::Message->create_from_hash($api_response, $self);
   }
   else {
@@ -458,7 +458,7 @@ sub sendPhoto {
   my $url = "https://api.telegram.org/bot${token}/sendPhoto";
   my $api_response = $self->_post_request($url, $send_args);
 
-  if ($api_response) {
+  unless ($api_response->{error}) {
     return Teapot::Bot::Object::Message->create_from_hash($api_response, $self);
   }
   else {
@@ -542,7 +542,7 @@ sub exportChatInviteLink {
   my $url = "https://api.telegram.org/bot${token}/exportChatInviteLink";
   my $api_response = $self->_post_request($url);
 
-  if ($api_response) {
+  if ($api_response->{error}) {
     return $api_response;
   }
   else {
@@ -569,7 +569,7 @@ sub createChatInviteLink {
   my $url = "https://api.telegram.org/bot${token}/createChatInviteLink";
   my $api_response = $self->_post_request($url);
 
-  if ($api_response) {
+  unless ($api_response->{error}) {
     return Teapot::Bot::Object::ChatInviteLink->create_from_hash($api_response, $self);
   }
   else {
@@ -602,7 +602,7 @@ sub editChatInviteLink {
   my $url = "https://api.telegram.org/bot${token}/editChatInviteLink";
   my $api_response = $self->_post_request($url);
 
-  if ($api_response) {
+  unless ($api_response->{error}) {
     return Teapot::Bot::Object::ChatInviteLink->create_from_hash($api_response, $self);
   }
   else {
@@ -633,7 +633,7 @@ sub revokeChatInviteLink {
   my $url = "https://api.telegram.org/bot${token}/revokeChatInviteLink";
   my $api_response = $self->_post_request($url);
 
-  if ($api_response) {
+  unless ($api_response->{error}) {
     return Teapot::Bot::Object::ChatInviteLink->create_from_hash($api_response, $self);
   }
   else {
@@ -742,16 +742,22 @@ sub _post_request {
     return $res->json->{result};
   }
   elsif ($res->is_error) {
+    my $result->{error} = 1;
     # This can be non-fatal error: api change.
     #cluck 'Failed to post: ' . $res->message;
     carp 'Failed to post to: ' . $res->message;
+
     carp sprintf (
      "Input parameters: %s\nResonse Dump: %s\nURL:%s\n",
      Dumper ($form_args),
      Dumper ($res),
      $url,
     );
-    return 0; # to handle this as false in upper layers
+
+    $result->{message}   = $res->content->asset->content;
+    $result->{http_code} = $res->code;
+
+    return $result; # to handle this in upper layers
   }
   else {
     # This must be something fatal for sure, because either is_success or is_error must be set by Mojo
