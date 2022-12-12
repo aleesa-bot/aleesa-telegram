@@ -80,7 +80,16 @@ sub Highlight {
 	my $highlight;
 	my $username;
 	my $visavi = '';
-	my $userid = $msg->from->id;
+
+	my $userid;
+
+	# In channel message $msg->from->id is omitted
+	# In channel context Highlight is pointless
+	if ($msg->chat->type eq 'channel') {
+		return ($userid, $username, $fullname, $highlight, undef);
+	}
+
+	$userid = $msg->from->id;
 
 	if ($msg->from->can ('username') && defined $msg->from->username ) {
 		$username = $msg->from->username;
