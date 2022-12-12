@@ -105,9 +105,8 @@ sub __on_msg {
 	if ($msg->can ('migrate_to_chat_id') && $msg->can ('migrate_from_chat_id')) {
 		if (defined ($msg->migrate_from_chat_id) && defined ($msg->migrate_from_chat_id)) {
 			MigrateSettingsToNewChatID ($msg->migrate_from_chat_id, $msg->migrate_to_chat_id);
+			return;
 		}
-
-		return;
 	}
 
 	my $chatname = 'Noname chat';
