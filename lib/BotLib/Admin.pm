@@ -18,7 +18,7 @@ our @ISA    = qw / Exporter /; ## no critic (ClassHierarchies::ProhibitExplicitI
 our @EXPORT_OK = qw (@ForbiddenMessageTypes @PluginList GetForbiddenTypes AddForbiddenType DelForbiddenType
                      ListForbidden FortuneToggle FortuneToggleList FortuneStatus PluginToggle PluginStatus
                      PluginEnabled ChanMsgToggle ChanMsgStatus ChanMsgEnabled GreetMsgToggle GreetMsgStatus
-                     GreetMsgEnabled GoodbyeMsgToggle GoodbyeMsgStatus GoodbyeMsgEnabled);
+                     GreetMsgEnabled GoodbyeMsgToggle GoodbyeMsgStatus GoodbyeMsgEnabled MigrateSettingsToNewChatID);
 
 my $c = LoadConf ();
 my $cachedir = $c->{cachedir};
@@ -106,6 +106,29 @@ sub ListForbidden {
 	}
 
 	return join "\n", @list;
+}
+
+sub StatusForbidden {
+	my $chatid = shift;
+	my $ftype  = shift;
+
+	my $cache = CHI->new (
+		driver    => 'BerkeleyDB',
+		root_dir  => $cachedir,
+		namespace => __PACKAGE__ . '_' . 'censor' . '_' . utf2sha1 ($chatid),
+	);
+
+	my $type = $cache->get ($ftype);
+
+	if ($type) {
+		return 1;
+	} else {
+		unless (defined $type) {
+			$cache->set ($ftype, 0, 'never');
+		}
+
+		return 0;
+	}
 }
 
 sub FortuneToggle (@) {
@@ -532,6 +555,55 @@ sub PluginToggle (@) {
 	}
 
 	return $phrase;
+}
+
+sub MigrateSettingsToNewChatID {
+	my $old_id = shift;
+	my $new_id = shift;
+
+	if (FortuneStatus ($old_id)) {
+		FortuneToggle ($new_id, 1);
+	} else {
+		FortuneToggle ($new_id, 0);
+	}
+
+	if (ChanMsgStatus ($old_id)) {
+		ChanMsgToggle ($new_id, 1);
+	} else {
+		ChanMsgToggle ($new_id, 0);
+	}
+
+	if (GreetMsgStatus ($old_id)) {
+		GreetMsgToggle ($new_id, 1);
+	} else {
+		GreetMsgToggle ($new_id, 0);
+	}
+
+	if (GoodbyeMsgStatus ($old_id)) {
+		GoodbyeMsgToggle ($new_id, 1);
+	} else {
+		GoodbyeMsgToggle ($new_id, 0);
+	}
+
+	# TODO: forbidden types
+
+	foreach my $plugin (@PluginList) {
+		if (PluginEnabled ($old_id, $plugin)) {
+			PluginToggle ($new_id, $plugin, 1);
+		} else {
+			PluginToggle ($new_id, $plugin, 0);
+		}
+	}
+
+	foreach my $ftype (@ForbiddenMessageTypes) {
+		if (StatusForbidden($old_id, $ftype)) {
+			AddForbiddenType($new_id, $ftype);
+		}
+
+		# Looks like we don't need to add forbiddent type for allowed types... right?
+	}
+
+	return;
 }
 
 1;

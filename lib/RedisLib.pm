@@ -7,10 +7,12 @@ use utf8;
 use open qw (:std :utf8);
 
 use Data::Dumper qw (Dumper);
+use JSON::XS qw (decode_json);
 use Log::Any qw ($log);
 use Mojo::Redis ();
 use Mojo::Redis::Connection ();
 
+use BotLib::Admin qw (MigrateSettingsToNewChatID);
 use BotLib::Conf qw (LoadConf);
 use Teapot::Bot::Object::ChatPermissions ();
 
@@ -62,7 +64,34 @@ sub redis_parse_message {
 		my $r = $main::TGM->sendMessage ($message);
 
 		if ($r->{error}) {
-			$log->error ("An error occured while sending message to chat $m->{chatid}");
+			if (defined ($r->{http_code}) && $r->{http_code} == 400) {
+				unless (defined $r->{$message}) {
+					$log->error ("An error occured while sending message to chat $m->{chatid}");
+					return;
+				}
+
+				my $j = eval { decode_json ($r->{$message}); };
+
+				unless (defined $j) {
+					$log->error ("An error occured while sending message to chat $m->{chatid}");
+					return;
+				}
+
+				unless (defined $j->{migrate_to_chat_id}) {
+					$log->error ("An error occured while sending message to chat $m->{chatid}");
+					return;
+				}
+
+				MigrateSettingsToNewChatID ($m->{chatid}, $j->{migrate_to_chat_id});
+
+				$message->{chat_id} = $j->{migrate_to_chat_id};
+				$r = undef;
+				$r = $main::TGM->sendMessage ($message);
+
+				if ($r->{error}) {
+					$log->error ("An error occured while sending message to chat $j->{migrate_to_chat_id}");
+				}
+			}
 		}
 	}
 

@@ -14,7 +14,7 @@ use Log::Any qw ($log);
 use Math::Random::Secure qw (irand);
 use Mojo::Base 'Teapot::Bot::Brain';
 
-use BotLib::Admin qw (FortuneToggleList ChanMsgEnabled GreetMsgEnabled GoodbyeMsgEnabled);
+use BotLib::Admin qw (FortuneToggleList ChanMsgEnabled GreetMsgEnabled GoodbyeMsgEnabled MigrateSettingsToNewChatID);
 use BotLib qw (Command);
 use BotLib::Conf qw (LoadConf);
 use BotLib::Util qw (trim fmatch BotSleep Highlight IsCensored RandomCommonPhrase);
@@ -99,6 +99,16 @@ sub __on_msg {
 	my ($self, $msg) = @_;
 	# chat info
 	my $chatid;
+
+	# Ловим сообщения о миграции.
+	if ($msg->can ('migrate_to_chat_id') && $msg->can ('migrate_from_chat_id')) {
+		if (defined ($msg->migrate_from_chat_id) && defined ($msg->migrate_from_chat_id)) {
+			MigrateSettingsToNewChatID ($msg->migrate_from_chat_id, $msg->migrate_to_chat_id);
+		}
+
+		return;
+	}
+
 	my $chatname = 'Noname chat';
 	# user sending message info
 	my ($userid, $username, $fullname, $highlight, $vis_a_vi) = Highlight ($msg);
