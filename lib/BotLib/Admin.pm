@@ -109,7 +109,7 @@ sub ListForbidden {
 	return join "\n", @list;
 }
 
-sub StatusForbidden {
+sub EnabledForbidden {
 	my $chatid = shift;
 	my $ftype  = shift;
 
@@ -188,6 +188,24 @@ sub FortuneStatus ($) {
 	}
 
 	return $phrase;
+}
+
+sub FortuneEnabled ($) {
+	my $chatid = shift;
+
+	my $cache = CHI->new (
+		driver => 'BerkeleyDB',
+		root_dir => $cachedir,
+		namespace => __PACKAGE__ . '_' . 'fortune',
+	);
+
+	my $state = $cache->get ($chatid);
+
+	if (defined $state && $state) {
+		return 1;
+	} else {
+		return 0;
+	}
 }
 
 sub FortuneToggleList () {
@@ -561,32 +579,32 @@ sub PluginToggle (@) {
 sub MigrateSettingsToNewChatID {
 	my $old_id = shift;
 	my $new_id = shift;
+	# TODO: Catch errors, if error==1, than noop
 
-	if (FortuneStatus ($old_id)) {
+	if (FortuneEnabled ($old_id)) {
 		FortuneToggle ($new_id, 1);
+		FortuneToggle ($old_id, 0);
 	} else {
 		FortuneToggle ($new_id, 0);
 	}
 
-	if (ChanMsgStatus ($old_id)) {
+	if (ChanMsgEnabled ($old_id)) {
 		ChanMsgToggle ($new_id, 1);
 	} else {
 		ChanMsgToggle ($new_id, 0);
 	}
 
-	if (GreetMsgStatus ($old_id)) {
+	if (GreetMsgEnabled ($old_id)) {
 		GreetMsgToggle ($new_id, 1);
 	} else {
 		GreetMsgToggle ($new_id, 0);
 	}
 
-	if (GoodbyeMsgStatus ($old_id)) {
+	if (GoodbyeMsgEnabled ($old_id)) {
 		GoodbyeMsgToggle ($new_id, 1);
 	} else {
 		GoodbyeMsgToggle ($new_id, 0);
 	}
-
-	# TODO: forbidden types
 
 	foreach my $plugin (@PluginList) {
 		if (PluginEnabled ($old_id, $plugin)) {
@@ -597,11 +615,11 @@ sub MigrateSettingsToNewChatID {
 	}
 
 	foreach my $ftype (@ForbiddenMessageTypes) {
-		if (StatusForbidden($old_id, $ftype)) {
+		if (EnabledForbidden($old_id, $ftype)) {
 			AddForbiddenType($new_id, $ftype);
 		}
 
-		# Looks like we don't need to add forbiddent type for allowed types... right?
+		# Looks like we don't need to add forbidden type for allowed types... right?
 	}
 
 	return;
