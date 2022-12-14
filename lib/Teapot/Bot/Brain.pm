@@ -754,7 +754,7 @@ sub _post_request {
      $url,
     );
 
-    $result->{message}   = $res->content->asset->content;
+    $result->{message}   = $res->content;
     $result->{http_code} = $res->code;
     $result->{param}     = $form_args;
 
