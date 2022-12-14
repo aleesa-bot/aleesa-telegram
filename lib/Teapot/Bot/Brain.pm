@@ -756,6 +756,7 @@ sub _post_request {
 
     $result->{message}   = $res->content->asset->content;
     $result->{http_code} = $res->code;
+    $result->{param}     = $form_args;
 
     return $result; # to handle this in upper layers
   }

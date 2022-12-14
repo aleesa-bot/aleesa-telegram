@@ -77,12 +77,17 @@ sub redis_parse_message {
 					return;
 				}
 
-				unless (defined $j->{migrate_to_chat_id}) {
-					$log->error ("An error occured while sending message to chat $m->{chatid}");
+				if (defined $j->{migrate_to_chat_id}) {
+					MigrateSettingsToNewChatID ($m->{chatid}, $j->{migrate_to_chat_id});
+				} elsif (defined ($j->{message}) && $j->{message} eq 'Bad Request: chat not found') {
+					if (defined $j->{param}->{chat_id}) {
+						FortuneToggle ($j->{param}->{chat_id}, 0);
+					}
+				} else {
+					$log->error("An error occured while sending message to chat $m->{chatid}");
 					return;
 				}
 
-				MigrateSettingsToNewChatID ($m->{chatid}, $j->{migrate_to_chat_id});
 
 				$message->{chat_id} = $j->{migrate_to_chat_id};
 				$r = undef;
