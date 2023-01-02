@@ -5,21 +5,21 @@ use 5.018; ## no critic (ProhibitImplicitImport)
 use strict;
 use warnings;
 use utf8;
-use open qw (:std :utf8);
-use English qw ( -no_match_vars );
+use open                 qw (:std :utf8);
+use English              qw ( -no_match_vars );
 
-use Clone qw (clone);
-use Data::Dumper qw (Dumper);
-use Log::Any qw ($log);
+use Clone                qw (clone);
+use Data::Dumper         qw (Dumper);
+use Log::Any             qw ($log);
 use Math::Random::Secure qw (irand);
-use Mojo::Base 'Teapot::Bot::Brain';
+use Mojo::Base              'Teapot::Bot::Brain';
 
-use BotLib::Admin qw (FortuneToggleList ChanMsgEnabled GreetMsgEnabled GoodbyeMsgEnabled MigrateSettingsToNewChatID
-                      IsCensored);
-use BotLib qw (Command);
-use BotLib::Conf qw (LoadConf);
-use BotLib::Util qw (trim fmatch BotSleep Highlight RandomCommonPhrase);
-use RedisLib qw (redis_events_listener);
+use BotLib::Admin        qw (FortuneToggleList ChanMsgEnabled GreetMsgEnabled GoodbyeMsgEnabled
+                             MigrateSettingsToNewChatID IsCensored);
+use BotLib               qw (Command);
+use BotLib::Conf         qw (LoadConf);
+use BotLib::Util         qw (trim fmatch BotSleep Highlight RandomCommonPhrase);
+use RedisLib             qw (redis_events_listener);
 
 use version; our $VERSION = qw (1.0);
 use Exporter qw (import);
@@ -316,7 +316,7 @@ sub __on_msg {
 		# Некоторые рекламные товарищи пытаются срать своими каналами в чятик это тоже можно зацензурить ботом и это
 		# пидорство он будет удалять asap
 		# 136817688 - это специальный id пользователя, который принимает облик канала, на него можно нажать и попасть
-		#              на рекламируемый канал
+		#             на рекламируемый канал
 		if ($msg->from->id == 136817688) {
 			my $sender_chat = eval { $msg->sender_chat->id };
 
