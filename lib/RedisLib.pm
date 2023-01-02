@@ -4,17 +4,17 @@ use 5.018; ## no critic (ProhibitImplicitImport)
 use strict;
 use warnings;
 use utf8;
-use open qw (:std :utf8);
+use English              qw ( -no_match_vars );
+use open                 qw (:std :utf8);
 
-use Data::Dumper qw (Dumper);
-use JSON::XS qw (decode_json);
-use Log::Any qw ($log);
-use Mojo::Redis ();
+use Data::Dumper         qw (Dumper);
+use JSON::XS             qw (decode_json);
+use Log::Any             qw ($log);
+use Mojo::Redis             ();
 use Mojo::Redis::Connection ();
 
-use BotLib::Admin qw (MigrateSettingsToNewChatID);
-use BotLib::Conf qw (LoadConf);
-use Teapot::Bot::Object::ChatPermissions ();
+use BotLib::Admin        qw (MigrateSettingsToNewChatID);
+use BotLib::Conf         qw (LoadConf);
 
 use version; our $VERSION = qw (1.0);
 use Exporter qw (import);
@@ -43,12 +43,12 @@ sub redis_parse_message {
 	$message->{chat_id} = eval { 0 + $m->{chatid}; };
 
 	unless (defined $message->{chat_id}) {
-		$log->error ('Incoming redis message is incorrect: chat id must be numeric value!');
+		$log->error ('[ERROR] Incoming redis message is incorrect: chat id must be numeric value!');
 		return;
 	}
 
 	if ($message->{chat_id} == 0) {
-		$log->error ('Incoming redis message is incorrect: chat id must not be equal 0!');
+		$log->error ('[ERROR] Incoming redis message is incorrect: chat id must not be equal 0!');
 		return;
 	}
 
@@ -57,45 +57,64 @@ sub redis_parse_message {
 		$message->{message_thread_id} = 0 + $m->{threadid};
 	}
 
-	my $can_talk = Teapot::Bot::Object::ChatPermissions->canTalk ($main::TGM, 0 + $m->{chatid});
+	# we cannot use $self->_brain->can_talk here because of $self pointing to redis object, not telegram
+	my $can_talk = $main::TGM->can_talk ({ chat_id => 0 + $m->{chatid}});
 
-	if ($can_talk) {
-		# Результат этого действия нас не сильно волнует, т.к. если будет ошибка, то в лог попадёт трейс
+	if ($can_talk->{error}) {
+		$log->error('[ERROR] Unable to guess if i can talk in this chat: ' . Dumper ($can_talk));
+		return;
+	}
+
+	if ($can_talk->{can_talk}) {
 		my $r = $main::TGM->sendMessage ($message);
 
 		if ($r->{error}) {
 			if (defined ($r->{http_code}) && $r->{http_code} == 400) {
 				unless (defined $r->{$message}) {
-					$log->error ("An error occured while sending message to chat $m->{chatid}");
+					$log->error ("[ERROR] An error occured while sending message to chat $m->{chatid}");
 					return;
 				}
 
 				my $j = eval { decode_json ($r->{$message}); };
 
 				unless (defined $j) {
-					$log->error ("An error occured while sending message to chat $m->{chatid}");
+					$log->error ("[ERROR] An error occured while sending message to chat $m->{chatid}: $EVAL_ERROR");
 					return;
 				}
 
-				if (defined $j->{migrate_to_chat_id}) {
-					MigrateSettingsToNewChatID ($m->{chatid}, $j->{migrate_to_chat_id});
-				} elsif (defined ($j->{message}) && $j->{message} eq 'Bad Request: chat not found') {
-					if (defined $j->{param}->{chat_id}) {
-						FortuneToggle ($j->{param}->{chat_id}, 0);
+				if (defined ($j->{parameters}) && defined $j->{parameters}->{migrate_to_chat_id}) {
+					MigrateSettingsToNewChatID ($m->{chatid}, $j->{parameters}->{migrate_to_chat_id});
+					$message->{chat_id} = $j->{parameters}->{migrate_to_chat_id};
+				} elsif (defined ($j->{description})) {
+					if ($j->{description} eq 'Bad Request: chat not found') {
+						if (defined $j->{param}->{chat_id}) {
+							# Выключим явным образом посылку фортунки с утра
+							FortuneToggle ($j->{param}->{chat_id}, 0);
+							return;
+						}
+					} elsif ($j->{description} eq 'Bad Request: have no rights to send a message') {
+						# Ебитес с этим как хотите, по идее $can_talk->{can_talk} должен был вернуть 0
+						# looks like race condition :)
+						$log->error ("[ERROR] Unable to send messages to chat $m->{chatid}: $j->{description}");
+						return;
 					}
 				} else {
-					$log->error("An error occured while sending message to chat $m->{chatid}");
+					$log->error ("[ERROR] An error occured while sending message to chat $m->{chatid}");
 					return;
 				}
 
-
-				$message->{chat_id} = $j->{migrate_to_chat_id};
 				$r = undef;
 				$r = $main::TGM->sendMessage ($message);
 
 				if ($r->{error}) {
-					$log->error ("An error occured while sending message to chat $j->{migrate_to_chat_id}");
+					$log->error (
+						"[ERROR] An error occured while sending message to chat $message->{chat_id}: " .
+						Dumper ($r)
+					);
 				}
+			} else {
+				# TODO: handle 50x errors? They occur when api servers being updated.
+				$log->error ('[ERROR] Unable to call sendMessage() BotAPI method: ' . Dumper ($r));
 			}
 		}
 	}
