@@ -118,13 +118,14 @@ sub __on_msg {
 		my $myObj = $self->getMe ();
 
 		if ($myObj->{error}) {
+			$log->error ("[ERROR] Unable to call getMe BotAPI method: " . Dumper ($myObj));
 			return;
 		}
 
-		$myid = $myObj->id;
-		$myusername = $myObj->username;
+		$myid         = $myObj->id;
+		$myusername   = $myObj->username;
 		$myfirst_name = $myObj->first_name;
-		$mylast_name = $myObj->last_name;
+		$mylast_name  = $myObj->last_name;
 
 		if (defined ($myfirst_name) && ($myfirst_name ne '') && defined ($mylast_name) && ($mylast_name ne '')) {
 			$myfullname = $myfirst_name . ' ' . $mylast_name;
@@ -207,7 +208,12 @@ sub __on_msg {
 		}
 
 		BotSleep $msg;
-		$msg->replyMd ($phrase);
+		my $res = $msg->replyMd ($phrase);
+
+		if ($res->{error}) {
+			$log->error ("Unable to call sendMessage BotAPI method: " . Dumper ($res));
+		}
+
 		return;
 	}
 
@@ -250,7 +256,12 @@ sub __on_msg {
 
 		my $leftuser = sprintf '[%s](tg://user?id=%s)', $member_str, $member->id;
 		$phrase = sprintf $goodbye[irand ($#goodbye + 1)], $leftuser;
-		$msg->replyMd ($phrase);
+		my $res = $msg->replyMd ($phrase);
+
+		if ($res->{error}) {
+			$log->error ("Unable to call sendMessage BotAPI method: " . Dumper ($res));
+		}
+
 		return;
 	}
 
@@ -310,7 +321,11 @@ sub __on_msg {
 		# И вот тут как раз такая проверка и происходит
 		if (IsCensored $msg) {
 			$log->info (sprintf '[INFO] In public chat %s (%s) message from %s was censored', $chatname, $chatid, $vis_a_vi);
-			$self->deleteMessage ({chat_id => $chatid, message_id => $msg->{message_id}});
+			my $res = $self->deleteMessage ({chat_id => $chatid, message_id => $msg->{message_id}});
+
+			if ($res->{error}) {
+				$log->error ("Unable to call sendMessage BotAPI method: " . Dumper ($res));
+			}
 		}
 
 		# Некоторые рекламные товарищи пытаются срать своими каналами в чятик это тоже можно зацензурить ботом и это
@@ -322,7 +337,11 @@ sub __on_msg {
 
 			if (defined $sender_chat) {
 				unless (ChanMsgEnabled ($chatid)) {
-					$self->deleteMessage ({chat_id => $chatid, message_id => $msg->{message_id}});
+					my $res = $self->deleteMessage ({chat_id => $chatid, message_id => $msg->{message_id}});
+
+					if ($res->{error}) {
+						$log->error ("Unable to call sendMessage BotAPI method: " . Dumper ($res));
+					}
 				}
 			}
 		}
@@ -489,7 +508,12 @@ sub __on_msg {
 					$chatname, $chatid, $vis_a_vi, $reply,
 				)
 			);
-			$msg->reply ($reply);
+
+			my $res = $msg->reply ($reply);
+
+			if ($res->{error}) {
+				$log->error ("Unable to call sendMessage BotAPI method: " . Dumper ($res));
+			}
 		} else {
 			$log->debug (
 				sprintf (
@@ -526,6 +550,8 @@ sub RunTelegramBot {
 		eval {                                       ## no critic (ErrorHandling::RequireCheckingReturnValueOfEval)
 			TelegramBot->new->think;
 		};
+
+		$log->error ("[ERROR] $EVAL_ERROR");
 	}
 
 	return;
