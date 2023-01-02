@@ -252,7 +252,7 @@ MYADMIN
 			my $arg;
 			$arg = trim $2 if (defined $2);
 
-			if (defined $arg && $arg !~ /^\s*$/) {
+			if (defined $arg && $arg !~ /^\s*$/ && ($member->status eq 'creator')) {
 				if ($arg == 1) {
 					$reply = MuteByAdminToggle ($chatid, 1);
 				} elsif ($arg == 0) {
