@@ -197,7 +197,12 @@ ${csign}karma фраза | ${csign}карма фраза - посмотреть 
 Но на самом деле я бот больше для общения, чем для исполнения команд.
 Поговоришь со мной?
 MYHELP
-		$msg->replyMd ("$reply");
+		my $res = $msg->replyMd ("$reply");
+
+		if ($res->{error}) {
+			$log->error ('[ERROR] Unable to call sendMessage BotAPI method: ' . Dumper ($res));
+		}
+
 		return;
 	# Если команда не найдена, но это команда admin :)
 	} elsif ($cmd =~ /^(admin|админ)(\s+|\s+.*)?$/u) {
@@ -206,7 +211,7 @@ MYHELP
 		my $member               = $self->getChatMember ($send_args);
 
 		if ($member->{error}) {
-			$log->error ("[ERROR] Unable to call getChatMember() BotAPI method: " . Dumper ($member));
+			$log->error ('[ERROR] Unable to call getChatMember BotAPI method: ' . Dumper ($member));
 			return;
 		}
 
@@ -246,7 +251,12 @@ ${csign}admin admin mute #    - где 1 - разрешено, 0 - не разр
 audio voice photo video animation sticker dice game poll document
 MYADMIN
 
-			$msg->replyMd ($reply);
+			my $res = $msg->replyMd ($reply);
+
+			if ($res->{error}) {
+				$log->error('[ERROR] Unable to call sendMessage BotAPI method: ' . Dumper($res));
+			}
+
 			return;
 		} elsif ($cmd =~ /^admin\s+(admin\s+mute)(\s*|\s+0|\s+1)$/gu) {
 			my $arg;
@@ -272,7 +282,7 @@ MYADMIN
 			my $me = $self->getMe ();
 
 			if ($me->{error}) {
-				$log->error ("[ERROR] Unable to call getMe() BotAPI method: " . Dumper ($member));
+				$log->error ('[ERROR] Unable to call getMe BotAPI method: ' . Dumper ($member));
 				return;
 			}
 
@@ -289,7 +299,7 @@ MYADMIN
 				$me                   = $self->getChatMember ($send_args);
 
 				if ($me->{error}) {
-					$log->error ("[ERROR] Unable to call getChatMember() BotAPI method: " . Dumper ($me));
+					$log->error ('[ERROR] Unable to call getChatMember BotAPI method: ' . Dumper ($me));
 					return;
 				}
 
@@ -299,7 +309,7 @@ MYADMIN
 					my $chatMember        = $self->getChatMember ($send_args);
 
 					if ($chatMember->{error}) {
-						$log->error ("[ERROR] Unable to call getChatMember() BotAPI method: " . Dumper ($chatMember));
+						$log->error ('[ERROR] Unable to call getChatMember BotAPI method: ' . Dumper ($chatMember));
 						return;
 					}
 
@@ -341,8 +351,16 @@ MYADMIN
 
 							if ($result->{error}) {
 								if ($action eq 'mute') {
+									$log->error (
+										'[ERROR] Unable to call muteChatMember BotAPI method: ' .
+										Dumper ($result)
+									);
 									$reply = 'Что-то пошло не так, не получается замьютить.';
 								} else {
+									$log->error (
+										'[ERROR] Unable to call banChatMember BotAPI method: ' .
+											Dumper ($result)
+									);
 									$reply = 'Что-то пошло не так, не получается забанить.';
 								}
 							} else {
