@@ -17,7 +17,8 @@ use BotLib::Conf qw (LoadConf);
 use BotLib::Admin qw (@ForbiddenMessageTypes GetForbiddenTypes AddForbiddenType
                       DelForbiddenType ListForbidden FortuneToggle FortuneStatus
                       PluginToggle PluginStatus PluginEnabled ChanMsgToggle ChanMsgStatus
-                      GreetMsgToggle GreetMsgStatus GoodbyeMsgToggle GoodbyeMsgStatus);
+                      GreetMsgToggle GreetMsgStatus GoodbyeMsgToggle GoodbyeMsgStatus MuteByAdminToggle
+                      MuteByAdminStatus MuteByAdminEnabled);
 use BotLib::Util qw (trim Highlight);
 
 use version; our $VERSION = qw (1.1);
@@ -198,16 +199,24 @@ ${csign}karma фраза | ${csign}карма фраза - посмотреть 
 MYHELP
 		$msg->replyMd ("$reply");
 		return;
-	# Если команда не найдена, но это команда admin
-	} elsif ($cmd =~ /^(admin|админ)$/u) {
-		my $member = $self->getChatMember ({ 'chat_id' => 0 + $msg->chat->id, 'user_id' => 0 + $msg->from->id });
+	# Если команда не найдена, но это команда admin :)
+	} elsif ($cmd =~ /^(admin|админ)(\s+|\s+.*)?$/u) {
+		my $send_args->{chat_id} = 0 + $chatid;
+		$send_args->{user_id}    = 0 + $msg->from->id;
+		my $member               = $self->getChatMember ($send_args);
 
 		if ($member->{error}) {
+			$log->error ("[ERROR] Unable to call getChatMember() BotAPI method: " . Dumper ($member));
 			return;
 		}
 
 		# Это должно показываться только админам чата
-		if (($member->status eq 'administrator') || ($member->status eq 'creator')) {
+		if (($member->status ne 'administrator') && ($member->status ne 'creator')) {
+			$log->debug ("[DEBUG] Non admin member called ${csign}admin command, " . $member->status);
+			return;
+		}
+
+		if ($cmd =~ /^(admin|админ)\s*$/u) {
 			$reply = << "MYADMIN";
 ```
 ${csign}admin censor type #   - где 1 - вкл, 0 - выкл цензуры для означенного типа сообщений
@@ -230,31 +239,40 @@ ${csign}admin chan_msg        - оставляем ли сообщения пр�
 ${csign}admin chan_msg #      - где 1 - оставляем, 0 - удаляем
 ${csign}admin ban userid sec  - выдаём ban указанному user-у на указанное количество секунд (от 30 сек до 1 года), доступно только создателю чата
 ${csign}admin mute userid sec - выдаём mute указанному user-у на указанное количество секунд (от 30 сек до 1 года), доступно только создателю чата
+${csign}admin admin mute      - разрешено ли обычным админам мьютить участников чата через бота (если бот - админ), (создатель чата всегда может попросить бота-админа замьютить обычного участника чата)
+${csign}admin admin mute #    - где 1 - разрешено, 0 - не разрешено
 ```
 Типы сообщений:
 audio voice photo video animation sticker dice game poll document
 MYADMIN
 
 			$msg->replyMd ($reply);
-		}
-
-		return;
-	# Если строка не найдена, но это команда admin с параметрами
-	} elsif ($cmd =~ /^admin\s+.+$/u  ||  $cmd =~ /^админ\s+.+$/u) {
-		my $member = $self->getChatMember ({ 'chat_id' => 0 + $msg->chat->id, 'user_id' => 0 + $msg->from->id });
-
-		if ($member->{error}) {
 			return;
-		}
+		} elsif ($cmd =~ /^admin\s+(admin\s+mute)(\s*|\s+0|\s+1)$/gu) {
+			my $arg;
+			$arg = trim $2 if (defined $2);
 
-		# Банить через бота можно только создателю чятика
-		if (($member->status eq 'creator')  &&  $cmd =~ /^(admin|админ)\s+(ban|mute)\s+(\d+)\s+(\d+)$/gu) {
+			if (defined $arg && $arg !~ /^\s*$/) {
+				if ($arg == 1) {
+					$reply = MuteByAdminToggle ($chatid, 1);
+				} elsif ($arg == 0) {
+					$reply = MuteByAdminToggle ($chatid, 0);
+				}
+			} else {
+				$reply = MuteByAdminStatus ($chatid);
+			}
+		} elsif ($cmd =~ /^(admin|админ)\s+(ban|mute)\s+(\d+)\s+(\d+)$/gu) {
+			if ($member->status eq 'admin' && (! MuteByAdminEnabled ($chatid))) {
+				return 'Не буду я для тебя никого мьтить.';
+			}
+
 			my (undef, $action, $user_id_to_prosecute, $time) = split /\s+/, $cmd;
 
 			# Бот должен быть админом, чтобы банить юзеров
 			my $me = $self->getMe ();
 
 			if ($me->{error}) {
+				$log->error ("[ERROR] Unable to call getMe() BotAPI method: " . Dumper ($member));
 				return;
 			}
 
@@ -267,17 +285,21 @@ MYADMIN
 					$reply = 'Я не буду себя банить.';
 				}
 			} else {
-				$me = $self->getChatMember ({'chat_id' => $chatid, 'user_id' => $me->id});
+				$send_args->{user_id} = $me->id;
+				$me                   = $self->getChatMember ($send_args);
 
 				if ($me->{error}) {
+					$log->error ("[ERROR] Unable to call getChatMember() BotAPI method: " . Dumper ($me));
 					return;
 				}
 
 				if ($me->status eq 'administrator') {
 					# Проверим, что такой юзер есть в чятике
-					my $chatMember = $self->getChatMember ({'chat_id' => $chatid, 'user_id' => $user_id_to_prosecute});
+					$send_args->{user_id} = $user_id_to_prosecute;
+					my $chatMember        = $self->getChatMember ($send_args);
 
 					if ($chatMember->{error}) {
+						$log->error ("[ERROR] Unable to call getChatMember() BotAPI method: " . Dumper ($chatMember));
 						return;
 					}
 
@@ -308,22 +330,13 @@ MYADMIN
 						} else {
 							my $result;
 
+							$send_args->{user_id}    = 0 + $user_id_to_prosecute;
+							$send_args->{until_date} = $time + time ();
+
 							if ($action eq 'mute') {
-								$result = $self->muteChatMember (
-									{
-										'chat_id' => 0 + $chatid,
-										'user_id' => 0 + $user_id_to_prosecute,
-										'until_date' => $time + time (),
-									},
-								);
+								$result = $self->muteChatMember ($send_args);
 							} else {
-								$result = $self->banChatMember (
-									{
-										'chat_id' => 0 + $chatid,
-										'user_id' => 0 + $user_id_to_prosecute,
-										'until_date' => $time + time (),
-									},
-								);
+								$result = $self->banChatMember ($send_args);
 							}
 
 							if ($result->{error}) {
@@ -341,105 +354,106 @@ MYADMIN
 					$reply = 'Я так пока не умею, я здесь не админ.'
 				}
 			}
+		} elsif ($cmd =~ /^admin\s+(censor|ценз)\s*$/gu) {
+			$reply = ListForbidden ($chatid);
+		} elsif ($cmd =~ /^admin\s+(censor|ценз)\s+(type|тип)\s+(.+)$/gu) {
+			my $arg;
+			$arg = trim $3 if (defined $3);
 
-		# Это должно показываться только админам чата
-		} elsif (($member->status eq 'administrator') || ($member->status eq 'creator')) {
-			# Вынем субкоманду, это первый аргумент команды admin
-			$cmd =~ /^(admin|админ)\s+(.+)$/u;
-			my $command = trim ($2); ## no critic (RegularExpressions::ProhibitCaptureWithoutTest)
-			my ($subcmd, $args) = split /\s+/, $command, 2;
+			if (defined $arg && $arg ne '') {
+				my ($msgType, $toggle) = split /\s/, $arg, 2;
 
-			# Субкоманды не нашлось, ну и какбэ досвидонья
-			if ($subcmd eq '') {
-				return;
-			# Субкоманда censor...
-			} elsif ($subcmd eq 'censor' || $subcmd eq 'ценз') {
-				# Censor с аргументами
-				if (defined ($args) && ($args ne '')) {
-					my ($msgType, $toggle) = split /\s/, $args, 2;
-
-					if (defined $toggle) {
-						foreach (@ForbiddenMessageTypes) {
-							if ($msgType eq $_) {
-								if ($toggle == 1) {
-									AddForbiddenType ($chatid, $msgType);
-									$reply = "Теперь сообщения с $msgType будут автоматически удаляться";
-								} elsif ($toggle == 0) {
-									DelForbiddenType ($chatid, $msgType);
-									$reply = "Теперь сообщения с $msgType будут оставаться";
-								}
+				if (defined $toggle) {
+					foreach (@ForbiddenMessageTypes) {
+						if ($msgType eq $_) {
+							if ($toggle == 1) {
+								AddForbiddenType ($chatid, $msgType);
+								$reply = "Теперь сообщения с $msgType будут автоматически удаляться";
+							} elsif ($toggle == 0) {
+								DelForbiddenType ($chatid, $msgType);
+								$reply = "Теперь сообщения с $msgType будут оставаться";
 							}
 						}
 					}
-				# Censor без аргументов, выдаёт список типов сообщений и будут ли они автоматически удаляться
-				} else {
-					$reply = ListForbidden ($chatid);
 				}
-			# Хотим ли мы показывать фортунку с утра
-			} elsif ($subcmd eq 'fortune' || $subcmd eq 'фортунка') {
-				if (defined $args) {
-					if ($args == 1) {
-						$reply = FortuneToggle ($chatid, 1);
-					} elsif ($args == 0) {
-						$reply = FortuneToggle ($chatid, 0);
-					}
-				} else {
-					$reply = FortuneStatus ($chatid);
+			}
+		} elsif ($cmd =~ /^admin\s+(fortune|фортунка)(\s*|\s+0|\s+1)$/gu) {
+			my $arg;
+			$arg = trim $2 if (defined $2);
+
+			if (defined $arg && $arg !~ /^\s*$/) {
+				if ($arg == 1) {
+					$reply = FortuneToggle ($chatid, 1);
+				} elsif ($arg == 0) {
+					$reply = FortuneToggle ($chatid, 0);
 				}
-			# Хотим ли мы удалять "сообщения от каналов"
-			} elsif ($subcmd eq 'chan_msg') {
-				if (defined $args) {
-					if ($args == 1) {
-						$reply = ChanMsgToggle ($chatid, 1);
-					} elsif ($args == 0) {
-						$reply = ChanMsgToggle ($chatid, 0);
-					}
-				} else {
-					$reply = ChanMsgStatus ($chatid);
+			} else {
+				$reply = FortuneStatus ($chatid);
+			}
+		} elsif ($cmd =~ /^admin\s+chan_msg(\s*|\s+0|\s+1)$/gu) {
+			my $arg = $1;
+			$arg = trim $1 if (defined $1);
+
+			if (defined $arg && $arg !~ /^\s*$/) {
+				if ($arg == 1) {
+					$reply = ChanMsgToggle ($chatid, 1);
+				} elsif ($arg == 0) {
+					$reply = ChanMsgToggle ($chatid, 0);
 				}
-			# Приветствуем ли мы новых участников чата
-			} elsif ($subcmd eq 'greet' || $subcmd eq 'приветствие') {
-				if (defined $args) {
-					if ($args == 1) {
-						$reply = GreetMsgToggle ($chatid, 1);
-					} elsif ($args == 0) {
-						$reply = GreetMsgToggle ($chatid, 0);
-					}
-				} else {
-					$reply = GreetMsgStatus ($chatid);
+			} else {
+				$reply = ChanMsgStatus ($chatid);
+			}
+		} elsif ($cmd =~ /^admin\s+(greet|приветствие)(\s*|\s+0|\s+1)$/gu) {
+			my $arg = $2;
+			$arg = trim $2 if (defined $2);
+
+			if (defined $arg &&  $arg !~ /^\s*$/) {
+				if ($arg == 1) {
+					$reply = GreetMsgToggle ($chatid, 1);
+				} elsif ($arg == 0) {
+					$reply = GreetMsgToggle ($chatid, 0);
 				}
-			} elsif ($subcmd eq 'goodbye' || $subcmd eq 'прощание') {
-				if (defined $args) {
-					if ($args == 1) {
-						$reply = GoodbyeMsgToggle ($chatid, 1);
-					} elsif ($args == 0) {
-						$reply = GoodbyeMsgToggle ($chatid, 0);
-					}
-				} else {
-					$reply = GoodbyeMsgStatus ($chatid);
+			} else {
+				$reply = GreetMsgStatus ($chatid);
+			}
+		} elsif ($cmd =~ /^admin\s+(goodbye|прощание)(\s*|\s+0|\s+1)$/gu) {
+			my $arg = $2;
+			$arg = trim $2 if (defined $2);
+
+			if (defined $arg &&  $arg !~ /^\s*$/) {
+				if ($arg == 1) {
+					$reply = GoodbyeMsgToggle ($chatid, 1);
+				} elsif ($arg == 0) {
+					$reply = GoodbyeMsgToggle ($chatid, 0);
 				}
-			# Работает ли плагин oboobs в чатике
-			} elsif ($subcmd eq 'oboobs') {
-				if (defined $args) {
-					if ($args == 1) {
-						$reply = PluginToggle ($chatid, 'oboobs', 1);
-					} elsif ($args == 0) {
-						$reply = PluginToggle ($chatid, 'oboobs', 0);
-					}
-				} else {
-					$reply = PluginStatus ($chatid, 'oboobs');
+			} else {
+				$reply = GoodbyeMsgStatus ($chatid);
+			}
+		} elsif ($cmd =~ /^admin\s+oboobs(\s*|\s+0|\s+1)$/gu) {
+			my $arg = $1;
+			$arg = trim $1 if (defined $1);
+
+			if (defined $arg) {
+				if ($arg == 1) {
+					$reply = PluginToggle ($chatid, 'oboobs', 1);
+				} elsif ($arg == 0) {
+					$reply = PluginToggle ($chatid, 'oboobs', 0);
 				}
-			# Работает ли плагин obutts в чатике
-			} elsif ($subcmd eq 'obutts') {
-				if (defined $args) {
-					if ($args == 1) {
-						$reply = PluginToggle ($chatid, 'obutts', 1);
-					} elsif ($args == 0) {
-						$reply = PluginToggle ($chatid, 'obutts', 0);
-					}
-				} else {
-					$reply = PluginStatus ($chatid, 'obutts');
+			} else {
+				$reply = PluginStatus ($chatid, 'oboobs');
+			}
+		} elsif ($cmd =~ /^admin\s+obutts(\s*|\s+0|\s+1)$/gu) {
+			my $arg = $1;
+			$arg = trim $1 if (defined $1);
+
+			if (defined $arg) {
+				if ($arg == 1) {
+					$reply = PluginToggle ($chatid, 'obutts', 1);
+				} elsif ($arg == 0) {
+					$reply = PluginToggle ($chatid, 'obutts', 0);
 				}
+			} else {
+				$reply = PluginStatus ($chatid, 'obutts');
 			}
 		}
 	}

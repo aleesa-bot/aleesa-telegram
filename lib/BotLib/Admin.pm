@@ -18,8 +18,8 @@ our @ISA    = qw / Exporter /; ## no critic (ClassHierarchies::ProhibitExplicitI
 our @EXPORT_OK = qw (@ForbiddenMessageTypes @PluginList GetForbiddenTypes AddForbiddenType DelForbiddenType
                      ListForbidden FortuneToggle FortuneToggleList FortuneStatus PluginToggle PluginStatus
                      PluginEnabled ChanMsgToggle ChanMsgStatus ChanMsgEnabled GreetMsgToggle GreetMsgStatus
-                     GreetMsgEnabled GoodbyeMsgToggle GoodbyeMsgStatus GoodbyeMsgEnabled MigrateSettingsToNewChatID
-                     IsCensored);
+                     GreetMsgEnabled GoodbyeMsgToggle GoodbyeMsgStatus GoodbyeMsgEnabled MuteByAdminToggle
+                     MuteByAdminStatus MuteByAdminEnabled MigrateSettingsToNewChatID IsCensored);
 
 my $c = LoadConf ();
 my $cachedir = $c->{cachedir};
@@ -574,6 +574,92 @@ sub PluginToggle (@) {
 	}
 
 	return $phrase;
+}
+
+sub MuteByAdminToggle (@) {
+	my $chatid = shift;
+	my $action = shift // undef;
+	my $phrase = 'Мьют участников чата админами ';
+
+	my $cache = CHI->new (
+		driver => 'BerkeleyDB',
+		root_dir => $cachedir,
+		namespace => __PACKAGE__ . '_' . 'admin_mute',
+	);
+
+	my $state = $cache->get ($chatid);
+
+	if (defined $action) {
+		if ($action) {
+			$cache->set ($chatid, 1, 'never');
+			$phrase .= 'разрешён.';
+		} else {
+			$cache->set ($chatid, 0, 'never');
+			$phrase .= 'запрещён.';
+		}
+	} else {
+		if (defined $state){
+			if ($state) {
+				$cache->set ($chatid, 0, 'never');
+				$phrase .= 'запрещён.';
+			} else {
+				$cache->set ($chatid, 1, 'never');
+				$phrase .= 'разрешён.';
+			}
+		} else {
+			$cache->set ($chatid, 1, 'never');
+			$phrase .= 'разрешён.';
+		}
+	}
+
+	return $phrase;
+}
+
+sub MuteByAdminStatus ($) {
+	my $chatid = shift;
+	my $phrase = 'Мьют админами участников чата ';
+
+	my $cache = CHI->new (
+		driver => 'BerkeleyDB',
+		root_dir => $cachedir,
+		namespace => __PACKAGE__ . '_' . 'admin_mute',
+	);
+
+	my $state = $cache->get ($chatid);
+
+	if (defined $state) {
+		if ($state) {
+			$phrase .= 'разрешён.';
+		} else {
+			$phrase .= 'запрещён.';
+		}
+	} else {
+		$phrase .= 'запрещён.';
+	}
+
+	return $phrase;
+}
+
+sub MuteByAdminEnabled ($) {
+	my $chatid = shift;
+
+	my $cache = CHI->new (
+		driver => 'BerkeleyDB',
+		root_dir => $cachedir,
+		namespace => __PACKAGE__ . '_' . 'admin_mute',
+	);
+
+	my $state = $cache->get ($chatid);
+
+	if (defined $state) {
+		if ($state) {
+			return 1;
+		} else {
+			return 0;
+		}
+	} else {
+		return 0;
+	}
 }
 
 sub MigrateSettingsToNewChatID {
