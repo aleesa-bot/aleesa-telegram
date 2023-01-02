@@ -13,7 +13,7 @@ use Teapot::Bot::Object::ChatMember ();
 use Teapot::Bot::Object::ChatInviteLink ();
 use Teapot::Bot::Object::Voice ();
 
-$Teapot::Bot::Object::ChatMemberUpdated::VERSION = '0.024';
+$Teapot::Bot::Object::ChatMemberUpdated::VERSION = '0.025';
 
 has 'chat';
 has 'from';
@@ -50,7 +50,7 @@ Teapot::Bot::Object::ChatMemberUpdated - The base class for Telegram 'ChatMember
 
 =head1 VERSION
 
-version 0.024
+version 0.025
 
 =head1 DESCRIPTION
 The base class for Telegram 'ChatMemberUpdated' type objects.

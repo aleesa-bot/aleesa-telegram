@@ -8,7 +8,7 @@ use utf8;
 
 use Mojo::Base 'Teapot::Bot::Object::Base';
 
-$Teapot::Bot::Object::User::VERSION = '0.024';
+$Teapot::Bot::Object::User::VERSION = '0.025';
 
 has 'id';
 has 'is_bot';
@@ -41,7 +41,7 @@ Teapot::Bot::Object::User - The base class for Telegram message 'User' type
 
 =head1 VERSION
 
-version 0.024
+version 0.025
 
 =head1 DESCRIPTION
 The base class for Telegram message 'User' type.

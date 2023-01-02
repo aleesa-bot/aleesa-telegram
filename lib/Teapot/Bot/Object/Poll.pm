@@ -9,7 +9,7 @@ use utf8;
 use Mojo::Base 'Teapot::Bot::Object::Base';
 use Teapot::Bot::Object::PollOption ();
 
-$Teapot::Bot::Object::Poll::VERSION = '0.024';
+$Teapot::Bot::Object::Poll::VERSION = '0.025';
 
 has 'id';
 has 'question';
@@ -52,7 +52,7 @@ Teapot::Bot::Object::Poll - The base class for Telegram 'Poll' type objects
 
 =head1 VERSION
 
-version 0.024
+version 0.025
 
 =head1 DESCRIPTION
 The base class for Telegram 'Poll' type objects

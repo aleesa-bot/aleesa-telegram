@@ -8,7 +8,7 @@ use utf8;
 
 use Mojo::Base 'Teapot::Bot::Object::Base';
 
-$Teapot::Bot::Object::ForumTopicClosed::VERSION = '0.024';
+$Teapot::Bot::Object::ForumTopicClosed::VERSION = '0.025';
 
 
 sub fields {
@@ -29,7 +29,7 @@ Teapot::Bot::Object::ForumTopicClosed - The 	base class for Telegram message 'Fo
 
 =head1 VERSION
 
-version 0.024
+version 0.025
 
 =head1 DESCRIPTION
 The base class for Telegram message 'ForumTopicClosed' type.

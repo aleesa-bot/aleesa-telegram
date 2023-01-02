@@ -9,7 +9,7 @@ use utf8;
 use Mojo::Base 'Teapot::Bot::Object::Base';
 use Teapot::Bot::Object::PhotoSize ();
 
-$Teapot::Bot::Object::Video::VERSION = '0.024';
+$Teapot::Bot::Object::Video::VERSION = '0.025';
 
 has 'file_id';
 has 'file_unique_id';
@@ -43,7 +43,7 @@ Teapot::Bot::Object::Video - The base class for Telegram 'Video' object
 
 =head1 VERSION
 
-version 0.024
+version 0.025
 
 =head1 DESCRIPTION
 The base class for Telegram 'Video' object.

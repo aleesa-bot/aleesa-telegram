@@ -8,7 +8,7 @@ use utf8;
 
 use Mojo::Base 'Teapot::Bot::Object::Base';
 
-$Teapot::Bot::Object::PollOption::VERSION = '0.024';
+$Teapot::Bot::Object::PollOption::VERSION = '0.025';
 
 has 'text';
 has 'voter_count';
@@ -31,7 +31,7 @@ Teapot::Bot::Object::PollOption - The base class for Telegram 'PollOption' type 
 
 =head1 VERSION
 
-version 0.024
+version 0.025
 
 =head1 DESCRIPTION
 The base class for Telegram 'PollOption' type objects.

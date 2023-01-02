@@ -40,7 +40,7 @@ use Teapot::Bot::Object::VideoChatStarted ();
 use Teapot::Bot::Object::VideoChatEnded ();
 use Teapot::Bot::Object::VideoChatParticipantsInvited ();
 
-$Teapot::Bot::Object::Message::VERSION = '0.024';
+$Teapot::Bot::Object::Message::VERSION = '0.025';
 
 # basic message stuff
 has 'message_id';
@@ -163,54 +163,76 @@ sub arrays {
   return qw/photo entities caption_entities new_chat_members new_chat_photo/;
 }
 
-
 sub reply {
   my $self = shift;
   my $text = shift;
 
-  my $chatid = $self->chat->id;
-  my $message_thread_id = eval {$self->message_thread_id};
+  my $ret = '';
 
-  if (Teapot::Bot::Object::ChatPermissions->canTalk($self, $chatid)) {
-    if (defined $message_thread_id && $message_thread_id ne '') {
-      return $self->_brain->sendMessage({chat_id => $chatid, message_thread_id => $message_thread_id, text => $text});
-    } else {
-      return $self->_brain->sendMessage({chat_id => $chatid, text => $text});
+  my $send_args->{chat_id} = $self->chat->id;
+  my $message_thread_id   = eval {$self->message_thread_id};
+
+  my $can_talk = $self->_brain->can_talk($send_args);
+
+  if ($can_talk->{error}) {
+    $ret = $can_talk;
+  } else {
+    if ($can_talk->{can_talk}) {
+      $send_args->{text} = $text;
+
+      if (defined $message_thread_id && $message_thread_id ne '') {
+        $send_args->{$message_thread_id} = $message_thread_id;
+      }
+
+      $ret = $self->_brain->sendMessage($send_args);
     }
   }
 
-  return {'error' => 1};
+  return $ret;
 }
 
 sub replyMd {
   my $self = shift;
   my $text = shift;
 
-  my $chatid = $self->chat->id;
-  my $message_thread_id = eval {$self->message_thread_id};
+  my $ret = '';
 
-  if (Teapot::Bot::Object::ChatPermissions->canTalk ($self, $chatid)) {
-    my $send_args;
-    $send_args->{text}              = $text;
-    $send_args->{parse_mode}        = 'Markdown';
-    $send_args->{chat_id}           = $chatid;
-    $send_args->{message_thread_id} = $message_thread_id if (defined $message_thread_id);
-    return $self->_brain->sendMessage($send_args);
+  my $send_args->{chat_id} = $self->chat->id;
+  my $message_thread_id    = eval {$self->message_thread_id};
+
+  my $can_talk = $self->_brain->can_talk($send_args);
+
+  if ($can_talk->{error}) {
+    $ret = $can_talk;
+  } else {
+    if ($can_talk->{can_talk}) {
+      $send_args->{text}              = $text;
+      $send_args->{parse_mode}        = 'Markdown';
+      $send_args->{message_thread_id} = $message_thread_id if (defined $message_thread_id);
+
+      $ret                            = $self->_brain->sendMessage($send_args);
+    }
   }
 
-  return {'error' => 1};
+  return $ret;
 }
 
 sub typing {
   my $self = shift;
 
-  my $chatid = $self->chat->id;
+  my $ret                  = '';
+  my $send_args->{chat_id} = $self->chat->id;
+  my $can_talk             = $self->_brain->can_talk($send_args);
 
-  if (Teapot::Bot::Object::ChatPermissions->canTalk ($self, $chatid)) {
-    return $self->_brain->sendChatAction({chat_id => $chatid});
+  if ($can_talk->{error}) {
+    $ret = $can_talk;
+  } else {
+    if ($can_talk->{can_talk}) {
+      $ret = $self->_brain->sendChatAction($send_args);
+    }
   }
 
-  return {'error' => 1};
+  return $ret;
 }
 
 1;
@@ -227,7 +249,7 @@ Teapot::Bot::Object::Message - The base class for the Telegram type "Message"
 
 =head1 VERSION
 
-version 0.024
+version 0.025
 
 =head1 DESCRIPTION
 The base class for the Telegram type "Message".
@@ -243,6 +265,9 @@ A convenience method to reply to a message with text.
 
 Will return the C<Teapot::Bot::Object::Message> object representing the message
 sent.
+On error returns hash reference with error field set to 1, also set fields
+param, url and debug (which is result of Mojo::UserAgent->post->result->json)
+
 
 =head2 replyMd
 
@@ -250,12 +275,15 @@ A convenience method to reply to a message with markdown formatted text.
 
 Will return the C<Teapot::Bot::Object::Message> object representing the message
 sent.
+On error returns hash reference with error field set to 1, also set fields
+param, url and debug (which is result of Mojo::UserAgent->post->result->json)
 
 =head2 typing
 
 Sends notification to chat that bot is "typing" something.
 
-Returns nothing that should be checked.
+On error returns hash reference with error field set to 1, also set fields
+param, url and debug (which is result of Mojo::UserAgent->post->result->json)
 
 =head1 AUTHOR
 

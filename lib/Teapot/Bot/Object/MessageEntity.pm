@@ -9,7 +9,7 @@ use utf8;
 use Mojo::Base 'Teapot::Bot::Object::Base';
 use Teapot::Bot::Object::User ();
 
-$Teapot::Bot::Object::MessageEntity::VERSION = '0.024';
+$Teapot::Bot::Object::MessageEntity::VERSION = '0.025';
 
 has 'type';
 has 'offset';
@@ -39,7 +39,7 @@ Teapot::Bot::Object::MessageEntity - The base class for Telegram 'MessageEntity'
 
 =head1 VERSION
 
-version 0.024
+version 0.025
 
 =head1 DESCRIPTION
 The base class for Telegram 'MessageEntity' type objects.

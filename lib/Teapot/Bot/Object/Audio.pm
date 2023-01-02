@@ -8,7 +8,7 @@ use utf8;
 
 use Mojo::Base 'Teapot::Bot::Object::Base';
 
-$Teapot::Bot::Object::Audio::VERSION = '0.024';
+$Teapot::Bot::Object::Audio::VERSION = '0.025';
 
 has 'file_id';
 has 'file_unique_id';
@@ -41,7 +41,7 @@ Teapot::Bot::Object::Audio - The base class for Telegram 'Audio' type objects
 
 =head1 VERSION
 
-version 0.024
+version 0.025
 
 =head1 DESCRIPTION
 The base class for Telegram 'Audio' type objects.

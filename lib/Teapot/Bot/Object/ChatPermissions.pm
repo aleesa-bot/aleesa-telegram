@@ -10,7 +10,7 @@ use Carp qw(carp);
 use Mojo::Base 'Teapot::Bot::Object::Base';
 use Teapot::Bot::Brain ();
 
-$Teapot::Bot::Object::ChatPermissions::VERSION = '0.024';
+$Teapot::Bot::Object::ChatPermissions::VERSION = '0.025';
 
 # all fields are optional
 # N.B. Some of the fields "overlaps" other, so in order to guess valid set of permissions you should check all of them
@@ -38,11 +38,38 @@ sub fields {
 }
 
 sub canTalk {
-  my $self = shift;
+  my $self;
+  my $args = {};
+
+  # There is some magic happen if we call function as object, as we usually do here
+  # But if we access function from usual-style wrapper that calls it directly from namespace it supply noy $self object
+  # but string with its name, which is a bummer.
+  while (my $o = shift @_) {
+    if (ref ($o) ne '') {
+      $self = $o;
+      last;
+    }
+  }
+
   my $chatid = shift;
 
-  my $args->{chat_id} = $chatid;
+  $args->{chat_id} = $chatid;
   my $can_talk = 0;
+  my $ret;
+
+  if (! defined($self->token) || $self->token eq '') {
+    $ret->{error}   = 1;
+    $ret->{message} = 'No token supplied to canTalk()';
+
+    return $ret;
+  }
+
+  unless ($args->{chat_id}) {
+    $ret->{error}   = 1;
+    $ret->{message} = 'No chat_id supplied to canTalk()';
+
+    return $ret;
+  }
 
   if ($chatid < 0) {
     # group chat
@@ -50,16 +77,23 @@ sub canTalk {
 
     # on api error, keep silence
     if ($chatobj == 0 || $chatobj->{error}) {
-      carp "Unable to get chat info for $chatid from telegram API";
-      return $can_talk;
+      my $emesg = "Unable to get chat info for $chatid from telegram API";
+      $ret->{message}  = $emesg;
+      $ret->{error}    = 1;
+      $ret->{can_talk} = 0;
+      return $ret;
     }
 
     my $myObj = Teapot::Bot::Brain->getMe ($self);
 
     # on api error, keep silence
     if ($myObj == 0 || $myObj->{error}) {
-      carp "Unable to get chat info for $chatid from telegram API";
-      return $can_talk;
+      my $emesg = "Unable to get chat info for $chatid from telegram API";
+      $ret->{message}  = $emesg;
+      $ret->{error}    = 1;
+      $ret->{can_talk} = 0;
+
+      return $ret;
     }
 
     my $myid = $myObj->id;
@@ -68,8 +102,12 @@ sub canTalk {
 
     # on api error, keep silence
     if ($me == 0 || $me->{error}) {
-      carp 'Unable to get chat info for bot itself from telegram API';
-      return $can_talk;
+      my $emesg = 'Unable to get chat info for bot itself from telegram API';
+      $ret->{message}  = $emesg;
+      $ret->{error}    = 1;
+      $ret->{can_talk} = 0;
+
+      return $ret;
     }
 
     if ($me->{'status'} eq 'administrator') {
@@ -83,8 +121,12 @@ sub canTalk {
     $can_talk = 1;
   }
 
-  return $can_talk;
+  $ret->{error}    = 0;
+  $ret->{can_talk} = $can_talk;
+
+  return $ret;
 }
+
 
 1;
 
@@ -100,7 +142,7 @@ Teapot::Bot::Object::ChatPermissions - The base class for Telegram 'ChatPermissi
 
 =head1 VERSION
 
-version 0.024
+version 0.025
 
 =head1 DESCRIPTION
 The base class for Telegram 'ChatPermissions' type objects.
@@ -114,7 +156,9 @@ attributes available for C<Teapot::Bot::Object::ChatPermissions> objects.
 
 A convenience method to check if bot can talk in given conversation.
 
-Returns true if the bot can talk in given conversation, otherwise false.
+Returns hash reference with can_talk true if the bot can talk in given conversation, otherwise false.
+Also set field error 1 if an error occurs during api interaction.
+And if error set to true message field also set plus can_talk set to false.
 
 =head1 AUTHOR
 

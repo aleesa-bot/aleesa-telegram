@@ -8,7 +8,7 @@ use utf8;
 
 use Mojo::Base 'Teapot::Bot::Object::Base';
 
-$Teapot::Bot::Object::VideoChatScheduled::VERSION = '0.024';
+$Teapot::Bot::Object::VideoChatScheduled::VERSION = '0.025';
 
 # This object represents a service message about a video chat started in the chat. Currently holds no information.
 has 'start_date';
@@ -31,7 +31,7 @@ Teapot::Bot::Object::VideoChatScheduled - The base class for Telegram message 'V
 
 =head1 VERSION
 
-version 0.024
+version 0.025
 
 =head1 DESCRIPTION
 The base class for Telegram message 'VideoChatScheduled' type.
