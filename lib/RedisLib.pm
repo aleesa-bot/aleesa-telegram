@@ -13,7 +13,7 @@ use Log::Any             qw ($log);
 use Mojo::Redis             ();
 use Mojo::Redis::Connection ();
 
-use BotLib::Admin        qw (MigrateSettingsToNewChatID);
+use BotLib::Admin        qw (MigrateSettingsToNewChatID FortuneToggle);
 use BotLib::Conf         qw (LoadConf);
 
 use version; our $VERSION = qw (1.0);
@@ -53,6 +53,7 @@ sub redis_parse_message {
 	}
 
 	$message->{text} = "$m->{message}";
+
 	if (defined ($m->{threadid}) && $m->{threadid} ne '') {
 		$message->{message_thread_id} = 0 + $m->{threadid};
 	}
@@ -61,7 +62,7 @@ sub redis_parse_message {
 	my $can_talk = $main::TGM->can_talk ({ chat_id => 0 + $m->{chatid}});
 
 	if ($can_talk->{error}) {
-		$log->error('[ERROR] Unable to guess if i can talk in this chat: ' . Dumper ($can_talk));
+		$log->error ('[ERROR] Unable to guess if i can talk in this chat: ' . Dumper ($can_talk));
 		return;
 	}
 
@@ -69,52 +70,46 @@ sub redis_parse_message {
 		my $r = $main::TGM->sendMessage ($message);
 
 		if ($r->{error}) {
-			if (defined ($r->{http_code}) && $r->{http_code} == 400) {
-				unless (defined $r->{$message}) {
-					$log->error ("[ERROR] An error occured while sending message to chat $m->{chatid}");
-					return;
-				}
+			# TODO: handle 50x errors? They occur when api servers being updated.
+			$log->error ('[ERROR] Unable to call sendMessage() BotAPI method: ' . Dumper ($r));
 
-				my $j = eval { decode_json ($r->{$message}); };
+			my $resp = eval { $r->{debug}->json };
 
-				unless (defined $j) {
-					$log->error ("[ERROR] An error occured while sending message to chat $m->{chatid}: $EVAL_ERROR");
-					return;
-				}
+			if (defined $resp) {
+				$log->error ('[ERROR] BotAPI returns parsable error: ' . Dumper ($resp));
 
-				if (defined ($j->{parameters}) && defined $j->{parameters}->{migrate_to_chat_id}) {
-					MigrateSettingsToNewChatID ($m->{chatid}, $j->{parameters}->{migrate_to_chat_id});
-					$message->{chat_id} = $j->{parameters}->{migrate_to_chat_id};
-				} elsif (defined ($j->{description})) {
-					if ($j->{description} eq 'Bad Request: chat not found') {
-						if (defined $j->{param}->{chat_id}) {
-							# Выключим явным образом посылку фортунки с утра
-							FortuneToggle ($j->{param}->{chat_id}, 0);
+				if (defined ($resp->{error_code}) && $resp->{error_code} == 400) {
+					if (defined $resp->{description}) {
+						if ($resp->{description} eq 'Bad Request: have no rights to send a message') {
+							$log->notice ("[NOTICE] Have no rights to send message to $m->{chatid}");
+							# TODO: disable fortune if message is good morning fortune
+						} elsif ($resp->{description} eq 'Bad Request: chat not found') {
+							$log->notice (
+								"[NOTICE] Chat not found toggling good morning fortune off for $m->{chatid}"
+							);
+
+							FortuneToggle($m->{chatid}, 0);
 							return;
+						} elsif ($resp->description eq 'Bad Request: group chat was upgraded to a supergroup chat') {
+							if (defined ($resp->{parameters}) &&
+								defined ($resp->{parameters}->{migrate_to_chat_id})) {
+								my $tpl = '[NOTICE] group upgraded to supergroup, chat_id changed, ';
+								$tpl   .= 'migrating settings from %s to %s';
+
+								$log->notice (
+									sprintf($tpl, $m->{chatid}, $resp->{parameters}->{migrate_to_chat_id})
+								);
+
+								MigrateSettingsToNewChatID (
+									$m->{chatid},
+									$resp->{parameters}->{migrate_to_chat_id}
+								);
+							}
+						} else {
+							$log->error ('[ERROR] Unable to call sendMessage() BotAPI method: ' . Dumper ($r));
 						}
-					} elsif ($j->{description} eq 'Bad Request: have no rights to send a message') {
-						# Ебитес с этим как хотите, по идее $can_talk->{can_talk} должен был вернуть 0
-						# looks like race condition :)
-						$log->error ("[ERROR] Unable to send messages to chat $m->{chatid}: $j->{description}");
-						return;
 					}
-				} else {
-					$log->error ("[ERROR] An error occured while sending message to chat $m->{chatid}");
-					return;
 				}
-
-				$r = undef;
-				$r = $main::TGM->sendMessage ($message);
-
-				if ($r->{error}) {
-					$log->error (
-						"[ERROR] An error occured while sending message to chat $message->{chat_id}: " .
-						Dumper ($r)
-					);
-				}
-			} else {
-				# TODO: handle 50x errors? They occur when api servers being updated.
-				$log->error ('[ERROR] Unable to call sendMessage() BotAPI method: ' . Dumper ($r));
 			}
 		}
 	}
