@@ -295,7 +295,9 @@ MYADMIN
 					$reply = 'Я не буду себя банить.';
 				}
 			} else {
-				$send_args->{user_id} = $me->id;
+				$send_args = undef;
+				$send_args->{chat_id} = 0 + $chatid;
+				$send_args->{user_id} = 0 + $me->id;
 				$me                   = $self->getChatMember ($send_args);
 
 				if ($me->{error}) {
@@ -305,7 +307,9 @@ MYADMIN
 
 				if ($me->status eq 'administrator') {
 					# Проверим, что такой юзер есть в чятике
-					$send_args->{user_id} = $user_id_to_prosecute;
+					$send_args = undef;
+					$send_args->{chat_id} = 0 + $chatid;
+					$send_args->{user_id} = 0 + $user_id_to_prosecute;
 					my $chatMember        = $self->getChatMember ($send_args);
 
 					if ($chatMember->{error}) {
@@ -339,7 +343,8 @@ MYADMIN
 							}
 						} else {
 							my $result;
-
+							$send_args = undef;
+							$send_args->{chat_id}    = 0 + $chatid;
 							$send_args->{user_id}    = 0 + $user_id_to_prosecute;
 							$send_args->{until_date} = $time + time ();
 
@@ -349,7 +354,10 @@ MYADMIN
 								$result = $self->banChatMember ($send_args);
 							}
 
-							if ($result->{error}) {
+							# Если всё хорошо, то возвращается true в формате JSON::PP::Boolean
+							if ((ref ($result) eq 'JSON::PP::Boolean') && ($result == JSON::PP::true)) {
+								$reply = 'Готово.';
+							} elsif (defined ($result->{error}) && $result->{error}) {
 								if ($action eq 'mute') {
 									$log->error (
 										'[ERROR] Unable to call muteChatMember BotAPI method: ' .
@@ -364,7 +372,11 @@ MYADMIN
 									$reply = 'Что-то пошло не так, не получается забанить.';
 								}
 							} else {
-								$reply = 'Готово.';
+								$log->error (
+									'[ERROR] Unable to call banChatMember/muteChatMember BotAPI method: ' .
+										Dumper ($result)
+								);
+								$reply = 'Что-то пошло совсем не так.';
 							}
 						}
 					}
