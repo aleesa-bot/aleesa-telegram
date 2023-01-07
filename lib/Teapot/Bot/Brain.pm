@@ -37,7 +37,21 @@ $Teapot::Bot::Brain::VERSION = '0.025';
 
 # base class for building telegram robots with Mojolicious
 has longpoll_time => 60;
-has ua            => sub { Mojo::UserAgent->new->inactivity_timeout(shift->longpoll_time + 15) };
+
+has ua            => sub {
+  my $self = shift;
+
+  my $ua = Mojo::UserAgent->new;
+  $ua = $ua->connect_timeout(5);                            # defaults to 10
+  $ua = $ua->inactivity_timeout($self->longpoll_time + 15); # defaults to 40
+  $ua = $ua->max_connections(0);                            # no keepalive connections (defaults to 5)
+  $ua = $ua->request_timeout($self->longpoll_time + 15);    # whole request should take no more than this time
+                                                            # including connection establishing time, request time and
+                                                            # response time
+
+  return $ua;
+};
+
 has token         => sub { croak 'You need to supply your own token'; };
 
 has tasks         => sub { [] };
@@ -1060,7 +1074,7 @@ L<https://core.telegram.org/bots/api#banchatmember>.
 Takes chat_id, and user_id as arguments. And optionally until_date and
 revoke_messages.
 
-Returns Telegram API answer that is basically returns true on success.
+Returns Telegram API answer that is basically returns JSON::PP::true on success.
 
 On error returns hash reference with error field set to 1, also set fields
 param, url and debug (which is result of Mojo::UserAgent->post->result->json)
@@ -1072,7 +1086,7 @@ L<https://core.telegram.org/bots/api#unbanchatmember>.
 
 Takes chat_id, and user_id as arguments. And optionally only_if_banned.
 
-Returns Telegram API answer that is basically returns true on success.
+Returns Telegram API answer that is basically returns JSON::PP::true on success.
 
 On error returns hash reference with error field set to 1, also set fields
 param, url and debug (which is result of Mojo::UserAgent->post->result->json)
@@ -1086,7 +1100,7 @@ Takes chat_id, and user_id as arguments. And optionally until_date.
 
 Shorthand for revoking all permissions for member being muted.
 
-Returns Telegram API answer that is basically returns true on success.
+Returns Telegram API answer that is basically returns JSON::PP::true on success.
 
 On error returns hash reference with error field set to 1, also set fields
 param, url and debug (which is result of Mojo::UserAgent->post->result->json)
