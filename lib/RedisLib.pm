@@ -76,8 +76,6 @@ sub redis_parse_message {
 			my $resp = eval { $r->{debug}->json };
 
 			if (defined $resp) {
-				$log->error ('[ERROR] BotAPI returns parsable error: ' . Dumper ($resp));
-
 				if (defined ($resp->{error_code}) && $resp->{error_code} == 400) {
 					if (defined $resp->{description}) {
 						if ($resp->{description} eq 'Bad Request: have no rights to send a message') {
@@ -108,7 +106,11 @@ sub redis_parse_message {
 						} else {
 							$log->error ('[ERROR] Unable to call sendMessage() BotAPI method: ' . Dumper ($r));
 						}
+					} else {
+						$log->error ('[ERROR] BotAPI returns parsable error: ' . Dumper ($resp));
 					}
+				} else {
+					$log->error ('[ERROR] Unable to handle BotAPI error: ' . Dumper ($resp));
 				}
 			}
 		}
