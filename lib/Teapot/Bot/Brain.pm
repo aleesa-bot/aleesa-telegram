@@ -233,7 +233,9 @@ sub banChatMember {
 
   $send_args->{chat_id}         = $args->{chat_id};
   $send_args->{user_id}         = $args->{user_id};
+  # Acording https://core.telegram.org/bots/api#banchatmember Applied for supergroups and channels only.
   $send_args->{until_date}      = $args->{until_date}      if exists $args->{until_date};
+  # Acording https://core.telegram.org/bots/api#banchatmember Always True for supergroups and channels.
   $send_args->{revoke_messages} = $args->{revoke_messages} if exists $args->{revoke_messages};
 
   my $url = sprintf 'https://api.telegram.org/bot%s/banChatMember', $self->token;
@@ -922,7 +924,7 @@ sub _process_message {
       };
 
       unless ($evalRet) {
-        cluck "An error occured during update processing: $EVAL_ERROR";
+        carp "An error occured during update processing: $EVAL_ERROR";
         return;
       }
     }
