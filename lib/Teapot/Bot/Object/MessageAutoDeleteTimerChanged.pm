@@ -8,7 +8,7 @@ use utf8;
 
 use Mojo::Base 'Teapot::Bot::Object::Base';
 
-$Teapot::Bot::Object::MessageAutoDeleteTimerChanged::VERSION = '0.025';
+$Teapot::Bot::Object::MessageAutoDeleteTimerChanged::VERSION = '0.026';
 
 has 'message_auto_delete_time';
 
@@ -32,7 +32,7 @@ Teapot::Bot::Object::MessageAutoDeleteTimerChanged - The base class for Telegram
 
 =head1 VERSION
 
-version 0.025
+version 0.026
 
 =head1 DESCRIPTION
 The base class for Telegram 'MessageAutoDeleteTimerChanged' type objects.

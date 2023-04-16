@@ -7,7 +7,7 @@ use 5.018; ## no critic (ProhibitImplicitImport)
 use utf8;
 
 use Mojo::Base 'Teapot::Bot::Object::Base';
-$Teapot::Bot::Object::CallbackGame::VERSION = '0.025';
+$Teapot::Bot::Object::CallbackGame::VERSION = '0.026';
 
 # https://core.telegram.org/bots/api#callbackgame
 # "A placeholder, currently holds no information. Use BotFather to set up your game"
@@ -30,7 +30,7 @@ Teapot::Bot::Object::CallbackGame - The base class for Telegram message 'Callbac
 
 =head1 VERSION
 
-version 0.025
+version 0.026
 
 =head1 DESCRIPTION
 The base class for Telegram message 'CallbackGame' type.

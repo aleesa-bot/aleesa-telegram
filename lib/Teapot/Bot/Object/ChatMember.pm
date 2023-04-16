@@ -12,7 +12,7 @@ use Mojo::Base 'Teapot::Bot::Object::Base';
 use Teapot::Bot::Object::User ();
 
 
-$Teapot::Bot::Object::ChatMember::VERSION = '0.025';
+$Teapot::Bot::Object::ChatMember::VERSION = '0.026';
 
 # ChatMemberOwner
 has   'user';
@@ -155,7 +155,7 @@ Teapot::Bot::Object::ChatMember - The base class for Telegram 'ChatMember' type 
 
 =head1 VERSION
 
-version 0.025
+version 0.026
 
 =head1 DESCRIPTION
 The base class for Telegram 'ChatMember' type objects.

@@ -9,7 +9,7 @@ use utf8;
 use Mojo::Base 'Teapot::Bot::Object::Base';
 use Teapot::Bot::Object::PhotoSize ();
 
-$Teapot::Bot::Object::Document::VERSION = '0.025';
+$Teapot::Bot::Object::Document::VERSION = '0.026';
 
 has 'file_id';
 has 'file_unique_id';
@@ -39,7 +39,7 @@ Teapot::Bot::Object::Document - The base class for Telegram 'Document' objects
 
 =head1 VERSION
 
-version 0.025
+version 0.026
 
 =head1 DESCRIPTION
 The base class for Telegram 'Document' objects.

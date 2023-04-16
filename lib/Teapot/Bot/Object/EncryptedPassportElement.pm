@@ -8,7 +8,7 @@ use utf8;
 
 use Mojo::Base 'Teapot::Bot::Object::Base';
 
-$Teapot::Bot::Object::EncryptedPassportElement::VERSION = '0.025';
+$Teapot::Bot::Object::EncryptedPassportElement::VERSION = '0.026';
 
 # XXX Implement rest of this
 # https://core.telegram.org/bots/api#encryptedpassportelement
@@ -38,7 +38,7 @@ Teapot::Bot::Object::EncryptedPassportElement - The base class for Telegram 'Enc
 
 =head1 VERSION
 
-version 0.025
+version 0.026
 
 =head1 DESCRIPTION
 The base class for Telegram 'EncryptedPassportElement' type objects.

@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use 5.018; ## no critic (ProhibitImplicitImport)
 use utf8;
-$Teapot::Bot::VERSION = '0.025';
+$Teapot::Bot::VERSION = '0.026';
 # ABSTRACT: A base class to make your very own Telegram bot
 
 1;
@@ -25,7 +25,7 @@ A base class to make your very own Telegram bot
 
 =head1 VERSION
 
-version 0.025
+version 0.026
 
 =head1 SYNOPSIS
 

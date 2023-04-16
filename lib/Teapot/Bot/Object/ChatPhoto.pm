@@ -8,7 +8,7 @@ use utf8;
 
 use Mojo::Base 'Teapot::Bot::Object::Base';
 
-$Teapot::Bot::Object::ChatPhoto::VERSION = '0.025';
+$Teapot::Bot::Object::ChatPhoto::VERSION = '0.026';
 
 has 'small_file_id';
 has 'small_file_unique_id';
@@ -35,7 +35,7 @@ Teapot::Bot::Object::ChatPhoto - The base class for Telegram 'ChatPhoto' type ob
 
 =head1 VERSION
 
-version 0.025
+version 0.026
 
 =head1 DESCRIPTION
 The base class for Telegram 'ChatPhoto' type objects.

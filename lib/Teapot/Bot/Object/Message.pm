@@ -47,7 +47,7 @@ use Teapot::Bot::Object::VideoChatStarted ();
 use Teapot::Bot::Object::VideoChatEnded ();
 use Teapot::Bot::Object::VideoChatParticipantsInvited ();
 
-$Teapot::Bot::Object::Message::VERSION = '0.025';
+$Teapot::Bot::Object::Message::VERSION = '0.026';
 
 # basic message stuff
 has 'message_id';
@@ -265,7 +265,7 @@ Teapot::Bot::Object::Message - The base class for the Telegram type "Message"
 
 =head1 VERSION
 
-version 0.025
+version 0.026
 
 =head1 DESCRIPTION
 The base class for the Telegram type "Message".

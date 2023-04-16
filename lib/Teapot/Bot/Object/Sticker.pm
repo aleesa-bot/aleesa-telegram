@@ -10,7 +10,7 @@ use Mojo::Base 'Teapot::Bot::Object::Base';
 use Teapot::Bot::Object::PhotoSize ();
 use Teapot::Bot::Object::MaskPosition ();
 
-$Teapot::Bot::Object::Sticker::VERSION = '0.025';
+$Teapot::Bot::Object::Sticker::VERSION = '0.026';
 
 has 'file_id';
 has 'file_unique_id';
@@ -52,7 +52,7 @@ Teapot::Bot::Object::Sticker - The base class for Telegram message 'Sticker' typ
 
 =head1 VERSION
 
-version 0.025
+version 0.026
 
 =head1 DESCRIPTION
 The base class for Telegram message 'Sticker' type.

@@ -10,7 +10,7 @@ use Carp qw(carp);
 use Mojo::Base 'Teapot::Bot::Object::Base';
 use Teapot::Bot::Brain ();
 
-$Teapot::Bot::Object::ChatPermissions::VERSION = '0.025';
+$Teapot::Bot::Object::ChatPermissions::VERSION = '0.026';
 
 # all fields are optional
 # N.B. Some of the fields "overlaps" other, so in order to guess valid set of permissions you should check all of them
@@ -148,7 +148,7 @@ Teapot::Bot::Object::ChatPermissions - The base class for Telegram 'ChatPermissi
 
 =head1 VERSION
 
-version 0.025
+version 0.026
 
 =head1 DESCRIPTION
 The base class for Telegram 'ChatPermissions' type objects.

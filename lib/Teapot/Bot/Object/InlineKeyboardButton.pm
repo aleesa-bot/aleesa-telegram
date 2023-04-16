@@ -10,7 +10,7 @@ use Mojo::Base 'Teapot::Bot::Object::Base';
 use Teapot::Bot::Object::LoginUrl ();
 use Teapot::Bot::Object::CallbackGame ();
 
-$Teapot::Bot::Object::InlineKeyboardButton::VERSION = '0.025';
+$Teapot::Bot::Object::InlineKeyboardButton::VERSION = '0.026';
 
 has 'text';
 has 'url';
@@ -43,7 +43,7 @@ Teapot::Bot::Object::InlineKeyboardButton - The base class for Telegram 'InlineK
 
 =head1 VERSION
 
-version 0.025
+version 0.026
 
 =head1 DESCRIPTION
 The base class for Telegram 'InlineKeyboardButton' type objects.

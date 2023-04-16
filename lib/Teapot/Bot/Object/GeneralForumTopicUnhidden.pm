@@ -8,7 +8,7 @@ use utf8;
 
 use Mojo::Base 'Teapot::Bot::Object::Base';
 
-$Teapot::Bot::Object::GeneralForumTopicUnhidden::VERSION = '0.025';
+$Teapot::Bot::Object::GeneralForumTopicUnhidden::VERSION = '0.026';
 
 
 sub fields {
@@ -29,7 +29,7 @@ Teapot::Bot::Object::GeneralForumTopicUnhidden - The 	base class for Telegram me
 
 =head1 VERSION
 
-version 0.025
+version 0.026
 
 =head1 DESCRIPTION
 The base class for Telegram message 'GeneralForumTopicUnhidden' type.

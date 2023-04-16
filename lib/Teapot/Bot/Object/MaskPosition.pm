@@ -8,7 +8,7 @@ use utf8;
 
 use Mojo::Base 'Teapot::Bot::Object::Base';
 
-$Teapot::Bot::Object::MaskPosition::VERSION = '0.025';
+$Teapot::Bot::Object::MaskPosition::VERSION = '0.026';
 
 has 'point';
 has 'x_shift';
@@ -33,7 +33,7 @@ Teapot::Bot::Object::MaskPosition - The base class for Telegram 'MaskPosition' t
 
 =head1 VERSION
 
-version 0.025
+version 0.026
 
 =head1 DESCRIPTION
 The base class for Telegram 'MaskPosition' type objects.

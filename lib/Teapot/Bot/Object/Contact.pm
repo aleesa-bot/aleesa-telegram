@@ -8,7 +8,7 @@ use utf8;
 
 use Mojo::Base 'Teapot::Bot::Object::Base';
 
-$Teapot::Bot::Object::Contact::VERSION = '0.025';
+$Teapot::Bot::Object::Contact::VERSION = '0.026';
 
 has 'phone_number';
 has 'first_name';
@@ -36,7 +36,7 @@ Teapot::Bot::Object::Contact - The base class for Telegram 'Contact' objects
 
 =head1 VERSION
 
-version 0.025
+version 0.026
 
 =head1 DESCRIPTION
 The base class for Telegram 'Contact' objects.

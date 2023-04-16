@@ -8,7 +8,7 @@ use utf8;
 
 use Mojo::Base 'Teapot::Bot::Object::Base';
 
-$Teapot::Bot::Object::Dice::VERSION = '0.025';
+$Teapot::Bot::Object::Dice::VERSION = '0.026';
 
 has 'emoji';
 has 'value';
@@ -31,7 +31,7 @@ Teapot::Bot::Object::Dice - The base class for Telegram message 'Dice' type
 
 =head1 VERSION
 
-version 0.025
+version 0.026
 
 =head1 DESCRIPTION
 The base class for Telegram message 'Dice' type.

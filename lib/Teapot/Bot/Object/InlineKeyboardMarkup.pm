@@ -9,7 +9,7 @@ use utf8;
 use Mojo::Base 'Teapot::Bot::Object::Base';
 use Teapot::Bot::Object::InlineKeyboardButton ();
 
-$Teapot::Bot::Object::InlineKeyboardMarkup::VERSION = '0.025';
+$Teapot::Bot::Object::InlineKeyboardMarkup::VERSION = '0.026';
 
 has 'inline_keyboard';
 
@@ -35,7 +35,7 @@ Teapot::Bot::Object::InlineKeyboardMarkup - The base class for Telegram 'InlineK
 
 =head1 VERSION
 
-version 0.025
+version 0.026
 
 =head1 DESCRIPTION
 The base class for Telegram 'InlineKeyboardMarkup' type objects.

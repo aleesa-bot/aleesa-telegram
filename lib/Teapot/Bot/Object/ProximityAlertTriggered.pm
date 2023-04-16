@@ -8,7 +8,7 @@ use utf8;
 
 use Mojo::Base 'Teapot::Bot::Object::Base';
 
-$Teapot::Bot::Object::ProximityAlertTriggered::VERSION = '0.025';
+$Teapot::Bot::Object::ProximityAlertTriggered::VERSION = '0.026';
 
 has 'traveler'; # User
 has 'watcher'; # User
@@ -35,7 +35,7 @@ Teapot::Bot::Object::ProximityAlertTriggered - The base class for Telegram messa
 
 =head1 VERSION
 
-version 0.025
+version 0.026
 
 =head1 DESCRIPTION
 The base class for Telegram message 'ProximityAlertTriggered' type.

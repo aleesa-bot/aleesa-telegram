@@ -8,7 +8,7 @@ use utf8;
 
 use Mojo::Base 'Teapot::Bot::Object::Base';
 
-$Teapot::Bot::Object::ForumTopicCreated::VERSION = '0.025';
+$Teapot::Bot::Object::ForumTopicCreated::VERSION = '0.026';
 
 has 'name';
 has 'icon_color';
@@ -32,7 +32,7 @@ Teapot::Bot::Object::ForumTopicCreated - The 	base class for Telegram message 'F
 
 =head1 VERSION
 
-version 0.025
+version 0.026
 
 =head1 DESCRIPTION
 The base class for Telegram message 'ForumTopicCreated' type.
