@@ -15,8 +15,12 @@ $Teapot::Bot::Object::ChatPermissions::VERSION = '0.025';
 # all fields are optional
 # N.B. Some of the fields "overlaps" other, so in order to guess valid set of permissions you should check all of them
 has 'can_send_messages';         # True, if the user is allowed to send text messages, contacts, locations and venues
-has 'can_send_media_messages';   # True, if the user is allowed to send audios, documents, photos, videos, video notes
-                                 # and voice notes, implies can_send_messages
+has 'can_send_audios';           # True, if the user is allowed to send audios
+has 'can_send_documents';        # True, if the user is allowed to send documents
+has 'can_send_photos';           # True, if the user is allowed to send photos
+has 'can_send_videos';           # True, if the user is allowed to send videos
+has 'can_send_video_notes';      # True, if the user is allowed to send video_notes
+has 'can_send_voice_notes';      # True, if the user is allowed to send voice_notes
 has 'can_send_polls';            # True, if the user is allowed to send polls, implies can_send_messages
 has 'can_send_other_messages';   # True, if the user is allowed to send animations, games, stickers and use inline bots,
                                  # implies can_send_media_messages
@@ -31,9 +35,11 @@ has 'can_manage_topics';         # Optional. True, if the user is allowed to cre
 
 sub fields {
   return {
-          'scalar'                           => [qw/can_send_messages can_send_media_messages can_send_polls
-                                                    can_send_other_messages can_add_web_page_previews can_change_info
-                                                    can_invite_users can_pin_messages can_manage_topics/],
+          'scalar'                           => [qw/can_send_messages can_send_audios can_send_documents
+                                                    can_send_photos can_send_videos can_send_video_notes
+                                                    can_send_voice_notes can_send_polls can_send_other_messages
+                                                    can_add_web_page_previews can_change_info can_invite_users
+                                                    can_pin_messages can_manage_topics/],
          };
 }
 

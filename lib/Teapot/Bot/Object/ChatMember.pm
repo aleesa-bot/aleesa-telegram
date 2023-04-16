@@ -53,7 +53,12 @@ has   'is_member';                 # optional. Restricted only.
 # has 'can_invite_users';          # optional. Administrators and restricted only.
 # has 'can_pin_messages';          # optional. Administrators and restricted only.
 has   'can_send_messages';         # optional. Restricted only.
-has   'can_send_media_messages';   # optional. Restricted only.
+has   'can_send_audios';
+has   'can_send_documents';
+has   'can_send_photos';
+has   'can_send_videos';
+has   'can_send_video_notes';
+has   'can_send_voice_notes';
 has   'can_send_polls';            # optional. Restricted only.
 has   'can_send_other_messages';   # optional. Restricted only.
 has   'can_add_web_page_previews'; # optional. Restricted only.
@@ -71,11 +76,14 @@ has   'until_date';                # optional. Restricted and kicked only.
 
 sub fields {
   return {
-          'scalar'                    => [qw/status custom_title is_anonymous can_be_edited can_manage_chat can_post_messages
-                                             can_edit_messages can_delete_messages can_manage_voice_chats can_restrict_members
-                                             can_promote_members can_change_info can_invite_users can_pin_messages is_member
-                                             can_send_messages can_send_media_messages can_send_polls can_send_other_messages
-                                             can_add_web_page_previews until_date can_manage_topics/],
+          'scalar'                    => [qw/status custom_title is_anonymous can_be_edited can_manage_chat
+                                             can_post_messages can_edit_messages can_delete_messages
+                                             can_manage_voice_chats can_restrict_members can_promote_members
+                                             can_change_info can_invite_users can_pin_messages is_member
+                                             can_send_messages can_send_audios can_send_documents can_send_photos
+                                             can_send_videos can_send_video_notes can_send_voice_notes can_send_polls
+                                             can_send_other_messagescan_add_web_page_previews until_date
+                                             can_manage_topics/],
           'Teapot::Bot::Object::User' => [qw/user/],
         };
 }

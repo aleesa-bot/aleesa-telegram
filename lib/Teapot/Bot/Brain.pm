@@ -311,9 +311,9 @@ sub muteChatMember {
   $send_args->{chat_id}                                  = $args->{chat_id};
   $send_args->{user_id}                                  = $args->{user_id};
   $send_args->{until_date}                               = $args->{until_date} if exists $args->{until_date};
-  # Revoke all known for API v6.2 permissions
+  # Revoke all known for API v6.4 permissions
   $send_args->{permissions}->{can_send_messages}         = false;
-  $send_args->{permissions}->{can_send_media_messages}   = false;
+	$send_args->{permissions}->{use_independent_chat_permissions} = false; # https://core.telegram.org/bots/api#restrictchatmember
   $send_args->{permissions}->{can_send_polls}            = false;
   $send_args->{permissions}->{can_send_other_messages}   = false;
   $send_args->{permissions}->{can_add_web_page_previews} = false;
