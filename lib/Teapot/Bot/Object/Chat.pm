@@ -35,7 +35,7 @@ has 'has_restricted_voice_and_video_messages'; # Optional. True, if the privacy 
                                                # Returned only in getChat.
 has 'join_to_send_messages';    # Optional. True, if users need to join the supergroup before they can send messages.
                                 # Returned only in getChat.
-has 'join_by_request'           # Optional. True, if all users directly joining the supergroup need to be approved by
+has 'join_by_request';          # Optional. True, if all users directly joining the supergroup need to be approved by
                                 # supergroup administrators. Returned only in getChat.
 has 'description';              # Optional. Returned only in getChat.
 has 'invite_link';              # Optional. Returned only in getChat.
