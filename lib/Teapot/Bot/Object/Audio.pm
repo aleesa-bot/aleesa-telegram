@@ -7,7 +7,7 @@ use 5.018; ## no critic (ProhibitImplicitImport)
 use utf8;
 
 use Mojo::Base 'Teapot::Bot::Object::Base';
-
+use Teapot::Bot::Object::PhotoSize ();
 $Teapot::Bot::Object::Audio::VERSION = '0.025';
 
 has 'file_id';
@@ -18,12 +18,12 @@ has 'title';     # Optional. Title of the audio as defined by sender or by audio
 has 'file_name'; # Optional. Original filename as defined by sender
 has 'mime_type'; # Optional. MIME type of the file as defined by sender
 has 'file_size'; # Optional. File size
-has 'thumb';     # Optional. Thumbnail of the album cover to which the music file belongs
+has 'thumbnail'; # Optional. Thumbnail of the album cover to which the music file belongs
 
 sub fields {
   return { scalar                           => [qw/file_id file_unique_id duration performer title file_name mime_type
                                                    file_size/],
-           'Teapot::Bot::Object::PhotoSize' => [qw/thumb/],
+           'Teapot::Bot::Object::PhotoSize' => [qw/thumbnail/],
          };
 }
 

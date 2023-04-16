@@ -13,7 +13,7 @@ $Teapot::Bot::Object::Document::VERSION = '0.025';
 
 has 'file_id';
 has 'file_unique_id';
-has 'thumb'; #PhotoSize
+has 'thumbnail'; #PhotoSize
 has 'file_name';
 has 'mime_type';
 has 'file_size';
@@ -21,7 +21,7 @@ has 'file_size';
 sub fields {
   return {
             scalar                          => [qw/file_id file_unique_id file_name mime_type file_size/],
-           'Teapot::Bot::Object::PhotoSize' => [qw/thumb/],
+           'Teapot::Bot::Object::PhotoSize' => [qw/thumbnail/],
          };
 }
 

@@ -14,20 +14,26 @@ $Teapot::Bot::Object::Sticker::VERSION = '0.025';
 
 has 'file_id';
 has 'file_unique_id';
+has 'type';
 has 'width';
 has 'height';
 has 'is_animated';
 has 'is_video';
-has 'thumb'; # PhotoSize
+has 'thumbnail'; # PhotoSize
 has 'emoji';
 has 'set_name';
+has 'premium_animation';
 has 'mask_position';
+has 'custom_emoji_id';
+has 'needs_repainting';
 has 'file_size';
 
 sub fields {
   return {
-           scalar                           => [ qw/file_id file_unique_id width height is_animated is_video emoji set_name file_size/ ],
-           'Teapot::Bot::Object::PhotoSize' => [ qw/thumb/ ],
+           scalar                           => [ qw/file_id file_unique_id type width height is_animated is_video emoji
+                                                    set_name premium_animation custom_emoji_id needs_repainting
+                                                    file_size/ ],
+           'Teapot::Bot::Object::PhotoSize' => [ qw/thumbnail/ ],
            'Teapot::Bot::Object::MaskPosition' => [qw/mask_position/],
          };
 }

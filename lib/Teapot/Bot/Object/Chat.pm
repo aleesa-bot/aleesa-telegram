@@ -30,6 +30,13 @@ has 'bio';                      # Optional. Bio of the other party in a private 
 has 'has_private_forwards';     # Optional. True, if privacy settings of the other party in the private chat allows to
                                 # use tg://user?id=<user_id> links only in chats with the user.
                                 # Returned only in getChat.
+has 'has_restricted_voice_and_video_messages'; # Optional. True, if the privacy settings of the other party restrict
+                                               # sending voice and video note messages in the private chat.
+                                               # Returned only in getChat.
+has 'join_to_send_messages';    # Optional. True, if users need to join the supergroup before they can send messages.
+                                # Returned only in getChat.
+has 'join_by_request'           # Optional. True, if all users directly joining the supergroup need to be approved by
+                                # supergroup administrators. Returned only in getChat.
 has 'description';              # Optional. Returned only in getChat.
 has 'invite_link';              # Optional. Returned only in getChat.
 has 'pinned_message';           # Teapot::Bot::Object::Message
@@ -53,10 +60,12 @@ sub fields {
   return {
           'scalar'                               => [qw/id type title username first_name last_name is_forum 
                                                         emoji_status_custom_emoji_id bio
-                                                        has_private_forwards description invite_link slow_mode_delay
-                                                        message_auto_delete_time has_aggressive_anti_spam_enabled
-                                                        has_hidden_members has_protected_content sticker_set_name
-                                                        can_set_sticker_set linked_chat_id/],
+                                                        has_private_forwards has_restricted_voice_and_video_messages
+                                                        join_to_send_messages join_by_request description invite_link
+                                                        slow_mode_delay message_auto_delete_time
+                                                        has_aggressive_anti_spam_enabled has_hidden_members
+                                                        has_protected_content sticker_set_name can_set_sticker_set
+                                                        linked_chat_id/],
           'Teapot::Bot::Object::ChatPhoto'       => [qw/photo/],
           'Teapot::Bot::Object::Message'         => [qw/pinned_message/],
           'Teapot::Bot::Object::ChatPermissions' => [qw/permissions/],

@@ -16,7 +16,7 @@ has 'file_unique_id';
 has 'width';
 has 'height';
 has 'duration';
-has 'thumb';     # Optional. Video thumbnail
+has 'thumbnail'; # Optional. Video thumbnail
 has 'file_name'; # Optional. Original filename as defined by sender
 has 'mime_type'; # Optional. Mime type of a file as defined by sender
 has 'file_size'; # Optional. File size
@@ -25,7 +25,7 @@ sub fields {
   return {
            scalar                           => [qw/file_id file_unique_id width height duration file_name mime_type
                                                    file_size/],
-           'Teapot::Bot::Object::PhotoSize' => [qw/thumb/],
+           'Teapot::Bot::Object::PhotoSize' => [qw/thumbnail/],
          };
 }
 
