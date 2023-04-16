@@ -30,7 +30,14 @@ use Teapot::Bot::Object::PhotoSize ();
 use Teapot::Bot::Object::Invoice ();
 use Teapot::Bot::Object::Venue ();
 use Teapot::Bot::Object::SuccessfulPayment ();
+use Teapot::Bot::Object::WriteAccessAllowed ();
 use Teapot::Bot::Object::PassportData ();
+use Teapot::Bot::Object::ForumTopicCreated ();
+use Teapot::Bot::Object::ForumTopicEdited ();
+use Teapot::Bot::Object::ForumTopicClosed ();
+use Teapot::Bot::Object::ForumTopicReopened ();
+use Teapot::Bot::Object::GeneralForumTopicHidden ();
+use Teapot::Bot::Object::GeneralForumTopicUnhidden ();
 use Teapot::Bot::Object::InlineKeyboardMarkup ();
 use Teapot::Bot::Object::ProximityAlertTriggered ();
 use Teapot::Bot::Object::Dice ();
@@ -76,6 +83,7 @@ has 'video_note'; # VideoNote
 has 'voice'; # Voice
 has 'caption';
 has 'caption_entities'; # Array of MessageEntity
+has 'has_media_spoiler';
 has 'contact'; # Contact
 has 'dice';
 has 'game';
@@ -97,11 +105,15 @@ has 'pinned_message'; # Message
 has 'invoice'; # Invoice
 has 'successful_payment'; # SuccessfulPayment
 has 'connected_website';
+has 'write_access_allowed'; # WriteAccessAllowed
 has 'passport_data'; # PassportData
 has 'proximity_alert_triggered';
 has 'forum_topic_created'; # ForumTopicCreated
+has 'forum_topic_edited'; # ForumTopicEdited
 has 'forum_topic_closed'; # ForumTopicClosed
 has 'forum_topic_reopened'; # ForumTopicReopened
+has 'general_forum_topic_hidden'; # GeneralForumTopicHidden
+has 'general_forum_topic_unhidden'; # GeneralForumTopicUnhidden
 has 'video_chat_scheduled';
 has 'video_chat_started';
 has 'video_chat_ended';
@@ -111,51 +123,55 @@ has 'reply_markup'; # Array of InlineKeyboardMarkup
 
 sub fields {
   return {
-          'scalar'                                      => [qw/message_id message_thread_id date forward_from_message_id
-                                                            forward_signature forward_sender_name forward_date
-                                                            is_topic_message is_automatic_forward edit_date
-                                                            has_protected_content media_group_id author_signature text
-                                                            caption new_chat_title delete_chat_photo
-                                                            group_chat_created supergroup_chat_created
-                                                            channel_chat_created migrate_to_chat_id
-                                                            migrate_from_chat_id connected_website/],
-          'Teapot::Bot::Object::User'                   => [qw/from forward_from via_bot new_chat_members left_chat_member /],
+          'scalar'                                         => [qw/message_id message_thread_id date forward_from_message_id
+                                                               forward_signature forward_sender_name forward_date
+                                                               is_topic_message is_automatic_forward edit_date
+                                                               has_protected_content media_group_id author_signature text
+                                                               caption has_media_spoiler new_chat_title delete_chat_photo
+                                                               group_chat_created supergroup_chat_created
+                                                               channel_chat_created migrate_to_chat_id
+                                                               migrate_from_chat_id connected_website/],
+          'Teapot::Bot::Object::User'                      => [qw/from forward_from via_bot new_chat_members left_chat_member /],
 
-          'Teapot::Bot::Object::Chat'                   => [qw/sender_chat chat forward_from_chat/],
-          'Teapot::Bot::Object::Message'                => [qw/reply_to_message pinned_message/],
-          'Teapot::Bot::Object::MessageEntity'          => [qw/entities caption_entities /],
+          'Teapot::Bot::Object::Chat'                      => [qw/sender_chat chat forward_from_chat/],
+          'Teapot::Bot::Object::Message'                   => [qw/reply_to_message pinned_message/],
+          'Teapot::Bot::Object::MessageEntity'             => [qw/entities caption_entities /],
 
-          'Teapot::Bot::Object::Audio'                  => [qw/audio/],
-          'Teapot::Bot::Object::Document'               => [qw/document/],
-          'Teapot::Bot::Object::Animation'              => [qw/animation/],
-          'Teapot::Bot::Object::Game'                   => [qw/game/],
-          'Teapot::Bot::Object::PhotoSize'              => [qw/photo new_chat_photo/],
-          'Teapot::Bot::Object::Sticker'                => [qw/sticker/],
-          'Teapot::Bot::Object::Video'                  => [qw/video/],
-          'Teapot::Bot::Object::Voice'                  => [qw/voice/],
-          'Teapot::Bot::Object::VideoNote'              => [qw/video_note/],
+          'Teapot::Bot::Object::Audio'                     => [qw/audio/],
+          'Teapot::Bot::Object::Document'                  => [qw/document/],
+          'Teapot::Bot::Object::Animation'                 => [qw/animation/],
+          'Teapot::Bot::Object::Game'                      => [qw/game/],
+          'Teapot::Bot::Object::PhotoSize'                 => [qw/photo new_chat_photo/],
+          'Teapot::Bot::Object::Sticker'                   => [qw/sticker/],
+          'Teapot::Bot::Object::Video'                     => [qw/video/],
+          'Teapot::Bot::Object::Voice'                     => [qw/voice/],
+          'Teapot::Bot::Object::VideoNote'                 => [qw/video_note/],
 
-          'Teapot::Bot::Object::Contact'                => [qw/contact/],
-          'Teapot::Bot::Object::Location'               => [qw/location/],
-          'Teapot::Bot::Object::Venue'                  => [qw/venue/],
+          'Teapot::Bot::Object::Contact'                   => [qw/contact/],
+          'Teapot::Bot::Object::Location'                  => [qw/location/],
+          'Teapot::Bot::Object::Venue'                     => [qw/venue/],
 
-          'Teapot::Bot::Object::Poll'                   => [qw/poll/],
+          'Teapot::Bot::Object::Poll'                      => [qw/poll/],
 
-          'Teapot::Bot::Object::Invoice'                => [qw/invoice/],
-          'Teapot::Bot::Object::SuccessfulPayment'      => [qw/successful_payment/],
-          'Teapot::Bot::Object::PassportData'           => [qw/passport_data/],
-          'Teapot::Bot::Object::ForumTopicCreated'      => [qw/forum_topic_created/],
-          'Teapot::Bot::Object::ForumTopicClosed'       => [qw/forum_topic_closed/],
-          'Teapot::Bot::Object::ForumTopicReopened'     => [qw/forum_topic_reopened/],
-          'Teapot::Bot::Object::InlineKeyboardMarkup'   => [qw/reply_markup/],
-          'Teapot::Bot::Object::ProximityAlertTriggered' => [qw/proximity_alert_triggered/],
-          'Teapot::Bot::Object::Dice'                   => [qw/dice/],
+          'Teapot::Bot::Object::Invoice'                   => [qw/invoice/],
+          'Teapot::Bot::Object::SuccessfulPayment'         => [qw/successful_payment/],
+          'Teapot::Bot::Object::WriteAccessAllowed'        => [qw/write_access_allowed/],
+          'Teapot::Bot::Object::PassportData'              => [qw/passport_data/],
+          'Teapot::Bot::Object::ForumTopicCreated'         => [qw/forum_topic_created/],
+          'Teapot::Bot::Object::ForumTopicEdited'          => [qw/forum_topic_edited/],
+          'Teapot::Bot::Object::ForumTopicClosed'          => [qw/forum_topic_closed/],
+          'Teapot::Bot::Object::ForumTopicReopened'        => [qw/forum_topic_reopened/],
+          'Teapot::Bot::Object::GeneralForumTopicHidden'   => [qw/general_forum_topic_unhidden/],
+          'Teapot::Bot::Object::GeneralForumTopicUnhidden' => [qw/general_forum_topic_unhidden/],
+          'Teapot::Bot::Object::InlineKeyboardMarkup'      => [qw/reply_markup/],
+          'Teapot::Bot::Object::ProximityAlertTriggered'   => [qw/proximity_alert_triggered/],
+          'Teapot::Bot::Object::Dice'                      => [qw/dice/],
           'Teapot::Bot::Object::MessageAutoDeleteTimerChanged' => [qw/message_auto_delete_timer_changed/],
-          'Teapot::Bot::Object::VideoChatScheduled'     => [qw/video_chat_scheduled/],
-          'Teapot::Bot::Object::VideoChatStarted'       => [qw/video_chat_started/],
-          'Teapot::Bot::Object::VideoChatEnded'         => [qw/video_chat_ended/],
+          'Teapot::Bot::Object::VideoChatScheduled'        => [qw/video_chat_scheduled/],
+          'Teapot::Bot::Object::VideoChatStarted'          => [qw/video_chat_started/],
+          'Teapot::Bot::Object::VideoChatEnded'            => [qw/video_chat_ended/],
           'Teapot::Bot::Object::VideoChatParticipantsInvited' => [qw/video_chat_participants_invited/],
-          'Teapot::Bot::Object::WebAppData'             => [qw/web_app_data/],
+          'Teapot::Bot::Object::WebAppData'                => [qw/web_app_data/],
   };
 }
 

@@ -568,8 +568,9 @@ sub deleteMessage {
     return $ret;
   }
 
-  $send_args->{chat_id}    = $args->{chat_id};
-  $send_args->{message_id} = $args->{message_id};
+  $send_args->{chat_id}           = $args->{chat_id};
+  $send_args->{message_id}        = $args->{message_id};
+  $send_args->{message_thread_id} = $args->{message_thread_id} if exists $args->{message_thread_id};
 
   # TODO: fix canDeleteMessage() && export it in this fle
   if (Teapot::Bot::Object::ChatMember->canDeleteMessage($self, $args->{chat_id})) {
@@ -667,20 +668,20 @@ sub sendChatAction {
     return $ret;
   }
 
-  $args->{action} = 'typing' unless (defined $args->{action});
-
-  $send_args->{chat_id} = $args->{chat_id};
-  $send_args->{action} = 'typing';
-  $send_args->{action} = 'upload_photo'      if ($args->{action} eq 'upload_photo');
-  $send_args->{action} = 'record_video'      if ($args->{action} eq 'record_video');
-  $send_args->{action} = 'upload_video'      if ($args->{action} eq 'upload_video');
-  $send_args->{action} = 'record_voice'      if ($args->{action} eq 'record_voice');
-  $send_args->{action} = 'upload_voice'      if ($args->{action} eq 'upload_voice');
-  $send_args->{action} = 'upload_document'   if ($args->{action} eq 'upload_document');
-  $send_args->{action} = 'find_location'     if ($args->{action} eq 'find_location');
-  $send_args->{action} = 'record_video_note' if ($args->{action} eq 'record_video_note');
-  $send_args->{action} = 'upload_video_note' if ($args->{action} eq 'upload_video_note');
-  $send_args->{action} = 'choose_sticker'    if ($args->{action} eq 'choose_sticker');
+  $args->{action}                 = 'typing' unless (defined $args->{action});
+  $send_args->{message_thread_id} = $args->{message_thread_id} if exists $args->{message_thread_id};
+  $send_args->{chat_id}           = $args->{chat_id};
+  $send_args->{action}            = 'typing';
+  $send_args->{action}            = 'upload_photo'      if ($args->{action} eq 'upload_photo');
+  $send_args->{action}            = 'record_video'      if ($args->{action} eq 'record_video');
+  $send_args->{action}            = 'upload_video'      if ($args->{action} eq 'upload_video');
+  $send_args->{action}            = 'record_voice'      if ($args->{action} eq 'record_voice');
+  $send_args->{action}            = 'upload_voice'      if ($args->{action} eq 'upload_voice');
+  $send_args->{action}            = 'upload_document'   if ($args->{action} eq 'upload_document');
+  $send_args->{action}            = 'find_location'     if ($args->{action} eq 'find_location');
+  $send_args->{action}            = 'record_video_note' if ($args->{action} eq 'record_video_note');
+  $send_args->{action}            = 'upload_video_note' if ($args->{action} eq 'upload_video_note');
+  $send_args->{action}            = 'choose_sticker'    if ($args->{action} eq 'choose_sticker');
 
   my $url = sprintf 'https://api.telegram.org/bot%s/sendChatAction', $self->token;
 

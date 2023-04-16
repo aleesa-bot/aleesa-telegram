@@ -38,6 +38,10 @@ has 'permissions';              # Teapot::Bot::Object::ChatPermissions. Optional
 has 'slow_mode_delay';          # Optional. Returned only in getChat.
 has 'message_auto_delete_time'; # Optional. The time after which all messages sent to the chat will be automatically
                                 # deleted; in seconds. Returned only in getChat.
+has 'has_aggressive_anti_spam_enabled'; # Optional. True, if aggressive anti-spam checks are enabled in the supergroup.
+                                        # The field is only available to chat administrators. Returned only in getChat.
+has 'has_hidden_members';       # Optional. True, if non-administrators can only get the list of bots and administrators
+                                # in the chat. Returned only in getChat.
 has 'has_protected_content';    # Optional. True, if messages from the chat can't be forwarded to other chats.
                                 # Returned only in getChat.
 has 'sticker_set_name';         # Optional. Returned only in getChat.
@@ -50,8 +54,9 @@ sub fields {
           'scalar'                               => [qw/id type title username first_name last_name is_forum 
                                                         emoji_status_custom_emoji_id bio
                                                         has_private_forwards description invite_link slow_mode_delay
-                                                        message_auto_delete_time has_protected_content
-                                                        sticker_set_name can_set_sticker_set linked_chat_id/],
+                                                        message_auto_delete_time has_aggressive_anti_spam_enabled
+                                                        has_hidden_members has_protected_content sticker_set_name
+                                                        can_set_sticker_set linked_chat_id/],
           'Teapot::Bot::Object::ChatPhoto'       => [qw/photo/],
           'Teapot::Bot::Object::Message'         => [qw/pinned_message/],
           'Teapot::Bot::Object::ChatPermissions' => [qw/permissions/],
