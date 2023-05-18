@@ -85,10 +85,10 @@ sub Command {
 	# Полноценный поиск простой команды во входящем сообщении
 	$#cmds = -1;
 	@cmds = qw (ping пинг пинх pong понг понх coin монетка roll dice кости ver version версия хэлп halp kde кде lat
-	            лат friday пятница proverb пословица fortune фортунка f ф anek анек анекдот buni cat кис drink праздник
-	            fox лис frog лягушка horse лошадь лошадка monkeyuser owl сова сыч rabbit bunny кролик snail улитка tits
-	            boobs tities boobies сиси сисечки butt booty ass попа попка xkcd dig копать fish fishing рыба рыбка
-	            рыбалка karma карма fuck);
+	            лат friday пятница proverb пословица пословиться fortune фортунка f ф anek анек анекдот buni cat кис
+	            drink праздник fox лис frog лягушка horse лошадь лошадка monkeyuser owl сова сыч rabbit bunny кролик
+	            snail улитка tits boobs tities boobies сиси сисечки butt booty ass попа попка xkcd dig копать fish
+	            fishing рыба рыбка рыбалка karma карма fuck);
 
 	my $bingo = 0;
 
