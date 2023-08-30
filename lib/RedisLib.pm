@@ -71,14 +71,12 @@ sub redis_parse_message {
 
 		if ($r->{error}) {
 			# TODO: handle 50x errors? They occur when api servers being updated.
-			$log->error ('[ERROR] Unable to call sendMessage() BotAPI method: ' . Dumper ($r));
-
 			my $resp = eval { $r->{debug}->json };
 
 			if (defined $resp) {
 				if (defined ($resp->{error_code}) && $resp->{error_code} == 400) {
 					if (defined $resp->{description}) {
-						if ($resp->{description} eq 'Bad Request: have no rights to send a message') {
+						if ($resp->{description} eq 'Bad Request: not enough rights to send text messages to the chat') {
 							$log->notice ("[NOTICE] Have no rights to send message to $m->{chatid}");
 							# TODO: disable fortune if message is good morning fortune
 						} elsif ($resp->{description} eq 'Bad Request: chat not found') {
@@ -112,6 +110,8 @@ sub redis_parse_message {
 				} else {
 					$log->error ('[ERROR] Unable to handle BotAPI error: ' . Dumper ($resp));
 				}
+			} else {
+				$log->error ('[ERROR] Unable to call sendMessage() BotAPI method: ' . Dumper ($r));
 			}
 		}
 	}
