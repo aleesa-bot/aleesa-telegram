@@ -193,6 +193,10 @@ sub __fork {
 sub __signal_handler {
 	$log->info ("[INFO] Caught a signal $OS_ERROR");
 
+	eval {
+		$main::TGM->logOut();
+	};
+
 	if (-e $pidfile) {
 		unlink $pidfile;
 	}
