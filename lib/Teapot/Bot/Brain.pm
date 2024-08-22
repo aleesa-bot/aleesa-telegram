@@ -958,6 +958,23 @@ sub _post_request {
   return $result;
 }
 
+sub logOut {
+  my $self = shift;
+
+  my $send_args = {};
+  my $ret;
+
+  if (! defined($self->token) || $self->token eq '') {
+    $ret->{error}   = 1;
+    $ret->{message} = 'No token supplied to logOut()';
+
+    return $ret;
+  }
+
+  my $url               = sprintf 'https://api.telegram.org/bot%s/logOut', $self->token;
+
+  return $self->_post_request($url, $send_args);
+}
 
 1;
 
