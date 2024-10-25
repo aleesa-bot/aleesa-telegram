@@ -425,7 +425,7 @@ MYADMIN
 			my $arg = $1;
 			$arg = trim $1 if (defined $1);
 
-			if (defined $arg && $arg !~ /^\s*$/) {
+			if (defined ($arg) && $arg !~ /^\s*$/) {
 				if ($arg == 1) {
 					$reply = ChanMsgToggle ($chatid, 1);
 				} elsif ($arg == 0) {
@@ -438,7 +438,7 @@ MYADMIN
 			my $arg = $2;
 			$arg = trim $2 if (defined $2);
 
-			if (defined $arg &&  $arg !~ /^\s*$/) {
+			if (defined ($arg) && $arg !~ /^\s*$/) {
 				if ($arg == 1) {
 					$reply = GreetMsgToggle ($chatid, 1);
 				} elsif ($arg == 0) {
@@ -451,7 +451,7 @@ MYADMIN
 			my $arg = $2;
 			$arg = trim $2 if (defined $2);
 
-			if (defined $arg &&  $arg !~ /^\s*$/) {
+			if (defined ($arg) && $arg !~ /^\s*$/) {
 				if ($arg == 1) {
 					$reply = GoodbyeMsgToggle ($chatid, 1);
 				} elsif ($arg == 0) {
@@ -464,7 +464,7 @@ MYADMIN
 			my $arg = $1;
 			$arg = trim $1 if (defined $1);
 
-			if (defined $arg) {
+			if (defined ($arg) && $arg !~ /^\s*$/) {
 				if ($arg == 1) {
 					$reply = PluginToggle ($chatid, 'oboobs', 1);
 				} elsif ($arg == 0) {
@@ -477,7 +477,7 @@ MYADMIN
 			my $arg = $1;
 			$arg = trim $1 if (defined $1);
 
-			if (defined $arg) {
+			if (defined ($arg) && $arg !~ /^\s*$/) {
 				if ($arg == 1) {
 					$reply = PluginToggle ($chatid, 'obutts', 1);
 				} elsif ($arg == 0) {
