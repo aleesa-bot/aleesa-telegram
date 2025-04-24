@@ -851,7 +851,7 @@ sub _add_getUpdates_handler {
       return if $http_active;
 
       my $offset = $last_update_id + 1;
-      my $updateURL = "https://api.telegram.org/bot${token}/getUpdates?offset=${offset}&timeout=60";
+      my $updateURL = "https://api.telegram.org/bot${token}/getUpdates?offset=${offset}&timeout=60&allowed_updates=%5B%22message%22%2C%22edited_message%22%2C%22channel_post%22%2C%22edited_channel_post%22%2C%22poll%22%2C%22chat_member%22%2C%22message_reaction%22%2C%22message_reaction_count%22%2C%22poll_answer%22%2C%22my_chat_member%22%2C%22chat_join_request%22%2C%22chat_boost%22%2C%22removed_chat_boost%22%5D";
       $http_active = 1;
 
       $self->ua->get(
