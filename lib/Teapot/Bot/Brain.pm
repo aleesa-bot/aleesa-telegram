@@ -11,8 +11,9 @@ use utf8;
 use English                             qw ( -no_match_vars );
 
 use Mojo::IOLoop                           ();
-use Mojo::JSON                          qw (true false);
+use Mojo::JSON                          qw (true false encode_json);
 use Mojo::UserAgent                        ();
+use Mojo::Parameters                       ();
 use Carp                                qw (carp croak cluck confess);
                                         # use croak where we return error up to app that supply something wrong
                                         # use cluck where we want to say that something bad but non-critical happen in
@@ -845,13 +846,41 @@ sub _add_getUpdates_handler {
   my $last_update_id = -1;
   my $token          = $self->token;
 
+  my $timeout = 60;
+  my $limit   = 10;
+
+  my $au->[0] = 'message';
+  push @{$au}, 'edited_message';
+  push @{$au}, 'channel_post';
+  push @{$au}, 'edited_channel_post';
+  push @{$au}, 'message_reaction';
+  push @{$au}, 'message_reaction_count';
+  push @{$au}, 'inline_query';
+  push @{$au}, 'chosen_inline_result';
+  push @{$au}, 'callback_query';
+  push @{$au}, 'poll';
+  push @{$au}, 'poll_answer';
+  push @{$au}, 'my_chat_member';
+  push @{$au}, 'chat_member';
+  push @{$au}, 'chat_join_request';
+  push @{$au}, 'chat_boost';
+  push @{$au}, 'removed_chat_boost';
+  my $allowed_updates = encode_json ($au);
+
+  my $params = Mojo::Parameters->new();
+	$params = $params->append(limit           => $limit);
+  $params = $params->append(timeout         => $timeout);
+  $params = $params->append(allowed_updates => $allowed_updates);
+
   Mojo::IOLoop->recurring(
     0.1 => sub {
       # do nothing if our previous longpoll is still going
       return if $http_active;
 
       my $offset = $last_update_id + 1;
-      my $updateURL = "https://api.telegram.org/bot${token}/getUpdates?offset=${offset}&timeout=60&allowed_updates=%5B%22message%22%2C%22edited_message%22%2C%22channel_post%22%2C%22edited_channel_post%22%2C%22poll%22%2C%22chat_member%22%2C%22message_reaction%22%2C%22message_reaction_count%22%2C%22poll_answer%22%2C%22my_chat_member%22%2C%22chat_join_request%22%2C%22chat_boost%22%2C%22removed_chat_boost%22%5D";
+
+      my $updateURL = "https://api.telegram.org/bot${token}/getUpdates?offset=$offset&$params";
+
       $http_active = 1;
 
       $self->ua->get(
@@ -972,6 +1001,24 @@ sub logOut {
   }
 
   my $url               = sprintf 'https://api.telegram.org/bot%s/logOut', $self->token;
+
+  return $self->_post_request($url, $send_args);
+}
+
+sub Close {
+  my $self = shift;
+
+  my $send_args = {};
+  my $ret;
+
+  if (! defined($self->token) || $self->token eq '') {
+    $ret->{error}   = 1;
+    $ret->{message} = 'No token supplied to Close()';
+
+    return $ret;
+  }
+
+  my $url               = sprintf 'https://api.telegram.org/bot%s/close', $self->token;
 
   return $self->_post_request($url, $send_args);
 }
