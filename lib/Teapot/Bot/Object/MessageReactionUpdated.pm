@@ -10,7 +10,7 @@ use Mojo::Base 'Teapot::Bot::Object::Base';
 
 use Teapot::Bot::Object::Chat ();
 use Teapot::Bot::Object::Chat ();
-use Teapot::Bot::Object::User ();
+use Teapot::Bot::Object::MessageReaction ();
 
 $Teapot::Bot::Object::MessageReactionUpdated::VERSION = '0.026';
 

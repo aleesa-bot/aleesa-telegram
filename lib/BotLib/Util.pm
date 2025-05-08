@@ -89,20 +89,39 @@ sub Highlight {
 		return ($userid, $username, $fullname, $highlight, undef);
 	}
 
-	$userid = $msg->from->id;
+	if ($msg->can ('from')) {
+		$userid = $msg->from->id;
 
-	if ($msg->from->can ('username') && defined $msg->from->username ) {
-		$username = $msg->from->username;
-	}
-
-	if ($msg->from->can ('first_name') && defined $msg->from->first_name) {
-		$fullname = $msg->from->first_name;
-
-		if ($msg->from->can ('last_name') && defined $msg->from->last_name) {
-			$fullname .= ' ' . $msg->from->last_name;
+		if ($msg->from->can ('username') && defined $msg->from->username ) {
+			$username = $msg->from->username;
 		}
-	} elsif ($msg->from->can ('last_name') && defined $msg->from->last_name) {
-		$fullname .= $msg->from->last_name;
+
+		if ($msg->from->can ('first_name') && defined $msg->from->first_name) {
+			$fullname = $msg->from->first_name;
+
+			if ($msg->from->can ('last_name') && defined $msg->from->last_name) {
+				$fullname .= ' ' . $msg->from->last_name;
+			}
+		} elsif ($msg->from->can ('last_name') && defined $msg->from->last_name) {
+			$fullname .= $msg->from->last_name;
+		}
+	} else {
+		# Reacions case.
+		$userid = $msg->user->id;
+
+		if ($msg->user->can ('username') && defined $msg->user->username ) {
+			$username = $msg->user->username;
+		}
+
+		if ($msg->user->can ('first_name') && defined $msg->user->first_name) {
+			$fullname = $msg->user->first_name;
+
+			if ($msg->user->can ('last_name') && defined $msg->user->last_name) {
+				$fullname .= ' ' . $msg->user->last_name;
+			}
+		} elsif ($msg->user->can ('last_name') && defined $msg->user->last_name) {
+			$fullname .= $msg->user->last_name;
+		}
 	}
 
 	if (defined $username) {
