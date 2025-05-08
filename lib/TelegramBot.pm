@@ -265,6 +265,11 @@ sub __on_msg {
 		return;
 	}
 
+	if ($msg->can ('old_reaction') || $msg->can ('new_reaction')) {
+		$log->debug (sprintf ('[DEBUG] user %s in %s posts reaction to message', $highlight, $chatname));
+		return;
+	}
+
 	# is this a 1-on-1 ?
 	if ($msg->chat->type eq 'private') {
 		unless (defined $msg->text) {
