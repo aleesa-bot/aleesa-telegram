@@ -217,6 +217,51 @@ sub __on_msg {
 		return;
 	}
 
+	# Bots have non-0% tendency to appear with this kind of updates.
+	if ($msg->can ('new_chat_member') && defined ($msg->new_chat_member)) {
+		unless (GreetMsgEnabled ($chatid)) {
+			return;
+		}
+
+		my $member_str = '';
+
+		# Избегаем именования по пробельному символу
+		if ($msg->new_chat_member->user->can ('first_name') && defined ($msg->new_chat_member->user->first_name) && $msg->new_chat_member->user->first_name !~ /^\s+$/ui) {
+			$member_str .= $msg->new_chat_member->user->first_name;
+
+			if ($msg->new_chat_member->user->can ('last_name') && defined ($msg->new_chat_member->user->last_name) && $msg->new_chat_member->user->last_name !~ /^\s+$/ui) {
+				$member_str .= ' ' . $msg->new_chat_member->last_name;
+			}
+		} else {
+			if ($msg->new_chat_member->user->can ('last_name') && defined ($msg->new_chat_member->user->last_name) && $msg->new_chat_member->user->last_name !~ /^\s+$/ui) {
+				$member_str .= ' ' . $msg->new_chat_member->user->last_name;
+			# Username - это у нас валидная строка из только английских символов
+			} elsif ($msg->new_chat_member->user->can ('username') && defined ($msg->new_chat_member->user->username)) {
+				$member_str .= '@' . $msg->new_chat_member->user->username;
+			# Если у юзера нету подходящих имени, фамилии или username, будем пользовать его id
+			} else {
+				$member_str .= $msg->new_chat_member->user->id;
+			}
+		}
+
+		my $member = sprintf '[%s](tg://user?id=%s)', $member_str, $msg->user->id;
+
+		$phrase = sprintf (
+				'%s, %s. Представьтес, пожалуйста, и расскажите, что вас сюда привело.',
+				$introduce_greet[irand ($#introduce_greet + 1)],
+				$member,
+			);
+
+		BotSleep $msg;
+		my $res = $msg->replyMd ($phrase);
+
+		if ($res->{error}) {
+			$log->error ("Unable to call sendMessage BotAPI method: " . Dumper ($res));
+		}
+
+		return;
+	}
+
 	# Leaving event, say goodbye to member just left chat
 	if ($msg->can ('left_chat_member') && defined ($msg->left_chat_member)) {
 		unless (GoodbyeMsgEnabled ($chatid)) {
