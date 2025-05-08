@@ -4,5 +4,6 @@ _Deparsed_XSubs.pm
 .vstags
 aleesa-telegram.pid
 data/cache/**
+data/admin/**
 data/config.json
 vendor_perl/**
