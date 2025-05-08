@@ -266,7 +266,7 @@ sub __on_msg {
 	}
 
 	if ($msg->can ('old_reaction') || $msg->can ('new_reaction')) {
-		$log->debug (sprintf ('[DEBUG] user %s in %s posts reaction to message', $highlight, $chatname));
+		$log->debug (sprintf ('[DEBUG] user %s in %s posts reaction to message', $vis_a_vi, $chatname));
 		return;
 	}
 
