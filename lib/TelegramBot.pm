@@ -230,7 +230,7 @@ sub __on_msg {
 			$member_str .= $msg->new_chat_member->user->first_name;
 
 			if ($msg->new_chat_member->user->can ('last_name') && defined ($msg->new_chat_member->user->last_name) && $msg->new_chat_member->user->last_name !~ /^\s+$/ui) {
-				$member_str .= ' ' . $msg->new_chat_member->last_name;
+				$member_str .= ' ' . $msg->new_chat_member->user->last_name;
 			}
 		} else {
 			if ($msg->new_chat_member->user->can ('last_name') && defined ($msg->new_chat_member->user->last_name) && $msg->new_chat_member->user->last_name !~ /^\s+$/ui) {
@@ -244,7 +244,7 @@ sub __on_msg {
 			}
 		}
 
-		my $member = sprintf '[%s](tg://user?id=%s)', $member_str, $msg->user->id;
+		my $member = sprintf '[%s](tg://user?id=%s)', $member_str, $msg->new_chat_member->user->id;
 
 		$phrase = sprintf (
 				'%s, %s. Представьтес, пожалуйста, и расскажите, что вас сюда привело.',
