@@ -17,7 +17,6 @@ has 'emoji';           # Reaction emoji. Currently, it can be one of "👍", "�
 # "🎃", "🙈", "😇", "😨", "🤝", "✍", "🤗", "🫡", "🎅", "🎄", "☃", "💅", "🤪", "🗿", "🆒", "💘", "🙉", "🦄", "😘",
 # "💊", "🙊", "😎", "👾", "🤷‍♂", "🤷", "🤷‍♀", "😡"
 has 'custom_emoji_id'; # Only for ReactionTypeCustomEmoji. Custom emoji identifier.
-has 'total_count';     # Only for ReactionCount. Number of times the reaction was added.
 
 sub fields {
   return {
