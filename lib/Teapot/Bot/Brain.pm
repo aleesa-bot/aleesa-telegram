@@ -33,6 +33,7 @@ use Teapot::Bot::Object::User              ();
 use Teapot::Bot::Object::Chat              ();
 use Teapot::Bot::Object::ChatMember        ();
 use Teapot::Bot::Object::ChatInviteLink    ();
+use Teapot::Bot::Object::MessageReaction   ();
 
 $Teapot::Bot::Brain::VERSION = '0.026';
 
@@ -938,7 +939,7 @@ sub _process_message {
     $update = Teapot::Bot::Object::PollAnswer->create_from_hash($item->{poll_answer}, $self)                  if $item->{poll_answer};
     $update = Teapot::Bot::Object::ChatMemberUpdated->create_from_hash($item->{my_chat_member}, $self)        if $item->{my_chat_member};
     $update = Teapot::Bot::Object::ChatMemberUpdated->create_from_hash($item->{chat_member}, $self)           if $item->{chat_member};
-
+    $update = Teapot::Bot::Object::MessageReaction->create_from_hash($item->{message_reaction}, self)                        if $item->{message_reaction};
     # if we got to this point without creating a response, it must be a type we
     # don't handle yet
     if (! $update) {
