@@ -208,7 +208,12 @@ sub __on_msg {
 		}
 
 		sleep 2;
-		my $res = $msg->replyMd ($phrase);
+		my $m->{text} = $phrase;
+		$m->{chat_id} = $chatid;
+		$m->{disable_notification} = 1;
+		$m->{parse_mode} = 'Markdown';
+
+		my $res = $main::TGM->sendMessage ($m);
 
 		if ($res->{error}) {
 			$log->error ("Unable to call sendMessage BotAPI method: " . Dumper ($res));
@@ -253,7 +258,13 @@ sub __on_msg {
 			);
 
 		sleep 2;
-		my $res = $msg->replyMd ($phrase);
+
+		my $m->{text} = $phrase;
+		$m->{chat_id} = $chatid;
+		$m->{disable_notification} = 1;
+		$m->{parse_mode} = 'Markdown';
+
+		my $res = $main::TGM->sendMessage ($m);
 
 		if ($res->{error}) {
 			$log->error ("Unable to call sendMessage BotAPI method: " . Dumper ($res));
