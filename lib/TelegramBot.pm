@@ -15,7 +15,7 @@ use Math::Random::Secure qw (irand);
 use Mojo::Base              'Teapot::Bot::Brain';
 
 use BotLib::Admin        qw (FortuneToggleList ChanMsgEnabled GreetMsgEnabled GoodbyeMsgEnabled
-                             MigrateSettingsToNewChatID IsCensored);
+                             MigrateSettingsToNewChatID IsCensored GetSlackGreetRememberId SetSlackGreetRememberId);
 use BotLib               qw (Command);
 use BotLib::Conf         qw (LoadConf);
 use BotLib::Util         qw (trim fmatch Highlight RandomCommonPhrase);
@@ -188,6 +188,8 @@ sub __on_msg {
 				}
 			}
 
+			# Remember user id, to check it later, in next event.
+			SetSlackGreetRememberId ($member->id);
 			push @members, sprintf '[%s](tg://user?id=%s)', $member_str, $member->id;
 		}
 
@@ -224,50 +226,29 @@ sub __on_msg {
 
 	# Bots have non-0% tendency to appear with this kind of updates.
 	if ($msg->can ('new_chat_member') && defined ($msg->new_chat_member)) {
-		unless (GreetMsgEnabled ($chatid)) {
+		# slackware_ru
+		unless ($chatid == -1001332512695) {
 			return;
 		}
 
-		my $member_str = '';
-
-		# Избегаем именования по пробельному символу
-		if ($msg->new_chat_member->user->can ('first_name') && defined ($msg->new_chat_member->user->first_name) && $msg->new_chat_member->user->first_name !~ /^\s+$/ui) {
-			$member_str .= $msg->new_chat_member->user->first_name;
-
-			if ($msg->new_chat_member->user->can ('last_name') && defined ($msg->new_chat_member->user->last_name) && $msg->new_chat_member->user->last_name !~ /^\s+$/ui) {
-				$member_str .= ' ' . $msg->new_chat_member->user->last_name;
-			}
-		} else {
-			if ($msg->new_chat_member->user->can ('last_name') && defined ($msg->new_chat_member->user->last_name) && $msg->new_chat_member->user->last_name !~ /^\s+$/ui) {
-				$member_str .= ' ' . $msg->new_chat_member->user->last_name;
-			# Username - это у нас валидная строка из только английских символов
-			} elsif ($msg->new_chat_member->user->can ('username') && defined ($msg->new_chat_member->user->username)) {
-				$member_str .= '@' . $msg->new_chat_member->user->username;
-			# Если у юзера нету подходящих имени, фамилии или username, будем пользовать его id
-			} else {
-				$member_str .= $msg->new_chat_member->user->id;
-			}
-		}
-
-		my $member = sprintf '[%s](tg://user?id=%s)', $member_str, $msg->new_chat_member->user->id;
-
-		$phrase = sprintf (
-				'%s, %s. Представьтес, пожалуйста, и расскажите, что вас сюда привело.',
-				$introduce_greet[irand ($#introduce_greet + 1)],
-				$member,
-			);
-
 		sleep 2;
 
-		my $m->{text} = $phrase;
-		$m->{chat_id} = $chatid;
-		$m->{disable_notification} = 1;
-		$m->{parse_mode} = 'Markdown';
+		# Can be racy, but hope for best.
+		unless (SetSlackGreetRememberId($msg->new_chat_member->user->id)) {
+			# if earlier we did not get new chat member event, it looks like we have spammer here. Ban it.
+			my $send_args = undef;
+			$send_args->{chat_id}    = 0 + $chatid;
+			$send_args->{user_id}    = 0 + $msg->new_chat_member->user->id;
+			# I think formal ban for 10 seconds will be enough for start.
+			$send_args->{until_date} = 10 + time ();
 
-		my $res = $main::TGM->sendMessage ($m);
+			my $result = $self->banChatMember ($send_args);
 
-		if ($res->{error}) {
-			$log->error ("Unable to call sendMessage BotAPI method: " . Dumper ($res));
+			if ((ref ($result) eq 'JSON::PP::Boolean') && ($result == JSON::PP::true)) {
+				return;
+			} else {
+				$log->error ("Unable to ban user: " . Dumper ($result));
+			}
 		}
 
 		return;

@@ -19,7 +19,8 @@ our @EXPORT_OK = qw (@ForbiddenMessageTypes @PluginList GetForbiddenTypes AddFor
                      ListForbidden FortuneToggle FortuneToggleList FortuneStatus PluginToggle PluginStatus
                      PluginEnabled ChanMsgToggle ChanMsgStatus ChanMsgEnabled GreetMsgToggle GreetMsgStatus
                      GreetMsgEnabled GoodbyeMsgToggle GoodbyeMsgStatus GoodbyeMsgEnabled MuteByAdminToggle
-                     MuteByAdminStatus MuteByAdminEnabled MigrateSettingsToNewChatID IsCensored);
+                     MuteByAdminStatus MuteByAdminEnabled MigrateSettingsToNewChatID IsCensored GetSlackGreetRememberId
+                     SetSlackGreetRememberId);
 
 my $c = LoadConf ();
 my $cachedir = $c->{cachedir};
@@ -731,6 +732,43 @@ sub IsCensored {
 
 	return 0;
 }
+
+sub GetSlackGreetRememberId ($) {
+	my $userid = shift;
+
+	my $cache = CHI->new (
+		driver => 'BerkeleyDB',
+		root_dir => $cachedir,
+		namespace => __PACKAGE__ . '_' . 'slack_greet_remember_id',
+	);
+
+	my $state = $cache->get ($userid);
+
+	if (defined $state) {
+		if ($state) {
+			return 1;
+		} else {
+			return 0;
+		}
+	} else {
+		return 0;
+	}
+}
+
+sub SetSlackGreetRememberId ($) {
+	my $userid = shift;
+
+	my $cache = CHI->new (
+		driver => 'BerkeleyDB',
+		root_dir => $cachedir,
+		namespace => __PACKAGE__ . '_' . 'slack_greet_remember_id',
+	);
+
+	$cache->set ($userid, 1, 'never');
+
+	return;
+}
+
 
 1;
 
