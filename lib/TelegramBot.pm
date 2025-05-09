@@ -18,7 +18,7 @@ use BotLib::Admin        qw (FortuneToggleList ChanMsgEnabled GreetMsgEnabled Go
                              MigrateSettingsToNewChatID IsCensored);
 use BotLib               qw (Command);
 use BotLib::Conf         qw (LoadConf);
-use BotLib::Util         qw (trim fmatch BotSleep Highlight RandomCommonPhrase);
+use BotLib::Util         qw (trim fmatch Highlight RandomCommonPhrase);
 use RedisLib             qw (redis_events_listener);
 
 use version; our $VERSION = qw (1.0);
@@ -207,7 +207,7 @@ sub __on_msg {
 			);
 		}
 
-		BotSleep $msg;
+		sleep 2;
 		my $res = $msg->replyMd ($phrase);
 
 		if ($res->{error}) {
@@ -252,7 +252,7 @@ sub __on_msg {
 				$member,
 			);
 
-		BotSleep $msg;
+		sleep 2;
 		my $res = $msg->replyMd ($phrase);
 
 		if ($res->{error}) {
