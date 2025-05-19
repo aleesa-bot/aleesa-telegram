@@ -190,6 +190,8 @@ sub __on_msg {
 
 			# Remember user id, to check it later, in next event.
 			SetSlackGreetRememberId ($member->id);
+			$log->info (sprintf ("[INFO] New chat member %s (%s)", $member_str, $member->id));
+
 			push @members, sprintf '[%s](tg://user?id=%s)', $member_str, $member->id;
 		}
 
@@ -218,7 +220,7 @@ sub __on_msg {
 		my $res = $main::TGM->sendMessage ($m);
 
 		if ($res->{error}) {
-			$log->error ("Unable to call sendMessage BotAPI method: " . Dumper ($res));
+			$log->error ("[ERROR] Unable to call sendMessage BotAPI method: " . Dumper ($res));
 		}
 
 		return;
@@ -226,6 +228,7 @@ sub __on_msg {
 
 	# Bots have non-0% tendency to appear with this kind of updates.
 	if ($msg->can ('new_chat_member') && defined ($msg->new_chat_member)) {
+		return;
 		# slackware_ru
 		unless ($chatid == -1001332512695) {
 			return;
@@ -234,20 +237,26 @@ sub __on_msg {
 		sleep 2;
 
 		# Can be racy, but hope for best.
-		unless (SetSlackGreetRememberId($msg->new_chat_member->user->id)) {
+		unless (GetSlackGreetRememberId($msg->new_chat_member->user->id)) {
+			$log->info ("[INFO] $vis_a_vi entered to chat without prior notice event");
+
 			# if earlier we did not get new chat member event, it looks like we have spammer here. Ban it.
 			my $send_args = undef;
 			$send_args->{chat_id}    = 0 + $chatid;
 			$send_args->{user_id}    = 0 + $msg->new_chat_member->user->id;
-			# I think formal ban for 10 seconds will be enough for start.
+
+			# According to docs if user banned for <30 seonds || >366 days it banned forever.
+			# Some bots have annoying behavior to constantly try to join chat.
+			$send_args->{until_date} = 10 + time ();
 			$send_args->{until_date} = 10 + time ();
 
 			my $result = $self->banChatMember ($send_args);
 
 			if ((ref ($result) eq 'JSON::PP::Boolean') && ($result == JSON::PP::true)) {
+				$log->info ("[INFO] $vis_a_vi banned");
 				return;
 			} else {
-				$log->error ("Unable to ban user: " . Dumper ($result));
+				$log->error ("[ERROR] Unable to ban user: " . Dumper ($result));
 			}
 		}
 
@@ -296,7 +305,7 @@ sub __on_msg {
 		my $res = $msg->replyMd ($phrase);
 
 		if ($res->{error}) {
-			$log->error ("Unable to call sendMessage BotAPI method: " . Dumper ($res));
+			$log->error ("[ERROR] Unable to call sendMessage BotAPI method: " . Dumper ($res));
 		}
 
 		return;
@@ -366,7 +375,7 @@ sub __on_msg {
 			my $res = $self->deleteMessage ({chat_id => $chatid, message_id => $msg->{message_id}});
 
 			if ($res->{error}) {
-				$log->error ("Unable to call sendMessage BotAPI method: " . Dumper ($res));
+				$log->error ("[ERROR] Unable to call sendMessage BotAPI method: " . Dumper ($res));
 			}
 		}
 
@@ -382,7 +391,7 @@ sub __on_msg {
 					my $res = $self->deleteMessage ({chat_id => $chatid, message_id => $msg->{message_id}});
 
 					if ($res->{error}) {
-						$log->error ("Unable to call sendMessage BotAPI method: " . Dumper ($res));
+						$log->error ("[ERROR] Unable to call sendMessage BotAPI method: " . Dumper ($res));
 					}
 				}
 			}
@@ -554,7 +563,7 @@ sub __on_msg {
 			my $res = $msg->reply ($reply);
 
 			if ($res->{error}) {
-				$log->error ("Unable to call sendMessage BotAPI method: " . Dumper ($res));
+				$log->error ("[ERROR] Unable to call sendMessage BotAPI method: " . Dumper ($res));
 			}
 		} else {
 			$log->debug (
