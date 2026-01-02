@@ -6,4 +6,5 @@ aleesa-telegram.pid
 data/cache/**
 data/admin/**
 data/config.json
+data/chatlist.txt
 vendor_perl/**
