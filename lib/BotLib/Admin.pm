@@ -15,12 +15,19 @@ use version; our $VERSION = qw (1.1);
 use Exporter qw (import);
 # to export array we need @ISA here
 our @ISA    = qw / Exporter /; ## no critic (ClassHierarchies::ProhibitExplicitISA)
-our @EXPORT_OK = qw (@ForbiddenMessageTypes @PluginList GetForbiddenTypes AddForbiddenType DelForbiddenType
-                     ListForbidden FortuneToggle FortuneToggleList FortuneStatus PluginToggle PluginStatus
-                     PluginEnabled ChanMsgToggle ChanMsgStatus ChanMsgEnabled GreetMsgToggle GreetMsgStatus
-                     GreetMsgEnabled GoodbyeMsgToggle GoodbyeMsgStatus GoodbyeMsgEnabled MuteByAdminToggle
-                     MuteByAdminStatus MuteByAdminEnabled MigrateSettingsToNewChatID IsCensored GetSlackGreetRememberId
-                     SetSlackGreetRememberId);
+our @EXPORT_OK = qw (@ForbiddenMessageTypes @PluginList
+                     GetForbiddenTypes  AddForbiddenType  DelForbiddenType   ListForbidden EnabledForbidden
+                     FortuneToggle      FortuneStatus     FortuneEnabled     FortuneToggleList
+                     ChanMsgToggle      ChanMsgStatus     ChanMsgEnabled     ChanMsgToggleList
+                     GreetMsgToggle     GreetMsgStatus    GreetMsgEnabled    GreetMsgToggleList
+                     GoodbyeMsgToggle   GoodbyeMsgStatus  GoodbyeMsgEnabled  GoodbyeMsgToggleList
+                     PluginToggle       PluginStatus      PluginEnabled
+                     MuteByAdminToggle  MuteByAdminStatus MuteByAdminEnabled MuteByAdminToggleList
+                     MigrateSettingsToNewChatID
+                     IsCensored
+                     GetSlackGreetRememberId
+                     SetSlackGreetRememberId
+                    );
 
 my $c = LoadConf ();
 my $cachedir = $c->{cachedir};
@@ -406,6 +413,16 @@ sub GreetMsgEnabled ($) {
 	}
 }
 
+sub GreetMsgToggleList () {
+	my $cache = CHI->new (
+		driver => 'BerkeleyDB',
+		root_dir => $cachedir,
+		namespace => __PACKAGE__ . '_' . 'greet_msg',
+	);
+
+	return $cache->get_keys ();
+}
+
 sub GoodbyeMsgToggle (@) {
 	my $chatid = shift;
 	my $action = shift // undef;
@@ -490,6 +507,16 @@ sub GoodbyeMsgEnabled ($) {
 	} else {
 		return 0;
 	}
+}
+
+sub GoodbyeMsgToggleList () {
+	my $cache = CHI->new (
+		driver => 'BerkeleyDB',
+		root_dir => $cachedir,
+		namespace => __PACKAGE__ . '_' . 'goodbye_msg',
+	);
+
+	return $cache->get_keys ();
 }
 
 sub PluginStatus (@) {
@@ -661,6 +688,16 @@ sub MuteByAdminEnabled ($) {
 	} else {
 		return 0;
 	}
+}
+
+sub MuteByAdminToggleList () {
+	my $cache = CHI->new (
+		driver => 'BerkeleyDB',
+		root_dir => $cachedir,
+		namespace => __PACKAGE__ . '_' . 'admin_mute',
+	);
+
+	return $cache->get_keys ();
 }
 
 sub MigrateSettingsToNewChatID {
